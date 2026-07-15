@@ -1,0 +1,34 @@
+import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+
+class AppPrice extends StatelessWidget {
+  final double price;
+  final double? oldPrice;
+
+  const AppPrice({super.key, required this.price, this.oldPrice});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (oldPrice != null)
+          Text(
+            '${oldPrice!.toStringAsFixed(0)} ر.ي',
+            style: const TextStyle(
+              color: Colors.grey,
+              decoration: TextDecoration.lineThrough,
+            ),
+          ),
+        Text(
+          '${price.toStringAsFixed(0)} ر.ي',
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}

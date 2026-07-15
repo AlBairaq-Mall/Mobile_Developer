@@ -1,0 +1,57 @@
+name: bhm_supermarket
+description: "A production-ready supermarket app"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  local_auth: ^2.1.6
+  flutter:
+    sdk: flutter
+
+  flutter_secure_storage: ^9.2.2
+
+  pretty_dio_logger: ^1.4.0
+
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.5
+
+  # Navigation
+  go_router: ^16.2.1
+
+  # UI & Fonts
+  google_fonts: ^8.1.0
+  cupertino_icons: ^1.0.8
+
+  # Networking (ready for Laravel API)
+  dio: ^5.9.0
+
+  # Image cache (uncomment when connecting to real API with image URLs)
+  # cached_network_image: ^3.4.1
+
+  # File upload for payment proof (uncomment when needed)
+  # file_picker: ^8.1.7
+
+  # Secure Storage (uncomment in Production)
+  # flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/images/logos/
+    - assets/images/banners/
+    - assets/images/categories/
+    - assets/images/products/
