@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/models/product_model.dart';
+import '../domain/repositories/product_repository.dart';
+import '../models/product_unit_model.dart';
+
+class ProductProvider extends ChangeNotifier {
+  ProductProvider(this._repository);
+
+  final ProductRepository _repository;
+
+  ProductModel? _product;
+  List<ProductUnitModel> _units = [];
+  List<ProductModel> _related = [];
+
+  List<ProductModel> _products = [];
+  List<ProductModel> get products => _products;
+
+  bool _isLoading = false;
+  String? _error;
+
+  int _selectedUnitIndex = 0;
+  int _quantity = 1;
+
+  ProductModel? get product => _product;
+
+  List<ProductUnitModel> get units => _units;
+
+  List<ProductModel> get related => _related;
+
+  bool get isLoading => _isLoading;
+
+  String? get error => _error;
+
+  int get quantity => _quantity;
+
+  int get selectedUnitIndex => _selectedUnitIndex;
+
+  ProductUnitModel? get selectedUnit =>
+      _units.isEmpty ? null : _units[_selectedUnitIndex];
+
+  Future<void> loadProduct(String productId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final productResponse = await _repository.getProductById(productId);
+
+    if (!productResponse.isSuccess || productResponse.data == null) {
+      _product = null;
+      _units = [];
+      _related = [];
+      _error = productResponse.message ?? 'تعذر تحميل المنتج';
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    _product = productResponse.data!;
+
+    final unitsResponse = await _repository.getProductUnits(_product!.itemCode);
+
+    final relatedResponse =
+        await _repository.getProducts(categoryId: _product!.categoryId);
+
+    _units = unitsResponse.data ?? [];
+
+    _related = (relatedResponse.data ?? [])
+        .where((e) => e.id != _product!.id)
+        .take(6)
+        .toList();
+
+    final defaultIndex = _units.indexWhere((e) => e.isDefault);
+
+    _selectedUnitIndex = defaultIndex >= 0 ? defaultIndex : 0;
+
+    _quantity = 1;
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void selectUnit(int index) {
+    if (index < 0 || index >= _units.length) return;
+
+    if (_selectedUnitIndex == index) return;
+
+    _selectedUnitIndex = index;
+    notifyListeners();
+  }
+
+  void increaseQuantity() {
+    _quantity++;
+    notifyListeners();
+  }
+
+  void decreaseQuantity() {
+    if (_quantity > 1) {
+      _quantity--;
+      notifyListeners();
+    }
+  }
+
+  void reset() {
+    _product = null;
+    _units = [];
+    _related = [];
+    _selectedUnitIndex = 0;
+    _quantity = 1;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> loadCategory(String categoryId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final response = await _repository.getProducts(
+      categoryId: categoryId,
+    );
+
+    if (response.isSuccess) {
+      _products = response.data ?? [];
+    } else {
+      _products = [];
+      _error = response.message;
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+}

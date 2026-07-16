@@ -3,7 +3,7 @@
     <application
         android:label="bhm_supermarket"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true">  // اذا كان في لارفيل يستخدم http وليس https
         <activity
             android:name=".MainActivity"

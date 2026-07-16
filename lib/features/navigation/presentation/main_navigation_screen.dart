@@ -49,11 +49,31 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _NavItem(icon: Icons.home_rounded,       label: 'الرئيسية', index: 0, current: _index, onTap: _go),
-                _NavItem(icon: Icons.grid_view_rounded,  label: 'الأقسام',  index: 1, current: _index, onTap: _go),
-                _CartBtn(count: cartCount,               current: _index, onTap: _go),
-                _NavItem(icon: Icons.favorite_rounded,   label: 'المفضلة', index: 3, current: _index, onTap: _go),
-                _NavItem(icon: Icons.person_rounded,     label: 'حسابي',   index: 4, current: _index, onTap: _go),
+                _NavItem(
+                    icon: Icons.home_rounded,
+                    label: 'الرئيسية',
+                    index: 0,
+                    current: _index,
+                    onTap: _go),
+                _NavItem(
+                    icon: Icons.grid_view_rounded,
+                    label: 'الأقسام',
+                    index: 1,
+                    current: _index,
+                    onTap: _go),
+                _CartBtn(count: cartCount, current: _index, onTap: _go),
+                _NavItem(
+                    icon: Icons.favorite_rounded,
+                    label: 'المفضلة',
+                    index: 3,
+                    current: _index,
+                    onTap: _go),
+                _NavItem(
+                    icon: Icons.person_rounded,
+                    label: 'حسابي',
+                    index: 4,
+                    current: _index,
+                    onTap: _go),
               ],
             ),
           ),
@@ -95,7 +115,8 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: sel ? AppColors.primary : AppColors.textHint, size: 24),
+            Icon(icon,
+                color: sel ? AppColors.primary : AppColors.textHint, size: 24),
             const SizedBox(height: 3),
             Text(
               label,
@@ -117,7 +138,8 @@ class _CartBtn extends StatelessWidget {
   final int count, current;
   final void Function(int) onTap;
 
-  const _CartBtn({required this.count, required this.current, required this.onTap});
+  const _CartBtn(
+      {required this.count, required this.current, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +154,8 @@ class _CartBtn extends StatelessWidget {
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 52, height: 52,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   gradient: sel
                       ? const LinearGradient(
@@ -149,9 +172,11 @@ class _CartBtn extends StatelessWidget {
               ),
               if (count > 0)
                 Positioned(
-                  top: -4, left: -4,
+                  top: -4,
+                  left: -4,
                   child: Container(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     decoration: const BoxDecoration(
                       color: AppColors.error,
                       shape: BoxShape.circle,

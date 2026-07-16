@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../app/di/dependency_injection.dart';
+import 'package:provider/provider.dart';
+import '../providers/product_provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../core/models/product_model.dart';
@@ -34,49 +35,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProduct();
-  }
 
-  Future<void> _loadProduct() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final repo = DependencyInjection.productRepository;
-    final productResponse = await repo.getProductById(widget.productId);
-
-    if (!mounted) return;
-
-    if (!productResponse.isSuccess || productResponse.data == null) {
-      setState(() {
-        _isLoading = false;
-        _error = productResponse.message ?? 'تعذر تحميل المنتج';
-      });
-      return;
-    }
-
-    final product = productResponse.data!;
-    final unitsResponse = await repo.getProductUnits(product.itemCode);
-    final relatedResponse =
-        await repo.getProducts(categoryId: product.categoryId);
-
-    if (!mounted) return;
-
-    final related = (relatedResponse.data ?? [])
-        .where((p) => p.id != product.id)
-        .take(6)
-        .toList();
-
-    final units = unitsResponse.data ?? [];
-    final defaultIdx = units.indexWhere((u) => u.isDefault);
-
-    setState(() {
-      _product = product;
-      _units = units;
-      _related = related;
-      _selectedUnitIdx = defaultIdx >= 0 ? defaultIdx : 0;
-      _isLoading = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().loadProduct(widget.productId);
     });
   }
 
@@ -84,18 +45,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       _units.isEmpty ? null : _units[_selectedUnitIdx];
 
   void _addToCart() {
+    final provider = context.read<ProductProvider>();
     final product = _product;
     if (product == null || _selected == null) return;
     context.read<CartProvider>().addItem(
-      product: product,
-      unit: _selected!.unitName,
-      unitPrice: _selected!.price,
-      quantity: _quantity,
-    );
+          product: product,
+          unit: _selected!.unitName,
+          unitPrice: _selected!.price,
+          quantity: provider.quantity,
+        );
     final messenger = ScaffoldMessenger.of(context);
     Navigator.of(context).pop();
     messenger.showSnackBar(SnackBar(
-      content: Text('تمت إضافة ${product.name} × $_quantity'),
+      content: Text(
+        'تمت إضافة ${product.name} × ${provider.quantity}',
+      ),
       backgroundColor: AppColors.primary,
       behavior: SnackBarBehavior.floating,
     ));
@@ -103,6 +67,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProductProvider>();
+
+    _product = provider.product;
+    _units = provider.units;
+    _related = provider.related;
+    _selectedUnitIdx = provider.selectedUnitIndex;
+    _isLoading = provider.isLoading;
+    _error = provider.error;
     if (_isLoading) {
       return const Scaffold(body: LoadingWidget());
     }
@@ -115,7 +87,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           title: 'تعذر تحميل المنتج',
           subtitle: _error,
           actionLabel: 'إعادة المحاولة',
-          onAction: _loadProduct,
+          onAction: () =>
+              context.read<ProductProvider>().loadProduct(widget.productId),
         ),
       );
     }
@@ -171,8 +144,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       color: AppColors.background,
                       child: product.image.isEmpty
                           ? const Center(
-                              child: Text('🛍️',
-                                  style: TextStyle(fontSize: 100)))
+                              child:
+                                  Text('🛍️', style: TextStyle(fontSize: 100)))
                           : Image.asset(product.image,
                               fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) => const Center(
@@ -222,8 +195,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               final u = _units[i];
                               final sel = _selectedUnitIdx == i;
                               return GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedUnitIdx = i),
+                                onTap: () => context
+                                    .read<ProductProvider>()
+                                    .selectUnit(i),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 180),
                                   padding: const EdgeInsets.symmetric(
@@ -244,8 +218,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       Text(u.unitName,
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color:
-                                                sel ? Colors.white : null,
+                                            color: sel ? Colors.white : null,
                                           )),
                                       Text(u.package,
                                           style: TextStyle(
@@ -266,12 +239,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color:
-                                  AppColors.primary.withValues(alpha: 0.05),
+                              color: AppColors.primary.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                  color: AppColors.primary
-                                      .withValues(alpha: 0.2)),
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.2)),
                             ),
                             child: Column(
                               children: [
@@ -291,8 +263,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           const SizedBox(height: 8),
                           Text(product.description,
                               style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  height: 1.7)),
+                                  color: AppColors.textSecondary, height: 1.7)),
                         ],
                         const SizedBox(height: 24),
                         Row(
@@ -302,13 +273,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     fontSize: 15, fontWeight: FontWeight.bold)),
                             const Spacer(),
                             _QtyControl(
-                              quantity: _quantity,
-                              onDecrease: () {
-                                if (_quantity > 1) {
-                                  setState(() => _quantity--);
-                                }
-                              },
-                              onIncrease: () => setState(() => _quantity++),
+                              quantity: provider.quantity,
+                              onDecrease: provider.decreaseQuantity,
+                              onIncrease: provider.increaseQuantity,
                             ),
                           ],
                         ),
@@ -367,11 +334,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               fontSize: 12,
                             )),
                       Text(
-                        '${(_selected!.price * _quantity).toStringAsFixed(0)} ر.ي',
+                        '${(_selected!.price * provider.quantity).toStringAsFixed(0)} ر.ي',
                         style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                       Text(_selected!.unitName,
                           style: const TextStyle(
@@ -460,8 +428,7 @@ class _Btn extends StatelessWidget {
               color: isAdd ? AppColors.primary : Colors.transparent,
               borderRadius: BorderRadius.circular(12)),
           child: Icon(icon,
-              size: 20,
-              color: isAdd ? Colors.white : AppColors.textPrimary),
+              size: 20, color: isAdd ? Colors.white : AppColors.textPrimary),
         ),
       );
 }

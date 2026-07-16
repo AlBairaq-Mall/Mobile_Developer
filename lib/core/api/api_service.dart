@@ -20,7 +20,7 @@ class ApiService {
   // ══════════════════════════════════════════════
 
   /// رابط API الخاص بـ Laravel - غيّره قبل النشر
-  static const String baseUrl = 'https://api.bhmstore.com/api';
+  static const String baseUrl = 'https://backend-albarqy.onrender.com/api';
 
   // ignore: unused_field
   late final Dio _dio = Dio(BaseOptions(
@@ -41,7 +41,8 @@ class ApiService {
 
   /// إرسال OTP - POST /api/auth/send-otp
   /// Body: { "contact": "phone/email", "method": "phone|email" }
-  Future<void> sendOtp({required String contact, required String method}) async {
+  Future<void> sendOtp(
+      {required String contact, required String method}) async {
     // await _dio.post('/auth/send-otp', data: {'contact': contact, 'method': method});
     throw UnimplementedError('اربط مع Laravel');
   }
@@ -204,7 +205,8 @@ class ApiService {
   }
 
   /// POST /api/admin/products
-  Future<Map<String, dynamic>> adminCreateProduct(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> adminCreateProduct(
+      Map<String, dynamic> data) async {
     throw UnimplementedError('اربط مع Laravel');
   }
 
@@ -220,7 +222,8 @@ class ApiService {
 
   /// POST /api/admin/users (إضافة مدير أو سائق)
   /// Body: { "name", "email", "phone", "role": "admin|delivery|customer", "password" }
-  Future<Map<String, dynamic>> adminCreateUser(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> adminCreateUser(
+      Map<String, dynamic> data) async {
     throw UnimplementedError('اربط مع Laravel');
   }
 

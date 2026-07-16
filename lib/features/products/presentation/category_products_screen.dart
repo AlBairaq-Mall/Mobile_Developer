@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/di/dependency_injection.dart';
+import 'package:provider/provider.dart';
+import '../providers/product_provider.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_widget.dart';
@@ -22,43 +23,22 @@ class CategoryProductsScreen extends StatefulWidget {
 }
 
 class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
-  List<ProductModel> _products = [];
-  bool _isLoading = true;
-  String? _error;
   String _searchQuery = '';
   String _sortBy = 'default';
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
-  }
 
-  Future<void> _loadProducts() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final response = await DependencyInjection.productRepository.getProducts(
-      categoryId: widget.categoryId,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-      if (response.isSuccess && response.data != null) {
-        _products = response.data!;
-      } else {
-        _products = [];
-        _error = response.message;
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().loadCategory(widget.categoryId);
     });
   }
 
   List<ProductModel> get _filtered {
-    var filtered = List<ProductModel>.from(_products);
+    final provider = context.read<ProductProvider>();
+
+    var filtered = List<ProductModel>.from(provider.products);
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered
@@ -85,6 +65,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProductProvider>();
+
+    final products = provider.products;
+    final isLoading = provider.isLoading;
+    final error = provider.error;
     final title = widget.categoryName ?? 'المنتجات';
 
     return Scaffold(
@@ -117,7 +102,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             itemBuilder: (_) => const [
               PopupMenuItem(value: 'default', child: Text('الترتيب الافتراضي')),
               PopupMenuItem(value: 'price_asc', child: Text('السعر: من الأقل')),
-              PopupMenuItem(value: 'price_desc', child: Text('السعر: من الأعلى')),
+              PopupMenuItem(
+                  value: 'price_desc', child: Text('السعر: من الأعلى')),
               PopupMenuItem(value: 'name', child: Text('الاسم')),
             ],
           ),
@@ -128,21 +114,24 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
+    final provider = context.watch<ProductProvider>();
+
+    if (provider.isLoading) {
       return const LoadingWidget();
     }
 
-    if (_error != null) {
+    if (provider.error != null) {
       return EmptyState(
         emoji: '⚠️',
         title: 'تعذر تحميل المنتجات',
-        subtitle: _error,
+        subtitle: provider.error,
         actionLabel: 'إعادة المحاولة',
-        onAction: _loadProducts,
+        onAction: () => provider.loadCategory(widget.categoryId),
       );
     }
 
     final filtered = _filtered;
+
     if (filtered.isEmpty) {
       return const EmptyState(
         emoji: '📦',

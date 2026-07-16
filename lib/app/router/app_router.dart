@@ -47,6 +47,9 @@ class AppRouter {
   static const _authRequiredPaths = {
     AppRoutes.checkout,
     AppRoutes.orders,
+    AppRoutes.profile,
+    AppRoutes.addresses,
+    AppRoutes.notifications,
   };
 
   static GoRouter create(AuthProvider authProvider) => GoRouter(

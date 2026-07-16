@@ -15,17 +15,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final _pages = const [
     _OnboardPage(
-        '🛒',
+        Icons.shopping_cart_outlined,
         'تسوق بسهولة',
         'آلاف المنتجات من بقالة، خضار، ومنظفات كلها في مكان واحد',
-        [Color(0xFF00BF6F), Color(0xFF0099CC)]),
+        [(AppColors.primaryLight), (AppColors.primaryDark)]),
     _OnboardPage(
-        '🚚',
+        Icons.delivery_dining_outlined,
         'توصيل سريع',
         'توصيل لباب بيتك في وقت قياسي تتبع طلبك لحظة بلحظة',
         [Color(0xFFFF6B35), Color(0xFFFF4081)]),
     _OnboardPage(
-        '💳',
+        Icons.payment_outlined,
         'دفع آمن',
         'ادفع كاشاً أو بالتحويل البنكي بأمان وسهولة تامة',
         [Color(0xFF7B2FF7), Color(0xFF00C9FF)]),
@@ -54,7 +54,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             top: MediaQuery.of(context).padding.top + 16,
             left: 20,
             child: TextButton(
-              onPressed: () => context.go(AppRoutes.login),
+              onPressed: () => context.go(AppRoutes.home),
               child: const Text('تخطي',
                   style: TextStyle(color: Colors.white70, fontSize: 15)),
             ),
@@ -87,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                 _page == _pages.length - 1
                     ? ElevatedButton(
-                        onPressed: () => context.go(AppRoutes.login),
+                        onPressed: () => context.go(AppRoutes.home),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: _pages[_page].colors[0],
@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () => context.go(AppRoutes.login),
+                              onPressed: () => context.go(AppRoutes.home),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 side: const BorderSide(color: Colors.white54),
@@ -134,7 +134,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold)),
                                   SizedBox(width: 6),
-                                  Icon(Icons.arrow_back_ios_rounded, size: 16),
+                                  Icon(Icons.arrow_forward_ios_rounded,
+                                      size: 16),
                                 ],
                               ),
                             ),
@@ -151,9 +152,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _OnboardPage {
-  final String emoji, title, desc;
+  final IconData icon;
+  final String title, desc;
   final List<Color> colors;
-  const _OnboardPage(this.emoji, this.title, this.desc, this.colors);
+  const _OnboardPage(this.icon, this.title, this.desc, this.colors);
 }
 
 class _PageView extends StatelessWidget {
@@ -168,10 +170,8 @@ class _PageView extends StatelessWidget {
               end: Alignment.bottomLeft),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
@@ -179,28 +179,25 @@ class _PageView extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                    child:
-                        Text(page.emoji, style: const TextStyle(fontSize: 90))),
-              ),
-              const SizedBox(height: 48),
-              Text(page.title,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 48),
-                child: Text(page.desc,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.88),
-                        fontSize: 16,
-                        height: 1.6)),
-              ),
-              const SizedBox(height: 120),
-            ],
-          ),
+                    child: Icon(page.icon, size: 100, color: Colors.white))),
+            const SizedBox(height: 48),
+            Text(page.title,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: Text(page.desc,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.88),
+                      fontSize: 16,
+                      height: 1.6)),
+            ),
+            const SizedBox(height: 120),
+          ]),
         ),
       );
 }

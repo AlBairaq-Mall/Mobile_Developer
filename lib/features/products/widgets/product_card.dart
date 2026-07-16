@@ -25,13 +25,15 @@ class ProductCard extends StatelessWidget {
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (_) => DraggableScrollableSheet(
+          expand: false,
           initialChildSize: 0.92,
           maxChildSize: 0.95,
           minChildSize: 0.5,
           builder: (_, sc) => Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: ProductDetailsSheet(product: product),
           ),
@@ -51,50 +53,72 @@ class ProductCard extends StatelessWidget {
                     width: double.infinity,
                     color: AppColors.background,
                     child: product.image.isEmpty
-                        ? const Center(child: Text('🛍️', style: TextStyle(fontSize: 50)))
-                        : AppCachedImage(imageUrl: product.image, fit: BoxFit.contain),
+                        ? const Center(
+                            child: Text('🛍️', style: TextStyle(fontSize: 50)))
+                        : AppCachedImage(
+                            imageUrl: product.image, fit: BoxFit.contain),
                   ),
                 ),
                 // Flash deal badge
                 if (product.isFlashDeal)
                   Positioned(
-                    top: 8, right: 8,
+                    top: 8,
+                    right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.error,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('🔥 خصم', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text('🔥 خصم',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 // Best seller badge
                 if (product.isBestSeller && !product.isFlashDeal)
                   Positioned(
-                    top: 8, right: 8,
+                    top: 8,
+                    right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('⭐ الأكثر', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text('⭐ الأكثر',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 // Favorite
                 Positioned(
-                  top: 6, left: 6,
+                  top: 6,
+                  left: 6,
                   child: GestureDetector(
                     onTap: () => favProvider.toggle(product.id),
                     child: Container(
-                      width: 32, height: 32,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8)],
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8)
+                        ],
                       ),
                       child: Icon(
-                        isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        isFav
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
                         color: isFav ? AppColors.error : AppColors.textHint,
                         size: 17,
                       ),
@@ -116,14 +140,18 @@ class ProductCard extends StatelessWidget {
                       product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, height: 1.3),
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          height: 1.3),
                     ),
 
                     // Brand
                     if (product.brand.isNotEmpty)
                       Text(
                         product.brand,
-                        style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textHint),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -151,12 +179,14 @@ class ProductCard extends StatelessWidget {
                             );
                           },
                           child: Container(
-                            width: 34, height: 34,
+                            width: 34,
+                            height: 34,
                             decoration: BoxDecoration(
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                            child: const Icon(Icons.add_rounded,
+                                color: Colors.white, size: 20),
                           ),
                         ),
                       ],

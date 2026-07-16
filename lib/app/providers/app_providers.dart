@@ -13,6 +13,7 @@ import '../../features/favorites/providers/favorites_provider.dart';
 import '../../features/home/providers/home_provider.dart';
 import '../../features/orders/providers/orders_provider.dart';
 import '../../features/search/providers/search_provider.dart';
+import '../../features/products/providers/product_provider.dart';
 
 class AppProviders {
   AppProviders._();
@@ -33,6 +34,9 @@ class AppProviders {
         ChangeNotifierProvider(create: (_) => CheckoutProvider()),
         ChangeNotifierProvider(
           create: (_) => HomeProvider(DependencyInjection.productRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductProvider(DependencyInjection.productRepository),
         ),
         ChangeNotifierProvider(
           create: (_) =>

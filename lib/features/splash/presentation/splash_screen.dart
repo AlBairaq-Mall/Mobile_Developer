@@ -1,120 +1,184 @@
+import 'package:bhm_supermarket/app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-  @override State<SplashScreen> createState() => _SplashScreenState();
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale, _fade;
+  late final AnimationController _controller;
+
+  late final Animation<double> _logoScale;
+  late final Animation<double> _logoOpacity;
+  late final Animation<Offset> _textOffset;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _scale = CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut);
-    _fade  = CurvedAnimation(parent: _ctrl, curve: const Interval(0.4, 1, curve: Curves.easeIn));
-    _ctrl.forward();
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) context.go(AppRoutes.onboarding);
-    });
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+
+    _logoScale = Tween<double>(
+      begin: .7,
+      end: 1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
+    _logoOpacity = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(.0, .6),
+      ),
+    );
+
+    _textOffset = Tween<Offset>(
+      begin: const Offset(0, .35),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _start();
+  }
+
+  Future<void> _start() async {
+    await _controller.forward();
+
+    await Future.delayed(
+      const Duration(milliseconds: 1200),
+    );
+
+    if (!mounted) return;
+
+    context.go(AppRoutes.onboarding);
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF00BF6F), Color(0xFF0099CC)],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(flex: 3),
-
-              // Logo
-              ScaleTransition(
-                scale: _scale,
-                child: Container(
-                  width: 120, height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('🛒', style: TextStyle(fontSize: 56)),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Column(
-                  children: [
-                    const Text(
-                      'البيرق هايبر ماركت',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'كل ما تحتاجه بضغطة واحدة',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(flex: 3),
-
-              // Loading indicator
-              FadeTransition(
-                opacity: _fade,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 40, height: 3,
-                      child: LinearProgressIndicator(
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation(Colors.white),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+            colors: [
+              AppColors.primaryLight,
+              AppColors.primaryDark,
             ],
           ),
+        ),
+        child: Stack(
+          children: [
+            /// Logo + Name
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FadeTransition(
+                    opacity: _logoOpacity,
+                    child: ScaleTransition(
+                      scale: _logoScale,
+                      child: Container(
+                        width: size.width * .30,
+                        height: size.width * .30,
+                        constraints: const BoxConstraints(
+                          minWidth: 110,
+                          minHeight: 110,
+                          maxWidth: 170,
+                          maxHeight: 170,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 20,
+                              color: Colors.black26,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Image.asset(
+                            "assets/images/logos/bhm_logo.png",
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SlideTransition(
+                    position: _textOffset,
+                    child: const Text(
+                      "البيرق هايبر ماركت",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 27,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "كل ما تحتاجه بضغطة واحدة",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// Loader
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 45,
+              child: Center(
+                child: SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.6,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

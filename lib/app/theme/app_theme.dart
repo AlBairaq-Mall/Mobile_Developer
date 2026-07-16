@@ -81,8 +81,10 @@ class AppTheme {
         borderSide: const BorderSide(color: AppColors.error),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      hintStyle: const TextStyle(color: AppColors.textHint, fontFamily: 'Cairo'),
-      labelStyle: const TextStyle(color: AppColors.textSecondary, fontFamily: 'Cairo'),
+      hintStyle:
+          const TextStyle(color: AppColors.textHint, fontFamily: 'Cairo'),
+      labelStyle:
+          const TextStyle(color: AppColors.textSecondary, fontFamily: 'Cairo'),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: AppColors.primary,
@@ -91,7 +93,8 @@ class AppTheme {
       showUnselectedLabels: true,
       type: BottomNavigationBarType.fixed,
       elevation: 0,
-      selectedLabelStyle: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold),
+      selectedLabelStyle: TextStyle(
+          fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold),
       unselectedLabelStyle: TextStyle(fontFamily: 'Cairo', fontSize: 11),
     ),
     chipTheme: ChipThemeData(
@@ -105,9 +108,11 @@ class AppTheme {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       backgroundColor: AppColors.textPrimary,
-      contentTextStyle: const TextStyle(fontFamily: 'Cairo', color: Colors.white),
+      contentTextStyle:
+          const TextStyle(fontFamily: 'Cairo', color: Colors.white),
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.divider, thickness: 1),
+    dividerTheme:
+        const DividerThemeData(color: AppColors.divider, thickness: 1),
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -130,8 +135,10 @@ class AppTheme {
       backgroundColor: AppColors.surfaceDark,
       foregroundColor: Colors.white,
       titleTextStyle: TextStyle(
-        fontFamily: 'Cairo', fontSize: 18,
-        fontWeight: FontWeight.bold, color: Colors.white,
+        fontFamily: 'Cairo',
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
       ),
     ),
     cardTheme: CardThemeData(
@@ -147,7 +154,8 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         minimumSize: const Size(double.infinity, 54),
-        textStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.bold),
+        textStyle: const TextStyle(
+            fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.bold),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

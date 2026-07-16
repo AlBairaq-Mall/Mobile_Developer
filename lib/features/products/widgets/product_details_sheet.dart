@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../app/di/dependency_injection.dart';
+import '../providers/product_provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/models/product_model.dart';
 import '../../cart/providers/cart_provider.dart';
@@ -21,36 +21,24 @@ class ProductDetailsSheet extends StatefulWidget {
 }
 
 class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
-  List<ProductUnitModel> _units = [];
   int? _expandedIndex;
-  int _selectedIndex = 0;
-  bool _loadingUnits = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUnits();
-  }
 
-  Future<void> _loadUnits() async {
-    final response = await DependencyInjection.productRepository
-        .getProductUnits(widget.product.itemCode);
-    if (!mounted) return;
-    final units = response.data ?? [];
-    var selected = units.indexWhere((u) => u.isDefault);
-    if (selected < 0) selected = 0;
-    setState(() {
-      _units = units;
-      _selectedIndex = selected;
-      _loadingUnits = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().loadProduct(widget.product.id);
     });
   }
 
-  ProductUnitModel? get _selected =>
-      _units.isEmpty ? null : _units[_selectedIndex];
-
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProductProvider>();
+
+    final units = provider.units;
+    final selected = provider.selectedUnit;
+    final selectedIndex = provider.selectedUnitIndex;
     final favProvider = context.watch<FavoritesProvider>();
     final isFavorite = favProvider.isFavorite(widget.product.id);
     final cs = Theme.of(context).colorScheme;
@@ -108,8 +96,8 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   Text(
                     widget.product.name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   if (widget.product.brand.isNotEmpty)
                     Text(
@@ -126,7 +114,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   const SizedBox(height: 24),
 
                   // ── قسم الوحدات (Accordion/Accordion) ──
-                  if (_units.isNotEmpty) ...[
+                  if (units.isNotEmpty) ...[
                     Row(
                       children: [
                         const Icon(Icons.inventory_2_outlined,
@@ -148,7 +136,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            '${_units.length} وحدة',
+                            '${units.length} وحدة',
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -160,16 +148,17 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     const SizedBox(height: 12),
 
                     // كل وحدة = بطاقة قابلة للتوسع + راديو للاختيار
-                    ...List.generate(_units.length, (i) {
-                      final unit = _units[i];
-                      final isSelected = _selectedIndex == i;
+                    ...List.generate(units.length, (i) {
+                      final unit = units[i];
+                      final isSelected = selectedIndex == i;
                       final isExpanded = _expandedIndex == i;
 
                       return _UnitAccordionCard(
                         unit: unit,
                         isSelected: isSelected,
                         isExpanded: isExpanded,
-                        onSelect: () => setState(() => _selectedIndex = i),
+                        onSelect: () =>
+                            context.read<ProductProvider>().selectUnit(i),
                         onToggleExpand: () => setState(() {
                           _expandedIndex = isExpanded ? null : i;
                         }),
@@ -185,9 +174,9 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           ),
 
           // ── شريط الإضافة السفلي ───────────────────────
-          if (_selected != null)
+          if (selected != null)
             _AddToCartBar(
-              unit: _selected!,
+              unit: selected,
               product: widget.product,
             ),
         ],
@@ -243,14 +232,16 @@ class _UnitAccordionCard extends StatelessWidget {
                   // راديو الاختيار
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
-                    width: 22, height: 22,
+                    width: 22,
+                    height: 22,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isSelected ? AppColors.primary : Colors.grey,
                         width: 2,
                       ),
-                      color: isSelected ? AppColors.primary : Colors.transparent,
+                      color:
+                          isSelected ? AppColors.primary : Colors.transparent,
                     ),
                     child: isSelected
                         ? const Icon(Icons.check, size: 14, color: Colors.white)
@@ -296,9 +287,7 @@ class _UnitAccordionCard extends StatelessWidget {
                           ],
                         ),
                         Text(unit.package,
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: cs.outline)),
+                            style: TextStyle(fontSize: 12, color: cs.outline)),
                       ],
                     ),
                   ),
@@ -367,20 +356,21 @@ class _UnitAccordionCard extends StatelessWidget {
                           '${unit.oldPrice!.toStringAsFixed(0)} ر.ي'),
                     if (unit.description.isNotEmpty)
                       _detailRow('الوصف', unit.description),
-                    if (unit.label != null)
-                      _detailRow('التصنيف', unit.label!),
+                    if (unit.label != null) _detailRow('التصنيف', unit.label!),
 
                     // حساب التحويل للوحدات الأخرى (معلومة إضافية)
                     const SizedBox(height: 12),
                     const Text(
                       'SKU (رمز الصنف)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     // TODO: استبدل بـ itemCode من API
                     Row(
                       children: [
-                        const Icon(Icons.qr_code_2, size: 16, color: AppColors.primary),
+                        const Icon(Icons.qr_code_2,
+                            size: 16, color: AppColors.primary),
                         const SizedBox(width: 6),
                         Text(
                           'مشترك مع وحدات المنتج الأخرى بنفس الرمز',
@@ -415,8 +405,8 @@ class _UnitAccordionCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(value,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: 13)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
           ),
         ],
       ),
@@ -522,7 +512,8 @@ class _ProductImage extends StatelessWidget {
               child: Icon(Icons.image_outlined, size: 70, color: Colors.grey))
           : ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.asset(product.image, fit: BoxFit.cover,
+              child: Image.asset(product.image,
+                  fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(
                         Icons.image_outlined,
                         size: 70,
