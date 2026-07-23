@@ -6,10 +6,30 @@ class AdminUsersScreen extends StatelessWidget {
 
   // TODO: استبدل بـ GET /api/admin/users
   static const _users = [
-    _UserRow(name: 'أحمد علي', phone: '777123456', role: 'customer', orders: 12, joined: '2025-01'),
-    _UserRow(name: 'سارة محمد', phone: '771456789', role: 'customer', orders: 8, joined: '2025-02'),
-    _UserRow(name: 'محمد التوصيل', phone: '733000001', role: 'delivery', orders: 145, joined: '2024-12'),
-    _UserRow(name: 'مدير النظام', phone: '000000001', role: 'admin', orders: 0, joined: '2024-01'),
+    _UserRow(
+        name: 'أحمد علي',
+        phone: '777123456',
+        role: 'customer',
+        orders: 12,
+        joined: '2025-01'),
+    _UserRow(
+        name: 'سارة محمد',
+        phone: '771456789',
+        role: 'customer',
+        orders: 8,
+        joined: '2025-02'),
+    _UserRow(
+        name: 'محمد التوصيل',
+        phone: '733000001',
+        role: 'delivery',
+        orders: 145,
+        joined: '2024-12'),
+    _UserRow(
+        name: 'مدير النظام',
+        phone: '000000001',
+        role: 'admin',
+        orders: 0,
+        joined: '2024-01'),
   ];
 
   @override
@@ -18,7 +38,10 @@ class AdminUsersScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('إدارة المستخدمين'),
         actions: [
-          IconButton(icon: const Icon(Icons.person_add_outlined), onPressed: () {}, tooltip: 'إضافة مستخدم'),
+          IconButton(
+              icon: const Icon(Icons.person_add_outlined),
+              onPressed: () {},
+              tooltip: 'إضافة مستخدم'),
         ],
       ),
       body: Column(
@@ -45,28 +68,38 @@ class AdminUsersScreen extends StatelessWidget {
               itemBuilder: (_, i) {
                 final u = _users[i];
                 return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: _roleColor(u.role).withOpacity(0.15),
-                      child: Icon(_roleIcon(u.role), color: _roleColor(u.role)),
-                    ),
-                    title: Text(u.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${u.phone}  •  ${u.orders} طلب'),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _roleColor(u.role).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
+                  child: Material(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: _roleColor(u.role).withOpacity(0.15),
+                        child:
+                            Icon(_roleIcon(u.role), color: _roleColor(u.role)),
+                      ),
+                      title: Text(u.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('${u.phone}  •  ${u.orders} طلب'),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _roleColor(u.role).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(_roleName(u.role),
+                                style: TextStyle(
+                                    color: _roleColor(u.role),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold)),
                           ),
-                          child: Text(_roleName(u.role),
-                              style: TextStyle(color: _roleColor(u.role), fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
-                        Text(u.joined, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                      ],
+                          Text(u.joined,
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -83,11 +116,13 @@ class AdminUsersScreen extends StatelessWidget {
     if (r == 'delivery') return Colors.blue;
     return AppColors.success;
   }
+
   IconData _roleIcon(String r) {
     if (r == 'admin') return Icons.admin_panel_settings;
     if (r == 'delivery') return Icons.delivery_dining;
     return Icons.person;
   }
+
   String _roleName(String r) {
     if (r == 'admin') return 'مدير';
     if (r == 'delivery') return 'سائق';
@@ -96,15 +131,21 @@ class AdminUsersScreen extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  final String label; final bool selected;
+  final String label;
+  final bool selected;
   const _FilterChip(this.label, this.selected);
   @override
-  Widget build(BuildContext context) => FilterChip(
-    label: Text(label), selected: selected, onSelected: (_) {});
+  Widget build(BuildContext context) =>
+      FilterChip(label: Text(label), selected: selected, onSelected: (_) {});
 }
 
 class _UserRow {
   final String name, phone, role, joined;
   final int orders;
-  const _UserRow({required this.name, required this.phone, required this.role, required this.orders, required this.joined});
+  const _UserRow(
+      {required this.name,
+      required this.phone,
+      required this.role,
+      required this.orders,
+      required this.joined});
 }

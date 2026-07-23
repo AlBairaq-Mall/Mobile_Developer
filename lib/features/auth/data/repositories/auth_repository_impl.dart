@@ -11,63 +11,49 @@ class AuthRepositoryImpl implements AuthRepository {
   final SecureStorageService _storage;
 
   @override
-  Future<ApiResponse<void>> sendOtp({required String email}) =>
-      _remote.sendOtp(email: email);
-
-  @override
-  Future<ApiResponse<UserModel>> verifyOtp({
-    required String email,
-    required String otp,
-    String? name,
-    String? phone,
-  }) async {
-    final response = await _remote.verifyOtp(
-      email: email,
-      otp: otp,
-      name: name,
-      phone: phone,
-    );
-    if (response.isSuccess && response.data != null) {
-      await _storage.saveUserProfile(response.data!);
-    }
-    return response;
-  }
-
-  @override
   Future<ApiResponse<UserModel>> register({
     required String name,
     required String phone,
     required String email,
+    required String password,
+    required String passwordConfirmation,
   }) async {
     final response = await _remote.register(
       name: name,
       phone: phone,
       email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
     );
-    if (response.isSuccess && response.data != null) {
-      await _storage.saveUserProfile(response.data!);
+
+// Backend currently doesn't return access_token after register.
+// We login automatically to obtain the token.
+
+    if (response.isSuccess) {
+      return await login(
+        email: email,
+        password: password,
+      );
     }
     return response;
   }
 
   @override
-  Future<ApiResponse<UserModel>> loginWithPassword({
+  Future<ApiResponse<UserModel>> login({
     required String email,
     required String password,
-    required UserRole expectedRole,
   }) async {
-    final response = await _remote.loginWithPassword(
+    final response = await _remote.login(
       email: email,
       password: password,
     );
-    if (response.isFailure || response.data == null) return response;
+    print(response.data?.token);
 
-    final user = response.data!;
-    if (user.role != expectedRole) {
-      return ApiResponse.failure('بيانات الدخول غير صحيحة');
+    if (response.isSuccess && response.data != null) {
+      final user = response.data!;
+      await _storage.saveUserProfile(user);
     }
 
-    await _storage.saveUserProfile(user);
     return response;
   }
 
@@ -79,5 +65,21 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<UserModel?> loadStoredUser() => _storage.loadUserProfile();
+  Future<UserModel?> loadStoredUser() async {
+    final token = await _storage.readToken();
+
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final response = await _remote.me();
+
+    if (response.isSuccess && response.data != null) {
+      await _storage.saveUserProfile(response.data!);
+      return response.data;
+    }
+
+    await _storage.clearAll();
+    return null;
+  }
 }

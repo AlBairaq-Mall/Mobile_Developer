@@ -23,12 +23,14 @@ class ApiClient {
   static Dio _createDio(String baseUrl) {
     final dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: ApiConfig.connectTimeout,
-        receiveTimeout: ApiConfig.receiveTimeout,
-        sendTimeout: ApiConfig.sendTimeout,
-        headers: ApiConfig.defaultHeaders,
-      ),
+          baseUrl: baseUrl,
+          connectTimeout: ApiConfig.connectTimeout,
+          receiveTimeout: ApiConfig.receiveTimeout,
+          sendTimeout: ApiConfig.sendTimeout,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }),
     );
 
     dio.interceptors.add(AuthInterceptor());
@@ -46,5 +48,53 @@ class ApiClient {
     }
 
     return dio;
+  }
+
+  static Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) {
+    return instance.dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
+  static Future<Response> post(
+    String path, {
+    dynamic data,
+    Options? options,
+  }) {
+    return instance.dio.post(
+      path,
+      data: data,
+      options: options,
+    );
+  }
+
+  static Future<Response> put(
+    String path, {
+    dynamic data,
+    Options? options,
+  }) {
+    return instance.dio.put(
+      path,
+      data: data,
+      options: options,
+    );
+  }
+
+  static Future<Response> delete(
+    String path, {
+    dynamic data,
+    Options? options,
+  }) {
+    return instance.dio.delete(
+      path,
+      data: data,
+      options: options,
+    );
   }
 }

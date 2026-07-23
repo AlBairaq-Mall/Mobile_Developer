@@ -11,6 +11,7 @@ class SecureStorageService {
   static final SecureStorageService instance = SecureStorageService._();
 
   static const _tokenKey = '_bhm_access_token';
+  static const _languageKey = '_bhm_language';
   static const _userRoleKey = '_bhm_user_role';
   static const _userIdKey = '_bhm_user_id';
   static const _userProfileKey = '_bhm_user_profile';
@@ -47,7 +48,9 @@ class SecureStorageService {
 
   /// Persists profile fields for guest-editable profile screen.
   Future<void> saveUserProfile(UserModel user) async {
-    await saveToken(user.token ?? '');
+    if (user.token != null) {
+      await saveToken(user.token!);
+    }
     await saveUserId(user.id);
     await saveRole(user.role.name);
     await _storage.write(
@@ -66,6 +69,17 @@ class SecureStorageService {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<void> saveLanguage(String languageCode) async {
+    await _storage.write(
+      key: _languageKey,
+      value: languageCode,
+    );
+  }
+
+  Future<String> readLanguage() async {
+    return await _storage.read(key: _languageKey) ?? 'ar';
   }
 
   Future<void> clearAll() async => _storage.deleteAll();

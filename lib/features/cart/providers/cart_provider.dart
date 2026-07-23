@@ -2,20 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../models/cart_item_model.dart';
 import '../../../core/models/product_model.dart';
+import '../../products/models/product_unit_model.dart';
 
 class CartProvider extends ChangeNotifier {
   final List<CartItemModel> _items = [];
   List<CartItemModel> get items => _items;
+  bool get isEmpty => _items.isEmpty;
+
+  bool get isNotEmpty => _items.isNotEmpty;
   int get itemsCount => _items.length;
+
+  int get totalQuantity {
+    return _items.fold(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
+  }
 
   void addItem({
     required ProductModel product,
-    required String unit,
+    required ProductUnitModel selectedUnit,
     required double unitPrice,
-    int quantity = 1,   // عداد الكمية من شاشة تفاصيل المنتج
+    int quantity = 1,
   }) {
     final index = _items.indexWhere(
-      (item) => item.product.id == product.id && item.unit == unit,
+      (item) =>
+          item.product.id == product.id &&
+          item.selectedUnit.id == selectedUnit.id,
     );
 
     if (index != -1) {
@@ -23,17 +36,17 @@ class CartProvider extends ChangeNotifier {
 
       _items[index] = CartItemModel(
         product: old.product,
-        unit: old.unit,
+        selectedUnit: old.selectedUnit,
         unitPrice: old.unitPrice,
-        quantity: old.quantity + 1,
+        quantity: old.quantity + quantity,
       );
     } else {
       _items.add(
         CartItemModel(
           product: product,
-          unit: unit,
+          selectedUnit: selectedUnit,
           unitPrice: unitPrice,
-          quantity: 1,
+          quantity: quantity,
         ),
       );
     }
@@ -42,7 +55,31 @@ class CartProvider extends ChangeNotifier {
   }
 
   void add(ProductModel product) {
-    addItem(product: product, unit: product.unit, unitPrice: product.price);
+    ProductUnitModel selectedUnit;
+
+    if (product.units.isNotEmpty) {
+      selectedUnit = product.units.firstWhere(
+        (u) => u.isDefault,
+        orElse: () => product.units.first,
+      );
+    } else {
+      selectedUnit = ProductUnitModel(
+        id: "0",
+        itemCode: product.itemCode,
+        unitName: product.unit,
+        price: product.price,
+        package: product.package,
+        description: "",
+        unit: product.unit,
+        isDefault: true,
+      );
+    }
+
+    addItem(
+      product: product,
+      selectedUnit: selectedUnit,
+      unitPrice: selectedUnit.price,
+    );
   }
 
   void increase(int index) {
@@ -50,7 +87,7 @@ class CartProvider extends ChangeNotifier {
 
     _items[index] = CartItemModel(
       product: item.product,
-      unit: item.unit,
+      selectedUnit: item.selectedUnit,
       unitPrice: item.unitPrice,
       quantity: item.quantity + 1,
     );
@@ -66,7 +103,7 @@ class CartProvider extends ChangeNotifier {
     } else {
       _items[index] = CartItemModel(
         product: item.product,
-        unit: item.unit,
+        selectedUnit: item.selectedUnit,
         unitPrice: item.unitPrice,
         quantity: item.quantity - 1,
       );

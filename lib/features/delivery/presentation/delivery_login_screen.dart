@@ -33,11 +33,20 @@ class _DeliveryLoginScreenState extends State<DeliveryLoginScreen> {
     });
 
     final auth = context.read<AuthProvider>();
-    final loginError = await auth.loginWithPassword(
+    final loginError = await auth.login(
       email: _emailCtrl.text.trim(),
       password: _passCtrl.text.trim(),
-      expectedRole: UserRole.delivery,
     );
+    if (loginError == null) {
+      if (auth.user?.role == UserRole.delivery) {
+        context.go(AppRoutes.deliveryHome);
+      } else {
+        setState(() {
+          _error = "ليست لديك صلاحية الدخول";
+          _loading = false;
+        });
+      }
+    }
 
     if (!mounted) return;
 
@@ -77,8 +86,8 @@ class _DeliveryLoginScreenState extends State<DeliveryLoginScreen> {
                         ?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text('سجّل دخولك كسائق توصيل',
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.outline)),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline)),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _emailCtrl,

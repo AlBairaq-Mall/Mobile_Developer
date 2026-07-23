@@ -43,27 +43,72 @@ class ApiResponse<T> {
         message: message,
         statusCode: statusCode,
       );
-
   factory ApiResponse.fromEnvelope(
     dynamic raw, {
     required T Function(dynamic json) parser,
     int? statusCode,
   }) {
     final map = JsonParser.map(raw);
-    final success = JsonParser.boolValue(map['success']);
-    final message = JsonParser.string(map['message']);
-    final payload = map['data'];
-
-    if (!success) {
-      return ApiResponse.failure(message, statusCode: statusCode);
-    }
 
     try {
-      return ApiResponse.success(parser(payload), message: message, statusCode: statusCode);
+      // الشكل الأول
+      // {
+      //   success:true,
+      //   message:"",
+      //   data:{}
+      // }
+      if (map.containsKey('success')) {
+        final success = JsonParser.boolValue(map['success']);
+        final message = JsonParser.string(map['message']);
+
+        if (!success) {
+          return ApiResponse.failure(
+            message,
+            statusCode: statusCode,
+          );
+        }
+
+        return ApiResponse.success(
+          parser(map['data']),
+          message: message,
+          statusCode: statusCode,
+        );
+      }
+
+      // الشكل الثاني (Laravel Pagination)
+      // {
+      //   data:[],
+      //   links:{},
+      //   meta:{}
+      // }
+      if (map.containsKey('data')) {
+        return ApiResponse.success(
+          parser(map['data']),
+          statusCode: statusCode,
+        );
+      }
+
+      // الشكل الثالث
+      // []
+      if (raw is List) {
+        return ApiResponse.success(
+          parser(raw),
+          statusCode: statusCode,
+        );
+      }
+
+      return ApiResponse.failure(
+        'صيغة البيانات غير معروفة',
+        statusCode: statusCode,
+      );
     } catch (_) {
-      return ApiResponse.failure('فشل تحليل البيانات', statusCode: statusCode);
+      return ApiResponse.failure(
+        'فشل تحليل البيانات',
+        statusCode: statusCode,
+      );
     }
   }
+  //
 
   R fold<R>({
     required R Function(T data) onSuccess,

@@ -26,8 +26,7 @@ class FavoritesScreen extends StatelessWidget {
             if (favProducts.isNotEmpty) ...[
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                     color: AppColors.error,
                     borderRadius: BorderRadius.circular(10)),
@@ -45,18 +44,22 @@ class FavoritesScreen extends StatelessWidget {
             TextButton.icon(
               onPressed: () {
                 for (final p in favProducts) {
+                  final unit = p.units.firstWhere(
+                    (u) => u.isDefault,
+                    orElse: () => p.units.first,
+                  );
+
                   cartProv.add(p);
                 }
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content:
-                      Text('تمت إضافة ${favProducts.length} منتج للسلة'),
+                  content: Text('تمت إضافة ${favProducts.length} منتج للسلة'),
                   backgroundColor: AppColors.primary,
                   behavior: SnackBarBehavior.floating,
                 ));
               },
               icon: const Icon(Icons.shopping_cart_outlined, size: 16),
-              label: const Text('نقل الكل للسلة',
-                  style: TextStyle(fontSize: 12)),
+              label:
+                  const Text('نقل الكل للسلة', style: TextStyle(fontSize: 12)),
             ),
         ],
       ),

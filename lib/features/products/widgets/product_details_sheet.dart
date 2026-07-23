@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../app/widgets/app_cached_image.dart';
 import '../providers/product_provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/models/product_model.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../models/product_unit_model.dart';
+import '../../products/presentation/product_details_screen.dart';
 
 /// شاشة تفاصيل المنتج مع Accordion للوحدات المرتبطة بنفس الـ Item Code.
 /// الفكرة: كل وحدة (حبة / شدة / كرتون / باكت) تشترك في نفس Item Code
@@ -466,11 +468,8 @@ class _AddToCartBar extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () {
                 final cart = context.read<CartProvider>();
-                cart.addItem(
-                  product: product,
-                  unit: unit.unitName,
-                  unitPrice: unit.price,
-                );
+                cart.add(product);
+
                 final messenger = ScaffoldMessenger.of(context);
                 Navigator.pop(context);
                 messenger.showSnackBar(
@@ -509,16 +508,18 @@ class _ProductImage extends StatelessWidget {
       ),
       child: product.image.isEmpty
           ? const Center(
-              child: Icon(Icons.image_outlined, size: 70, color: Colors.grey))
+              child: Icon(
+                Icons.image_outlined,
+                size: 70,
+                color: Colors.grey,
+              ),
+            )
           : ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.asset(product.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                        Icons.image_outlined,
-                        size: 70,
-                        color: Colors.grey,
-                      )),
+              child: AppCachedImage(
+                imageUrl: product.image,
+                fit: BoxFit.cover,
+              ),
             ),
     );
   }

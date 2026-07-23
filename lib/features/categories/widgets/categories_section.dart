@@ -1,3 +1,5 @@
+import 'package:bhm_supermarket/app/localization/language_provider.dart';
+import 'package:bhm_supermarket/app/widgets/app_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,7 @@ class CategoriesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final catProv = context.watch<CategoryProvider>();
+    final isArabic = context.watch<LanguageProvider>().isArabic;
 
     if (catProv.isLoading) {
       return const SizedBox(height: 110, child: LoadingWidget());
@@ -41,7 +44,7 @@ class CategoriesSection extends StatelessWidget {
             width: 85,
             child: InkWell(
               onTap: () => context.push(
-                '${AppRoutes.categories}/${category.id}?name=${Uri.encodeComponent(category.name)}',
+                '${AppRoutes.categories}/${category.id}?name=${Uri.encodeComponent(isArabic ? category.nameAr : category.nameEn)}',
               ),
               borderRadius: BorderRadius.circular(18),
               child: Column(
@@ -57,15 +60,13 @@ class CategoriesSection extends StatelessWidget {
                         ? const Icon(Icons.category)
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(18),
-                            child: Image.asset(
-                              category.image,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                            child: AppCachedImage(
+                              imageUrl: category.imageUrl,
+                            )),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    category.name,
+                    isArabic ? category.nameAr : category.nameEn,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

@@ -14,9 +14,15 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final token = await SecureStorageService.instance.readToken();
+
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+
+    final language = await SecureStorageService.instance.readLanguage();
+
+    options.headers['Accept-Language'] = language;
+
     handler.next(options);
   }
 
@@ -26,12 +32,18 @@ class AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode == 401) {
-      await SecureStorageService.instance.clearAll();
       final context = rootNavigatorKey.currentContext;
+
       if (context != null && context.mounted) {
-        final location = GoRouter.of(context).state.uri.toString();
-        final redirect = Uri.encodeComponent(location);
-        context.go('${AppRoutes.login}?redirect=$redirect');
+        final logged = await SecureStorageService.instance.isLoggedIn();
+
+        if (logged) {
+          final location = GoRouter.of(context).state.uri.toString();
+
+          context.go(
+            '${AppRoutes.login}?redirect=${Uri.encodeComponent(location)}',
+          );
+        }
       }
     }
     handler.next(err);

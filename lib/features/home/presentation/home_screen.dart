@@ -43,14 +43,20 @@ class HomeScreen extends StatelessWidget {
                 if (provider.isLoading)
                   const Center(child: CircularProgressIndicator())
                 else ...[
-                  if (provider.bestSellerProducts.isNotEmpty) ...[
+                  if (provider.products.isNotEmpty) ...[
                     ProductSection(
-                      title: 'الأكثر مبيعاً',
-                      products: provider.bestSellerProducts,
+                      title: 'كل المنتجات',
+                      products: provider.products,
                     ),
                     const SizedBox(height: 28),
                   ],
-
+                  if (provider.recommendedProducts.isNotEmpty) ...[
+                    ProductSection(
+                      title: 'مقترحة لك',
+                      products: provider.recommendedProducts,
+                    ),
+                    const SizedBox(height: 28),
+                  ],
                   if (provider.flashDeals.isNotEmpty) ...[
                     ProductSection(
                       title: 'عروض اليوم 🔥',
@@ -58,13 +64,12 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                   ],
-
-                  if (provider.recommendedProducts.isNotEmpty)
+                  if (provider.bestSellerProducts.isNotEmpty)
                     ProductSection(
-                      title: 'مقترحة لك',
-                      products: provider.recommendedProducts,
+                      title: 'الأكثر مبيعاً',
+                      products: provider.bestSellerProducts,
                     ),
-                ],
+                ]
               ],
             ),
           ),

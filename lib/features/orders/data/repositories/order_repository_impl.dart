@@ -1,31 +1,34 @@
-import '../../../../core/network/api_response.dart';
-import '../../domain/repositories/order_repository.dart';
-import '../../models/order_model.dart';
-import '../datasources/order_remote_datasource.dart';
+import 'package:bhm_supermarket/core/network/api_response.dart';
+import 'package:bhm_supermarket/features/orders/data/datasources/order_remote_datasource.dart';
+import 'package:bhm_supermarket/features/orders/domain/repositories/order_repository.dart';
+import 'package:bhm_supermarket/features/orders/models/order_model.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
-  OrderRepositoryImpl(this._remote);
-
   final OrderRemoteDataSource _remote;
 
+  OrderRepositoryImpl(this._remote);
+
   @override
-  Future<ApiResponse<List<OrderModel>>> getMyOrders() => _remote.fetchMyOrders();
+  Future<ApiResponse<List<OrderModel>>> getOrders() {
+    return _remote.getOrders();
+  }
 
   @override
   Future<ApiResponse<Map<String, dynamic>>> createOrder({
     required String addressId,
     required String paymentMethod,
+    required double deliveryFee,
+    required double discount,
+    String? notes,
     required List<Map<String, dynamic>> items,
-    String? couponCode,
-  }) =>
-      _remote.createOrder(
-        addressId: addressId,
-        paymentMethod: paymentMethod,
-        items: items,
-        couponCode: couponCode,
-      );
-
-  @override
-  Future<ApiResponse<Map<String, dynamic>>> trackOrder(String orderNumber) =>
-      _remote.trackOrder(orderNumber);
+  }) {
+    return _remote.createOrder(
+      addressId: addressId,
+      paymentMethod: paymentMethod,
+      deliveryFee: deliveryFee,
+      discount: discount,
+      notes: notes,
+      items: items,
+    );
+  }
 }

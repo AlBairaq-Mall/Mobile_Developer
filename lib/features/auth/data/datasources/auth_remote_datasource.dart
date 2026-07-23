@@ -1,11 +1,12 @@
+import 'package:bhm_supermarket/core/network/dio_exception_mapper.dart';
+import 'package:bhm_supermarket/core/services/secure_storage_service.dart';
+import 'package:dio/dio.dart';
+
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/datasource/base_remote_datasource.dart';
 import '../../../../core/network/api_response.dart';
 import '../../../../core/utils/json_parser.dart';
 import '../../models/user_model.dart';
-
-/// OTP delivery channel — **Email is active by default**.
-enum OtpDeliveryChannel { email, sms }
 
 class AuthRemoteDataSource extends BaseRemoteDataSource {
   AuthRemoteDataSource(super.dio);
@@ -20,99 +21,149 @@ class AuthRemoteDataSource extends BaseRemoteDataSource {
   //   3. In [verifyOtp], send `phone` instead of `email` in request body.
   //   4. Update LoginScreen to collect phone number (not just email).
   // ---------------------------------------------------------
-  static const OtpDeliveryChannel otpChannel = OtpDeliveryChannel.email;
-
-  Future<ApiResponse<void>> sendOtp({required String email, String? phone}) {
-    final Map<String, dynamic> payload;
-
-    if (otpChannel == OtpDeliveryChannel.email) {
-      payload = {
-        'email': email,
-        'method': 'email',
-      };
-    } else {
-      // ── SMS OTP (future) ──────────────────────────────────────────────────
-      // payload = {
-      //   'phone': phone ?? email,
-      //   'method': 'sms',
-      // };
-      payload = {'email': email, 'method': 'email'};
-    }
-
-    return postEnvelope<void>(
-      ApiEndpoints.authSendOtp,
-      data: payload,
-      parser: (_) => null,
-    );
-  }
-
-  Future<ApiResponse<UserModel>> verifyOtp({
-    required String email,
-    required String otp,
-    String? name,
-    String? phone,
-  }) {
-    final Map<String, dynamic> payload = {
-      'otp': otp,
-      if (otpChannel == OtpDeliveryChannel.email) 'email': email,
-      if (otpChannel == OtpDeliveryChannel.email) 'method': 'email',
-      if (name != null && name.isNotEmpty) 'name': name,
-      if (phone != null && phone.isNotEmpty) 'phone': phone,
-    };
-
-    // ── SMS OTP verify (future) ─────────────────────────────────────────────
-    // payload = {
-    //   'phone': phone,
-    //   'otp': otp,
-    //   'method': 'sms',
-    //   if (name != null) 'name': name,
-    //   if (email != null) 'email': email,
-    // };
-
-    return postEnvelope<UserModel>(
-      ApiEndpoints.authVerifyOtp,
-      data: payload,
-      parser: _parseAuthUser,
-    );
-  }
-
+  // ── SMS OTP verify (future) ─────────────────────────────────────────────
+  // payload = {
+  //   'phone': phone,
+  //   'otp': otp,
+  //   'method': 'sms',
+  //   if (name != null) 'name': name,
+  //   if (email != null) 'email': email,
+  // };
   Future<ApiResponse<UserModel>> register({
     required String name,
     required String phone,
     required String email,
-  }) =>
-      postEnvelope<UserModel>(
-        ApiEndpoints.authRegister,
-        data: {'name': name, 'phone': phone, 'email': email},
-        parser: _parseAuthUser,
-      );
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final response = await dio.post(ApiEndpoints.authRegister, data: {
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+    });
 
-  Future<ApiResponse<UserModel>> loginWithPassword({
+    final user = UserModel.fromJson({
+      ...response.data["user"],
+      "token": null,
+    });
+
+    return ApiResponse.success(
+      user,
+      message: response.data["message"] ?? "",
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<UserModel>> login({
     required String email,
     required String password,
-  }) =>
-      postEnvelope<UserModel>(
+  }) async {
+    try {
+      final response = await dio.post(
         ApiEndpoints.authLogin,
-        data: {'email': email, 'password': password},
-        parser: _parseAuthUser,
+        data: {"email": email, "password": password},
       );
 
-  Future<ApiResponse<void>> logout() => deleteEnvelope(ApiEndpoints.authLogout);
-
-  UserModel _parseAuthUser(dynamic json) {
-    final map = JsonParser.map(json);
-    if (map.containsKey('user')) {
-      final user = UserModel.fromJson(JsonParser.map(map['user']));
-      final token = map['token']?.toString();
-      return UserModel(
-        id: user.id,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        role: user.role,
-        token: token ?? user.token,
+      return ApiResponse.success(
+        _parseLogin(response.data),
+        statusCode: response.statusCode,
       );
+    } on DioException catch (e) {
+      return apiResponseFromDioError(e);
     }
-    return UserModel.fromJson(map);
   }
+
+  UserModel _parseLogin(dynamic json) {
+    final map = JsonParser.map(json);
+
+    final user = JsonParser.map(map["user"]);
+
+    final token = JsonParser.map(map["token"]);
+
+    final original = JsonParser.map(token["original"]);
+
+    return UserModel(
+      id: user["id"].toString(),
+      name: user["name"] ?? "",
+      email: user["email"] ?? "",
+      phone: user["phone"] ?? "",
+      role: UserRole.values.firstWhere(
+        (e) => e.name == (user["role"] ?? "customer"),
+        orElse: () => UserRole.customer,
+      ),
+      token: original["access_token"],
+    );
+  }
+
+  Future<ApiResponse<void>> logout() async {
+    try {
+      final response = await dio.post(ApiEndpoints.authLogout);
+
+      return ApiResponse.success(
+        null,
+        message: response.data["message"] ?? "",
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return apiResponseFromDioError(e);
+    }
+  }
+
+  // UserModel _parseAuthUser(dynamic json) {
+  //   final map = JsonParser.map(json);
+
+  //   final user = JsonParser.map(map['user']);
+
+  //   final token = JsonParser.map(map['token']);
+
+  //   final original = JsonParser.map(token['original']);
+
+  //   return UserModel(
+  //     id: user['id'].toString(),
+  //     name: user['name'] ?? '',
+  //     email: user['email'] ?? '',
+  //     phone: user['phone'] ?? '',
+  //     role: UserRole.values.firstWhere(
+  //       (e) => e.name == (user['role'] ?? 'customer'),
+  //       orElse: () => UserRole.customer,
+  //     ),
+  //     token: original['access_token'],
+  //   );
+  // }
+
+  Future<ApiResponse<UserModel>> me() async {
+    try {
+      final response = await dio.post(ApiEndpoints.me);
+
+      final stored = await SecureStorageService.instance.readToken();
+
+      return ApiResponse.success(
+        UserModel.fromJson({
+          ...Map<String, dynamic>.from(response.data),
+          "token": stored,
+        }),
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return apiResponseFromDioError(e);
+    }
+  }
+  // UserModel _parseAuthUser(dynamic json) {
+  //   final map = JsonParser.map(json);
+  //   if (map.containsKey('user')) {
+  //     final user = UserModel.fromJson(JsonParser.map(map['user']));
+  //     final token = map['token']?.toString();
+  //     return UserModel(
+  //       id: user.id,
+  //       name: user.name,
+  //       phone: user.phone,
+  //       email: user.email,
+  //       role: user.role,
+  //       token: token ?? user.token,
+  //     );
+  //   }
+  //   return UserModel.fromJson(map);
+  // }
 }

@@ -24,8 +24,4 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<ApiResponse<ProductModel>> getProductById(String id) =>
       _remote.fetchProduct(id);
-
-  @override
-  Future<ApiResponse<List<ProductUnitModel>>> getProductUnits(String itemCode) =>
-      _remote.fetchUnits(itemCode);
 }

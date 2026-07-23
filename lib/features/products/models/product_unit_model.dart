@@ -25,19 +25,24 @@ class ProductUnitModel {
     required this.isDefault,
   });
 
-  factory ProductUnitModel.fromJson(Map<String, dynamic> json) =>
-      ProductUnitModel(
-        id: JsonParser.string(json['id']),
-        itemCode: JsonParser.string(json['item_code']),
-        unitName: JsonParser.string(json['unit_name']),
-        price: JsonParser.doubleValue(json['price']),
-        package: JsonParser.string(json['package']),
-        description: JsonParser.string(json['description']),
-        unit: JsonParser.string(json['unit']),
-        label: json['label']?.toString(),
-        oldPrice: json['old_price'] != null
-            ? JsonParser.doubleValue(json['old_price'])
-            : null,
-        isDefault: JsonParser.boolValue(json['is_default']),
-      );
+  String get displayName => unitName;
+
+  factory ProductUnitModel.fromJson(Map<String, dynamic> json) {
+    final unitName = JsonParser.string(
+      json['name_${JsonParser.currentLanguage}'],
+    );
+
+    return ProductUnitModel(
+      id: JsonParser.string(json['id']),
+      itemCode: '',
+      unitName: unitName,
+      price: JsonParser.doubleValue(json['price']),
+      package: JsonParser.string(json['quantity']),
+      description: '',
+      unit: unitName,
+      label: null,
+      oldPrice: null,
+      isDefault: false,
+    );
+  }
 }

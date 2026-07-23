@@ -12,12 +12,23 @@ import '../../features/orders/domain/repositories/order_repository.dart';
 import '../../features/products/data/datasources/product_remote_datasource.dart';
 import '../../features/products/data/repositories/product_repository_impl.dart';
 import '../../features/products/domain/repositories/product_repository.dart';
+import '../localization/language_provider.dart';
+
+import '../../features/address/data/datasources/address_remote_datasource.dart';
+import '../../features/address/data/repositories/address_repository_impl.dart';
+import '../../features/address/domain/repositories/address_repository.dart';
+
+// import '../../features/location/data/datasources/location_remote_datasource.dart';
+// import '../../features/location/data/repositories/location_repository_impl.dart';
+import '../../features/location/domain/repositories/location_repository.dart';
 
 /// Central dependency wiring — swap implementations here without touching UI.
 class DependencyInjection {
   DependencyInjection._();
 
   static final dio = ApiClient.instance.dio;
+
+  static final LanguageProvider languageProvider = LanguageProvider();
 
   static final AuthRepository authRepository = AuthRepositoryImpl(
     AuthRemoteDataSource(dio),
@@ -34,5 +45,8 @@ class DependencyInjection {
 
   static final OrderRepository orderRepository = OrderRepositoryImpl(
     OrderRemoteDataSource(dio),
+  );
+  static final AddressRepository addressRepository = AddressRepositoryImpl(
+    AddressRemoteDataSource(dio),
   );
 }

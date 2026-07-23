@@ -6,10 +6,34 @@ class DeliveryHistoryScreen extends StatelessWidget {
 
   // TODO: GET /api/delivery/history
   static const _history = [
-    _HistoryItem(id: '1042', customer: 'فاطمة أحمد', address: 'خور مكسر', amount: 8000, date: '2026-06-30', status: 'تم التسليم'),
-    _HistoryItem(id: '1041', customer: 'خالد حسن', address: 'المنصورة', amount: 4500, date: '2026-06-30', status: 'تم التسليم'),
-    _HistoryItem(id: '1038', customer: 'محمد علي', address: 'التواهي', amount: 12000, date: '2026-06-29', status: 'تم التسليم'),
-    _HistoryItem(id: '1035', customer: 'ريم محمد', address: 'كريتر', amount: 3500, date: '2026-06-29', status: 'تم التسليم'),
+    _HistoryItem(
+        id: '1042',
+        customer: 'فاطمة أحمد',
+        address: 'خور مكسر',
+        amount: 8000,
+        date: '2026-06-30',
+        status: 'تم التسليم'),
+    _HistoryItem(
+        id: '1041',
+        customer: 'خالد حسن',
+        address: 'المنصورة',
+        amount: 4500,
+        date: '2026-06-30',
+        status: 'تم التسليم'),
+    _HistoryItem(
+        id: '1038',
+        customer: 'محمد علي',
+        address: 'التواهي',
+        amount: 12000,
+        date: '2026-06-29',
+        status: 'تم التسليم'),
+    _HistoryItem(
+        id: '1035',
+        customer: 'ريم محمد',
+        address: 'كريتر',
+        amount: 3500,
+        date: '2026-06-29',
+        status: 'تم التسليم'),
   ];
 
   @override
@@ -44,22 +68,28 @@ class DeliveryHistoryScreen extends StatelessWidget {
               itemBuilder: (_, i) {
                 final h = _history[i];
                 return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.success.withOpacity(0.1),
-                      child: const Icon(Icons.check_circle_outline, color: AppColors.success),
-                    ),
-                    title: Text(h.customer, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${h.address}  •  ${h.date}'),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('${h.amount.toStringAsFixed(0)} ر.ي',
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(h.status,
-                            style: const TextStyle(color: AppColors.success, fontSize: 12)),
-                      ],
+                  child: Material(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.success.withOpacity(0.1),
+                        child: const Icon(Icons.check_circle_outline,
+                            color: AppColors.success),
+                      ),
+                      title: Text(h.customer,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('${h.address}  •  ${h.date}'),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('${h.amount.toStringAsFixed(0)} ر.ي',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(h.status,
+                              style: const TextStyle(
+                                  color: AppColors.success, fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -77,17 +107,26 @@ class _SummaryItem extends StatelessWidget {
   const _SummaryItem(this.label, this.value);
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
-      const SizedBox(height: 4),
-      Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-    ],
-  );
+        children: [
+          Text(value,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.primary)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      );
 }
 
 class _HistoryItem {
   final String id, customer, address, date, status;
   final double amount;
-  const _HistoryItem({required this.id, required this.customer, required this.address,
-      required this.amount, required this.date, required this.status});
+  const _HistoryItem(
+      {required this.id,
+      required this.customer,
+      required this.address,
+      required this.amount,
+      required this.date,
+      required this.status});
 }

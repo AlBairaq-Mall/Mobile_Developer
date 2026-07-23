@@ -1,3 +1,4 @@
+// import 'package:bhm_supermarket/features/auth/models/login_flow_model';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -16,24 +17,36 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _ctrl = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   String? _error;
   bool _loading = false;
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final value = _ctrl.text.trim();
-    if (value.isEmpty) {
-      setState(() => _error = 'هذا الحقل مطلوب');
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _error = "البريد الإلكتروني مطلوب");
       return;
     }
-    if (!value.contains('@')) {
-      setState(() => _error = 'البريد الإلكتروني غير صحيح');
+
+    if (!email.contains("@")) {
+      setState(() => _error = "البريد الإلكتروني غير صحيح");
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() => _error = "كلمة المرور مطلوبة");
       return;
     }
 
@@ -43,27 +56,35 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final auth = context.read<AuthProvider>();
-    final sendError = await auth.sendOtp(email: value);
+
+    final error = await auth.login(
+      email: email,
+      password: password,
+    );
+
     if (!mounted) return;
 
-    if (sendError != null) {
+    setState(() => _loading = false);
+
+    if (error != null) {
       setState(() {
-        _error = sendError;
-        _loading = false;
+        _error = error;
       });
       return;
     }
 
-    setState(() => _loading = false);
-    context.push(
-      AppRoutes.otp,
-      extra: {
-        'contact': value,
-        'email': value,
-        'method': 'email',
-        'redirect': widget.redirectTo,
-      },
-    );
+    final redirect = auth.consumePendingRedirect();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final target =
+          widget.redirectTo ?? auth.pendingRedirect ?? AppRoutes.home;
+
+      auth.clearPendingRedirect();
+
+      context.go(target);
+    });
   }
 
   @override
@@ -143,13 +164,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontSize: 14)),
                         const SizedBox(height: 24),
                         TextField(
-                          controller: _ctrl,
+                          controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textDirection: TextDirection.ltr,
-                          decoration: InputDecoration(
-                            hintText: 'example@email.com',
-                            prefixIcon: const Icon(Icons.email_outlined),
-                            errorText: _error,
+                          decoration: const InputDecoration(
+                            labelText: "البريد الإلكتروني",
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'كلمة المرور',
+                            prefixIcon: Icon(Icons.lock_outline),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -157,12 +186,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const Center(child: CircularProgressIndicator())
                             : ElevatedButton(
                                 onPressed: _submit,
-                                child: const Text('متابعة'),
+                                child: const Text('تسجيل الدخول'),
                               ),
                         const SizedBox(height: 16),
                         Center(
                           child: GestureDetector(
-                            onTap: () => context.push(AppRoutes.register),
+                            onTap: () {
+                              context.push(AppRoutes.register);
+                            },
                             child: RichText(
                               text: TextSpan(
                                 text: 'ليس لديك حساب؟  ',
@@ -185,51 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _QuickLink(
-                          'لوحة التحكم',
-                          Icons.admin_panel_settings_outlined,
-                          AppRoutes.adminLogin,
-                          context),
-                      const SizedBox(width: 12),
-                      _QuickLink(
-                          'بوابة التوصيل',
-                          Icons.delivery_dining_outlined,
-                          AppRoutes.deliveryLogin,
-                          context),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _QuickLink(
-      String label, IconData icon, String route, BuildContext ctx) {
-    return GestureDetector(
-      onTap: () => ctx.go(route),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
-        ),
-        child: Row(children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
-          Text(label,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold)),
-        ]),
       ),
     );
   }

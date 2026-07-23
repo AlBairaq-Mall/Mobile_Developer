@@ -1,7 +1,10 @@
+import 'package:bhm_supermarket/app/router/app_routes.dart';
+import 'package:bhm_supermarket/core/network/api_response.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
+import '../models/login_flow_model.dart';
 
 enum LoginMethod { email }
 
@@ -13,6 +16,11 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   bool _isLoading = false;
   String? _pendingRedirect;
+  String consumePendingRedirect() {
+    final path = _pendingRedirect;
+    _pendingRedirect = null;
+    return path ?? AppRoutes.home;
+  }
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
@@ -35,52 +43,58 @@ class AuthProvider extends ChangeNotifier {
     _pendingRedirect = null;
   }
 
-  Future<String?> sendOtp({required String email}) async {
-    _setLoading(true);
-    final response = await _repository.sendOtp(email: email);
-    _setLoading(false);
-    return response.isSuccess ? null : response.message;
-  }
-
-  Future<String?> verifyOtp({
+  Future<String?> login({
     required String email,
-    required String otp,
-    String? name,
-    String? phone,
+    required String password,
   }) async {
     _setLoading(true);
-    final response = await _repository.verifyOtp(
+
+    final response = await _repository.login(
       email: email,
-      otp: otp,
-      name: name,
-      phone: phone,
+      password: password,
     );
+
     _setLoading(false);
+
     if (response.isSuccess && response.data != null) {
       _user = response.data;
-      notifyListeners();
+      _user = response.data;
+
+      Future.microtask(() {
+        notifyListeners();
+      });
+
       return null;
     }
+
     return response.message;
   }
 
-  Future<String?> loginWithPassword({
+  Future<String?> register({
+    required String name,
+    required String phone,
     required String email,
     required String password,
-    required UserRole expectedRole,
+    required String passwordConfirmation,
   }) async {
     _setLoading(true);
-    final response = await _repository.loginWithPassword(
+
+    final response = await _repository.register(
+      name: name,
+      phone: phone,
       email: email,
       password: password,
-      expectedRole: expectedRole,
+      passwordConfirmation: passwordConfirmation,
     );
+
     _setLoading(false);
+
     if (response.isSuccess && response.data != null) {
       _user = response.data;
       notifyListeners();
       return null;
     }
+
     return response.message;
   }
 

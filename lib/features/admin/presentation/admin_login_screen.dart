@@ -34,16 +34,22 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     });
 
     final auth = context.read<AuthProvider>();
-    final loginError = await auth.loginWithPassword(
+    final loginError = await auth.login(
       email: _emailCtrl.text.trim(),
       password: _passCtrl.text.trim(),
-      expectedRole: UserRole.admin,
     );
 
     if (!mounted) return;
 
     if (loginError == null) {
-      context.go(AppRoutes.adminDashboard);
+      if (auth.user?.role == UserRole.admin) {
+        context.go(AppRoutes.adminDashboard);
+      } else {
+        setState(() {
+          _error = "ليست لديك صلاحية";
+          _loading = false;
+        });
+      }
     } else {
       setState(() {
         _error = loginError;
@@ -79,8 +85,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         ?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text('ادخل بيانات المدير للمتابعة',
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.outline)),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline)),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _emailCtrl,

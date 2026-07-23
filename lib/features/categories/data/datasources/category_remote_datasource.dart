@@ -8,7 +8,7 @@ class CategoryRemoteDataSource extends BaseRemoteDataSource {
   CategoryRemoteDataSource(super.dio);
 
   Future<ApiResponse<List<CategoryModel>>> fetchCategories() =>
-      getEnvelope<List<CategoryModel>>(
+      getPaginated<List<CategoryModel>>(
         ApiEndpoints.categories,
         parser: (json) => JsonParser.list(json, CategoryModel.fromJson),
       );

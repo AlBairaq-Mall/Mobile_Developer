@@ -1,10 +1,11 @@
+import 'package:bhm_supermarket/features/auth/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../app/router/app_routes.dart';
-import '../models/user_model.dart';
 
 /// شاشة إنشاء حساب جديد (متطلب وظيفي رقم 05 في وثيقة المتطلبات).
 class RegisterScreen extends StatefulWidget {
@@ -15,20 +16,23 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_nameController.text.trim().isEmpty ||
         _phoneController.text.trim().length < 9) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -37,17 +41,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // TODO: ربط هذا الاستدعاء بـ AuthRepository الفعلي عند توفر الـ API.
-    context.push(
-      AppRoutes.otp,
-      extra: {
-        "name": _nameController.text.trim(),
-        "phone": _phoneController.text.trim(),
-        "email": _emailController.text.trim(),
-        'contact': _phoneController.text.trim(),
-        'method': 'phone',
-      },
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("كلمتا المرور غير متطابقتين"),
+        ),
+      );
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+
+    final error = await auth.register(
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      passwordConfirmation: _confirmPasswordController.text.trim(),
     );
+
+    if (!mounted) return;
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      return;
+    }
+
+    final redirect = auth.consumePendingRedirect();
+
+    context.go(redirect);
   }
 
   @override
@@ -74,13 +98,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               CustomTextField(
-                hint: 'البريد الإلكتروني (اختياري)',
+                hint: 'البريد الإلكتروني',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: const Icon(Icons.email_outlined),
               ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                hint: 'كلمة المرور',
+                controller: _passwordController,
+                obscureText: true,
+                prefixIcon: const Icon(Icons.lock_outline),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                hint: 'تأكيد كلمة المرور',
+                controller: _confirmPasswordController,
+                obscureText: true,
+                prefixIcon: const Icon(Icons.lock_reset_outlined),
+              ),
               const SizedBox(height: 28),
-              CustomButton(text: 'متابعة', onPressed: _submit),
+              CustomButton(text: 'إنشاء حساب', onPressed: _submit),
             ],
           ),
         ),

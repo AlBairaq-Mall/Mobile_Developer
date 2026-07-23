@@ -46,17 +46,20 @@ class NotificationsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final n = notifications[index];
                 return Card(
-                  color: n.read ? null : Colors.green.withOpacity(0.06),
-                  child: ListTile(
-                    leading: const Icon(Icons.notifications_outlined),
-                    title: Text(
-                      n.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  child: Material(
+                    color: n.read ? null : Colors.green.withOpacity(0.06),
+                    child: ListTile(
+                      leading: const Icon(Icons.notifications_outlined),
+                      title: Text(
+                        n.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(n.body),
+                      trailing: !n.read
+                          ? const Icon(Icons.circle,
+                              size: 10, color: Colors.green)
+                          : null,
                     ),
-                    subtitle: Text(n.body),
-                    trailing: !n.read
-                        ? const Icon(Icons.circle, size: 10, color: Colors.green)
-                        : null,
                   ),
                 );
               },

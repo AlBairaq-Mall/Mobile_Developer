@@ -10,6 +10,4 @@ abstract class ProductRepository {
   });
 
   Future<ApiResponse<ProductModel>> getProductById(String id);
-
-  Future<ApiResponse<List<ProductUnitModel>>> getProductUnits(String itemCode);
 }

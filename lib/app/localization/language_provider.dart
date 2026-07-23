@@ -1,33 +1,62 @@
 import 'package:flutter/material.dart';
+import '../../core/services/language_service.dart';
+import '../../core/services/secure_storage_service.dart';
+import '../../core/utils/json_parser.dart';
 
 class LanguageProvider extends ChangeNotifier {
   Locale _locale = const Locale('ar');
 
+  LanguageProvider() {
+    _loadLanguage();
+  }
+  Future<void> _loadLanguage() async {
+    final lang = await SecureStorageService.instance.readLanguage();
+
+    JsonParser.currentLanguage = lang;
+
+    _locale = Locale(lang);
+
+    notifyListeners();
+  }
+
   Locale get locale => _locale;
+  String get languageCode => _locale.languageCode;
   bool get isArabic => _locale.languageCode == 'ar';
   bool get isEnglish => _locale.languageCode == 'en';
 
-  void setArabic() {
+  Future<void> setArabic() async {
+    JsonParser.currentLanguage = 'ar';
+
     _locale = const Locale('ar');
+
+    await SecureStorageService.instance.saveLanguage('ar');
+
     notifyListeners();
   }
 
-  void setEnglish() {
+  Future<void> setEnglish() async {
+    JsonParser.currentLanguage = 'en';
+
     _locale = const Locale('en');
+
+    await SecureStorageService.instance.saveLanguage('en');
+
     notifyListeners();
   }
 
-  void toggle() {
-    _locale = isArabic ? const Locale('en') : const Locale('ar');
-    notifyListeners();
+  Future<void> toggle() async {
+    if (isArabic) {
+      await setEnglish();
+    } else {
+      await setArabic();
+    }
   }
 
   String t(String key) => AppStrings.of(_locale.languageCode)[key] ?? key;
 }
 
 class AppStrings {
-  static Map<String, String> of(String lang) =>
-      lang == 'en' ? _en : _ar;
+  static Map<String, String> of(String lang) => lang == 'en' ? _en : _ar;
 
   static const _ar = {
     // General

@@ -1,3 +1,4 @@
+import 'package:bhm_supermarket/app/localization/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   void _navigate(CategoryModel cat) {
     context.push(
-      '${AppRoutes.categories}/${cat.id}?name=${Uri.encodeComponent(cat.name)}',
+      '${AppRoutes.categories}/${cat.id}?name=${Uri.encodeComponent(
+        cat.name,
+      )}',
     );
   }
 

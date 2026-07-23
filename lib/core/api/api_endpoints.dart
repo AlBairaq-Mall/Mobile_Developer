@@ -2,22 +2,28 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  // Auth
-  static const authSendOtp = '/auth/send-otp';
-  static const authVerifyOtp = '/auth/verify-otp';
-  static const authRegister = '/auth/register';
-  static const authLogin = '/auth/login';
-  static const authLogout = '/auth/logout';
+  static const authRegister = '/register';
+  static const authLogin = '/login';
+  static const authLogout = '/logout';
+  static const me = '/me';
+  static const refresh = '/refresh';
 
   // Catalog
+  // categories
   static const categories = '/categories';
+  // products
   static const products = '/products';
   static String product(String id) => '/products/$id';
-  static String productUnits(String itemCode) => '/products/$itemCode/units';
 
   // Orders
   static const orders = '/orders';
+  static String order(String id) => '/orders/$id';
   static String orderTrack(String orderNumber) => '/orders/$orderNumber/track';
+
+// Users
+  static const users = '/users';
+  // Locations
+  static const locations = '/locations';
 
   // Addresses
   static const addresses = '/addresses';
@@ -25,10 +31,13 @@ class ApiEndpoints {
 
   // Favorites
   static const favorites = '/favorites';
-  static String favoriteToggle(String productId) => '/favorites/$productId/toggle';
+  static String favoriteToggle(String productId) =>
+      '/favorites/$productId/toggle';
+
+  static const myOrders = "/my-orders";
 
   // Profile
-  static const profile = '/profile';
+  // static const profile = '/profile';
 
   // Notifications
   static const notifications = '/notifications';

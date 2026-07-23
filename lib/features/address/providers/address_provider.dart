@@ -1,97 +1,120 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/di/dependency_injection.dart';
 import '../models/address_model.dart';
 
 class AddressProvider extends ChangeNotifier {
-  final List<AddressModel> _addresses = [
-    const AddressModel(
-      id: '1',
-      title: 'المنزل',
-      city: 'عدن',
-      district: 'المنصورة',
-      street: 'شارع السجن',
-      phone: '775612613',
-      isDefault: true,
-    ),
-  ];
+  final _repository = DependencyInjection.addressRepository;
+
+  List<AddressModel> _addresses = [];
+
+  bool _loading = false;
+
+  bool get loading => _loading;
 
   List<AddressModel> get addresses => _addresses;
 
   AddressModel? get selectedAddress {
+    if (_addresses.isEmpty) return null;
+
     try {
       return _addresses.firstWhere((e) => e.isDefault);
     } catch (_) {
-      return _addresses.isNotEmpty ? _addresses.first : null;
+      return _addresses.first;
     }
   }
 
-  void addAddress(AddressModel address) {
-    // إذا كان العنوان الجديد افتراضياً، أزل الافتراضي من الباقين
-    if (address.isDefault) {
-      _clearDefault();
+  Future<void> loadAddresses() async {
+    if (_loading) return;
+    _loading = true;
+    notifyListeners();
+
+    final response = await _repository.getLocations();
+
+    if (response.isSuccess && response.data != null) {
+      _addresses = response.data!;
     }
-    _addresses.add(address);
+
+    _loading = false;
     notifyListeners();
   }
 
-  void editAddress(String id, AddressModel updated) {
-    final index = _addresses.indexWhere((a) => a.id == id);
-    if (index == -1) return;
-    if (updated.isDefault) _clearDefault();
-    _addresses[index] = updated;
-    notifyListeners();
+  Future<bool> addAddress({
+    required String title,
+    required String address,
+    double? latitude,
+    double? longitude,
+    bool isDefault = false,
+  }) async {
+    final response = await _repository.createLocation(
+      title: title,
+      address: address,
+      latitude: latitude,
+      longitude: longitude,
+      isDefault: isDefault,
+    );
+
+    if (!response.isSuccess) return false;
+
+    await loadAddresses();
+
+    return true;
   }
 
-  void deleteAddress(String id) {
-    _addresses.removeWhere((a) => a.id == id);
-    // إذا لم يعد هناك عنوان افتراضي اجعل الأول هو الافتراضي
-    if (_addresses.isNotEmpty && !_addresses.any((a) => a.isDefault)) {
-      final first = _addresses.first;
-      _addresses[0] = AddressModel(
-        id: first.id,
-        title: first.title,
-        city: first.city,
-        district: first.district,
-        street: first.street,
-        phone: first.phone,
-        isDefault: true,
-      );
-    }
-    notifyListeners();
+  Future<bool> editAddress({
+    required int id,
+    required String title,
+    required String address,
+    double? latitude,
+    double? longitude,
+    bool isDefault = false,
+  }) async {
+    final response = await _repository.updateLocation(
+      id: id,
+      title: title,
+      address: address,
+      latitude: latitude,
+      longitude: longitude,
+      isDefault: isDefault,
+    );
+
+    if (!response.isSuccess) return false;
+
+    await loadAddresses();
+
+    return true;
   }
 
-  void setDefault(String id) {
-    _clearDefault();
-    final index = _addresses.indexWhere((a) => a.id == id);
-    if (index == -1) return;
-    final a = _addresses[index];
-    _addresses[index] = AddressModel(
-      id: a.id,
-      title: a.title,
-      city: a.city,
-      district: a.district,
-      street: a.street,
-      phone: a.phone,
+  Future<bool> deleteAddress(int id) async {
+    final response = await _repository.deleteLocation(id);
+
+    if (!response.isSuccess) return false;
+
+    await loadAddresses();
+
+    return true;
+  }
+
+  Future<bool> setDefault(String id) async {
+    final address = _addresses.firstWhere(
+      (e) => e.id == id,
+    );
+
+    final response = await _repository.updateLocation(
+      id: int.parse(id),
+      title: address.title,
+      address: address.address,
+      latitude: null,
+      longitude: null,
       isDefault: true,
     );
-    notifyListeners();
-  }
 
-  void _clearDefault() {
-    for (var i = 0; i < _addresses.length; i++) {
-      final a = _addresses[i];
-      if (a.isDefault) {
-        _addresses[i] = AddressModel(
-          id: a.id,
-          title: a.title,
-          city: a.city,
-          district: a.district,
-          street: a.street,
-          phone: a.phone,
-          isDefault: false,
-        );
-      }
+    if (!response.isSuccess) {
+      return false;
     }
+
+    await loadAddresses();
+
+    return true;
   }
 }
-

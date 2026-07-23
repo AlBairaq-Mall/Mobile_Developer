@@ -12,26 +12,34 @@ class ProductRemoteDataSource extends BaseRemoteDataSource {
     String? categoryId,
     String? search,
     int page = 1,
-  }) =>
-      getEnvelope<List<ProductModel>>(
-        ApiEndpoints.products,
-        query: {
-          if (categoryId != null) 'category_id': categoryId,
-          if (search != null && search.isNotEmpty) 'search': search,
-          'page': page,
-        },
-        parser: (json) => JsonParser.list(json, ProductModel.fromJson),
-      );
+  }) {
+    print('fetchProducts started');
+
+    return getPaginated<List<ProductModel>>(
+      ApiEndpoints.products,
+      query: {
+        if (categoryId != null) 'category_id': categoryId,
+        if (search != null && search.isNotEmpty) 'search': search,
+        'page': page,
+      },
+      parser: (json) {
+        print('parser started');
+
+        final products = JsonParser.list(
+          json,
+          ProductModel.fromJson,
+        );
+
+        print('Products count = ${products.length}');
+
+        return products;
+      },
+    );
+  }
 
   Future<ApiResponse<ProductModel>> fetchProduct(String id) =>
-      getEnvelope<ProductModel>(
+      getPaginated<ProductModel>(
         ApiEndpoints.product(id),
         parser: (json) => ProductModel.fromJson(JsonParser.map(json)),
-      );
-
-  Future<ApiResponse<List<ProductUnitModel>>> fetchUnits(String itemCode) =>
-      getEnvelope<List<ProductUnitModel>>(
-        ApiEndpoints.productUnits(itemCode),
-        parser: (json) => JsonParser.list(json, ProductUnitModel.fromJson),
       );
 }

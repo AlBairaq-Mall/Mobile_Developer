@@ -50,7 +50,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     if (product == null || _selected == null) return;
     context.read<CartProvider>().addItem(
           product: product,
-          unit: _selected!.unitName,
+          selectedUnit: _selected!,
           unitPrice: _selected!.price,
           quantity: provider.quantity,
         );
@@ -247,7 +247,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                             child: Column(
                               children: [
-                                _DetailRow('العبوة', _selected!.package),
+                                _DetailRow('العبوة',
+                                    '${_selected!.package} ${_selected!.unitName}'),
                                 if (_selected!.description.isNotEmpty)
                                   _DetailRow('الوصف', _selected!.description),
                                 _DetailRow('رمز الوحدة', product.itemCode),

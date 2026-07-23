@@ -7,9 +7,17 @@ class CheckoutProvider extends ChangeNotifier {
 
   PaymentMethod get paymentMethod => _paymentMethod;
 
+  bool _placingOrder = false;
+
+  bool get placingOrder => _placingOrder;
+
   void setPaymentMethod(PaymentMethod value) {
     _paymentMethod = value;
+    notifyListeners();
+  }
 
+  void setPlacing(bool value) {
+    _placingOrder = value;
     notifyListeners();
   }
 }

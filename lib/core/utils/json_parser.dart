@@ -1,5 +1,6 @@
 /// Null-safe JSON helpers for Laravel snake_case payloads.
 class JsonParser {
+  static String currentLanguage = 'ar';
   JsonParser._();
 
   static String string(dynamic value, {String fallback = ''}) =>

@@ -43,7 +43,7 @@ class AppProviders {
               CategoryProvider(DependencyInjection.categoryRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => OrdersProvider(DependencyInjection.orderRepository),
+          create: (_) => OrdersProvider(),
         ),
       ];
 }

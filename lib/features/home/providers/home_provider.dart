@@ -39,14 +39,11 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<ProductModel> get bestSellerProducts =>
-      _filterProducts().where((e) => e.isBestSeller).toList();
+  List<ProductModel> get bestSellerProducts => _filterProducts();
 
-  List<ProductModel> get flashDeals =>
-      _filterProducts().where((e) => e.isFlashDeal).toList();
+  List<ProductModel> get flashDeals => const [];
 
-  List<ProductModel> get recommendedProducts =>
-      _filterProducts().where((e) => e.isRecommended).toList();
+  List<ProductModel> get recommendedProducts => const [];
 
   List<ProductModel> _filterProducts() => _products.where((product) {
         final categoryMatch = _selectedCategory.isEmpty ||

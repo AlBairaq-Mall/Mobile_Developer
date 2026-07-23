@@ -41,24 +41,24 @@ class ApiService {
 
   /// إرسال OTP - POST /api/auth/send-otp
   /// Body: { "contact": "phone/email", "method": "phone|email" }
-  Future<void> sendOtp(
-      {required String contact, required String method}) async {
-    // await _dio.post('/auth/send-otp', data: {'contact': contact, 'method': method});
-    throw UnimplementedError('اربط مع Laravel');
-  }
+  // Future<void> sendOtp(
+  //     {required String contact, required String method}) async {
+  //   // await _dio.post('/auth/send-otp', data: {'contact': contact, 'method': method});
+  //   throw UnimplementedError('اربط مع Laravel');
+  // }
 
   /// التحقق من OTP - POST /api/auth/verify-otp
   /// Body: { "contact": "...", "otp": "1234", "method": "phone|email" }
   /// Returns: { "token": "...", "user": {...} }
-  Future<Map<String, dynamic>> verifyOtp({
-    required String contact,
-    required String otp,
-    required String method,
-  }) async {
-    // final res = await _dio.post('/auth/verify-otp', data: {...});
-    // return res.data;
-    throw UnimplementedError('اربط مع Laravel');
-  }
+  // Future<Map<String, dynamic>> verifyOtp({
+  //   required String contact,
+  //   required String otp,
+  //   required String method,
+  // }) async {
+  //   // final res = await _dio.post('/auth/verify-otp', data: {...});
+  //   // return res.data;
+  //   throw UnimplementedError('اربط مع Laravel');
+  // }
 
   /// تسجيل مستخدم جديد - POST /api/auth/register
   /// Body: { "name": "...", "phone": "...", "email": "..." }

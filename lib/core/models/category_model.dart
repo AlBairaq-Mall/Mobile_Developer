@@ -2,32 +2,50 @@ import '../../../core/utils/json_parser.dart';
 
 class CategoryModel {
   final String id;
-  final String name;
+
+  final String nameAr;
+  final String nameEn;
+
   final String image;
+
   final String? parentId;
+
   final int sortOrder;
 
   const CategoryModel({
     required this.id,
-    required this.name,
+    required this.nameAr,
+    required this.nameEn,
     required this.image,
     this.parentId,
     required this.sortOrder,
   });
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
-        id: JsonParser.string(json['id']),
-        name: JsonParser.string(json['name']),
-        image: JsonParser.string(json['image']),
-        parentId: json['parent_id']?.toString(),
-        sortOrder: JsonParser.intValue(json['sort_order']),
-      );
+  String get name => JsonParser.currentLanguage == 'ar' ? nameAr : nameEn;
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'image': image,
-        'parent_id': parentId,
-        'sort_order': sortOrder,
-      };
+  String get imageUrl => image.isEmpty
+      ? ''
+      : 'https://backend-albarqy.onrender.com/storage/$image';
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      id: JsonParser.string(json['id']),
+      nameAr: JsonParser.string(json['name_ar']),
+      nameEn: JsonParser.string(json['name_en']),
+      image: JsonParser.string(json['image']),
+      parentId: null,
+      sortOrder: 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name_ar': nameAr,
+      'name_en': nameEn,
+      'image': image,
+      'parent_id': parentId,
+      'sort_order': sortOrder,
+    };
+  }
 }

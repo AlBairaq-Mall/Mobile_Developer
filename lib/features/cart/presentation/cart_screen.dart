@@ -20,25 +20,31 @@ class CartScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('السلة'),
-            if (cart.items.isNotEmpty) ...[
+            if (cart.isNotEmpty) ...[
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text('${cart.items.length}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
+                child: Text(
+                  '${cart.items.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ],
         ),
         actions: [
-          if (cart.items.isNotEmpty)
+          if (cart.isNotEmpty)
             TextButton.icon(
               onPressed: () => showDialog(
                 context: context,
@@ -69,7 +75,7 @@ class CartScreen extends StatelessWidget {
             ),
         ],
       ),
-      body: cart.items.isEmpty
+      body: cart.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

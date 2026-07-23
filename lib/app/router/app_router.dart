@@ -1,6 +1,7 @@
+import 'package:bhm_supermarket/features/orders/models/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import '../../features/orders/presentation/order_details_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/address/presentation/address_management_screen.dart';
 import '../../features/admin/presentation/admin_login_screen.dart';
@@ -14,7 +15,6 @@ import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_ads_screen.dart';
 import '../../features/admin/presentation/admin_offers_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/auth/presentation/otp_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/cart/presentation/cart_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
@@ -36,6 +36,7 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/orders/presentation/order_details_screen.dart';
 
 import 'app_routes.dart';
 
@@ -63,7 +64,9 @@ class AppRouter {
 
           if (_authRequiredPaths.contains(location) && !isLoggedIn) {
             final redirect = Uri.encodeComponent(state.uri.toString());
-            authProvider.setPendingRedirect(state.uri.toString());
+            if (authProvider.pendingRedirect == null) {
+              authProvider.setPendingRedirect(state.uri.toString());
+            }
             return '${AppRoutes.login}?redirect=$redirect';
           }
 
@@ -87,19 +90,6 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.register,
             builder: (_, __) => const RegisterScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.otp,
-            builder: (_, state) {
-              final extra = state.extra as Map<String, dynamic>? ?? {};
-              return OtpScreen(
-                name: extra['name'] as String? ?? '',
-                phone: extra['phone'] as String? ?? '',
-                email: extra['email'] as String? ?? '',
-                contact: extra['contact'] as String? ?? '',
-                redirectTo: extra['redirect'] as String?,
-              );
-            },
           ),
           GoRoute(
             path: AppRoutes.home,
@@ -146,7 +136,13 @@ class AppRouter {
           ),
           GoRoute(
             path: AppRoutes.addresses,
-            builder: (_, __) => const AddressManagementScreen(),
+            builder: (context, state) {
+              final fromCheckout = state.extra == true;
+
+              return AddressManagementScreen(
+                fromCheckout: fromCheckout,
+              );
+            },
           ),
           GoRoute(
             path: AppRoutes.settings,
@@ -254,6 +250,18 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.deliveryHome,
             builder: (_, __) => const DeliveryMainScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.orders,
+            builder: (_, __) => const OrdersScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.orderDetails,
+            builder: (_, state) {
+              return OrderDetailsScreen(
+                order: state.extra as OrderModel,
+              );
+            },
           ),
         ],
       );

@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
 
-import '../domain/repositories/order_repository.dart';
+import '../../../app/di/dependency_injection.dart';
 import '../models/order_model.dart';
 
 class OrdersProvider extends ChangeNotifier {
-  OrdersProvider(this._repository);
-
-  final OrderRepository _repository;
+  final _repository = DependencyInjection.orderRepository;
 
   List<OrderModel> _orders = [];
-  bool _isLoading = false;
-  String? _error;
+
+  bool _loading = false;
 
   List<OrderModel> get orders => _orders;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+
+  bool get loading => _loading;
 
   Future<void> loadOrders() async {
-    _isLoading = true;
-    _error = null;
+    _loading = true;
     notifyListeners();
 
-    final response = await _repository.getMyOrders();
+    final response = await _repository.getOrders();
+
     if (response.isSuccess && response.data != null) {
       _orders = response.data!;
-    } else {
-      _orders = [];
-      _error = response.message;
     }
 
-    _isLoading = false;
+    _loading = false;
     notifyListeners();
   }
 
-  Future<void> refresh() => loadOrders();
+  Future<void> refresh() async {
+    await loadOrders();
+  }
 }

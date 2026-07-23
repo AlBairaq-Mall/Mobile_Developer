@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/checkout_provider.dart';
 import '../models/payment_method.dart';
+import '../providers/checkout_provider.dart';
 
 class PaymentMethodSelector extends StatelessWidget {
   const PaymentMethodSelector({super.key});
@@ -12,40 +12,36 @@ class PaymentMethodSelector extends StatelessWidget {
     final provider = context.watch<CheckoutProvider>();
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        RadioListTile(
-          title: const Text('الدفع عند الاستلام'),
-
+        RadioListTile<PaymentMethod>(
           value: PaymentMethod.cash,
-
           groupValue: provider.paymentMethod,
-
+          title: const Text('الدفع عند الاستلام'),
           onChanged: (value) {
-            provider.setPaymentMethod(value!);
+            if (value != null) {
+              provider.setPaymentMethod(value);
+            }
           },
         ),
-
-        RadioListTile(
-          title: const Text('المحفظة'),
-
+        RadioListTile<PaymentMethod>(
           value: PaymentMethod.wallet,
-
           groupValue: provider.paymentMethod,
-
+          title: const Text('المحفظة'),
           onChanged: (value) {
-            provider.setPaymentMethod(value!);
+            if (value != null) {
+              provider.setPaymentMethod(value);
+            }
           },
         ),
-
-        RadioListTile(
-          title: const Text('بطاقة بنكية'),
-
+        RadioListTile<PaymentMethod>(
           value: PaymentMethod.card,
-
           groupValue: provider.paymentMethod,
-
+          title: const Text('بطاقة بنكية'),
           onChanged: (value) {
-            provider.setPaymentMethod(value!);
+            if (value != null) {
+              provider.setPaymentMethod(value);
+            }
           },
         ),
       ],

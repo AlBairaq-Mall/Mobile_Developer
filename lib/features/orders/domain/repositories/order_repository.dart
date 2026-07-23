@@ -1,15 +1,15 @@
-import '../../../../core/network/api_response.dart';
-import '../../models/order_model.dart';
+import 'package:bhm_supermarket/core/network/api_response.dart';
+import 'package:bhm_supermarket/features/orders/models/order_model.dart';
 
 abstract class OrderRepository {
-  Future<ApiResponse<List<OrderModel>>> getMyOrders();
+  Future<ApiResponse<List<OrderModel>>> getOrders();
 
   Future<ApiResponse<Map<String, dynamic>>> createOrder({
     required String addressId,
     required String paymentMethod,
+    required double deliveryFee,
+    required double discount,
+    String? notes,
     required List<Map<String, dynamic>> items,
-    String? couponCode,
   });
-
-  Future<ApiResponse<Map<String, dynamic>>> trackOrder(String orderNumber);
 }

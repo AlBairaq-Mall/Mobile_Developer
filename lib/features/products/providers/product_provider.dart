@@ -57,27 +57,31 @@ class ProductProvider extends ChangeNotifier {
     }
 
     _product = productResponse.data!;
+    // الوحدات تأتي مع المنتج نفسه من Laravel
+    _units = _product!.units;
+    if (_product?.categoryId != null) {
+      final relatedResponse = await _repository.getProducts(
+        categoryId: _product!.categoryId,
+      );
+      _related = (relatedResponse.data ?? [])
+          .where((e) => e.id != _product!.id)
+          .take(6)
+          .toList();
 
-    final unitsResponse = await _repository.getProductUnits(_product!.itemCode);
+      if (_units.isEmpty) {
+        _selectedUnitIndex = 0;
+      } else {
+        _selectedUnitIndex = _units.isNotEmpty ? 0 : -1;
+        // final defaultIndex = _units.indexWhere((e) => e.isDefault);
 
-    final relatedResponse =
-        await _repository.getProducts(categoryId: _product!.categoryId);
+        // _selectedUnitIndex = defaultIndex >= 0 ? defaultIndex : 0;
+      }
 
-    _units = unitsResponse.data ?? [];
+      _quantity = 1;
 
-    _related = (relatedResponse.data ?? [])
-        .where((e) => e.id != _product!.id)
-        .take(6)
-        .toList();
-
-    final defaultIndex = _units.indexWhere((e) => e.isDefault);
-
-    _selectedUnitIndex = defaultIndex >= 0 ? defaultIndex : 0;
-
-    _quantity = 1;
-
-    _isLoading = false;
-    notifyListeners();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void selectUnit(int index) {

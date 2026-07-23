@@ -1,3 +1,4 @@
+import 'package:bhm_supermarket/features/products/providers/product_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
@@ -167,14 +168,22 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
+                            final provider = context.read<ProductProvider>();
+
+                            await provider.loadProduct(product.id);
+
+                            if (provider.selectedUnit == null) return;
+
                             context.read<CartProvider>().add(product);
+
+                            if (!context.mounted) return;
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('تمت إضافة ${product.name}'),
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(seconds: 1),
                                 backgroundColor: AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
                               ),
                             );
                           },
