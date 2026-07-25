@@ -1,203 +1,338 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../app/localization/language_provider.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _ctrl = PageController();
-  int _page = 0;
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
 
-  final _pages = const [
-    _OnboardPage(
-        Icons.shopping_cart_outlined,
-        'تسوق بسهولة',
-        'آلاف المنتجات من بقالة، خضار، ومنظفات كلها في مكان واحد',
-        [(AppColors.primaryLight), (AppColors.primaryDark)]),
-    _OnboardPage(
-        Icons.delivery_dining_outlined,
-        'توصيل سريع',
-        'توصيل لباب بيتك في وقت قياسي تتبع طلبك لحظة بلحظة',
-        [Color(0xFFFF6B35), Color(0xFFFF4081)]),
-    _OnboardPage(
-        Icons.payment_outlined,
-        'دفع آمن',
-        'ادفع كاشاً أو بالتحويل البنكي بأمان وسهولة تامة',
-        [Color(0xFF7B2FF7), Color(0xFF00C9FF)]),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _completeOnboarding(String targetRoute) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_completed', true);
+    if (mounted) {
+      context.go(targetRoute);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final langProvider = Provider.of<LanguageProvider>(context);
+    final isArabic = langProvider.isArabic;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _ctrl,
-            onPageChanged: (i) => setState(() => _page = i),
-            itemCount: _pages.length,
-            itemBuilder: (_, i) => _PageView(page: _pages[i]),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xff0C6CF2),
+              AppColors.primaryDark,
+              Color(0xff083A7A),
+            ],
           ),
-
-          // Skip button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            left: 20,
-            child: TextButton(
-              onPressed: () => context.go(AppRoutes.home),
-              child: const Text('تخطي',
-                  style: TextStyle(color: Colors.white70, fontSize: 15)),
-            ),
-          ),
-
-          // Bottom controls
-          Positioned(
-            bottom: 48,
-            left: 28,
-            right: 28,
-            child: Column(
-              children: [
-                // Dots
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                      _pages.length,
-                      (i) => AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: _page == i ? 24 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _page == i ? Colors.white : Colors.white38,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          )),
+        ),
+        child: Stack(
+          children: [
+            // Decorative background shapes
+            Positioned(
+              top: -80,
+              right: -70,
+              child: Container(
+                width: 230,
+                height: 230,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.05),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 28),
-
-                _page == _pages.length - 1
-                    ? ElevatedButton(
-                        onPressed: () => context.go(AppRoutes.home),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: _pages[_page].colors[0],
-                          minimumSize: const Size(double.infinity, 54),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text('ابدأ التسوق',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                      )
-                    : Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => context.go(AppRoutes.home),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.white54),
-                                minimumSize: const Size(0, 52),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
-                              ),
-                              child: const Text('تسجيل الدخول'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => _ctrl.nextPage(
-                                  duration: const Duration(milliseconds: 400),
-                                  curve: Curves.easeOut),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: _pages[_page].colors[0],
-                                minimumSize: const Size(0, 52),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('التالي',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  SizedBox(width: 6),
-                                  Icon(Icons.arrow_forward_ios_rounded,
-                                      size: 16),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-              ],
+              ),
             ),
-          ),
-        ],
+            Positioned(
+              bottom: -100,
+              left: -80,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.04),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+
+            // Top Header: Language Selection
+            SafeArea(
+              child: Align(
+                alignment: isArabic ? Alignment.topLeft : Alignment.topRight,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      langProvider.toggle();
+                    },
+                    icon: const Icon(Icons.language_rounded,
+                        color: Colors.white, size: 20),
+                    label: Text(
+                      isArabic ? "English" : "العربية",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Main Content Area
+            SafeArea(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      children: [
+                        const Spacer(),
+
+                        // Graphic Section (Child with shopping cart/products)
+                        SizedBox(
+                          height: size.height * 0.38,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 270,
+                                height: 270,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(.05),
+                                ),
+                              ),
+                              Container(
+                                width: 210,
+                                height: 210,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(.08),
+                                ),
+                              ),
+
+                              // Main Illustration (Child with shopping cart)
+                              Image.asset(
+                                "assets/images/onboarding_child.png",
+                                width: 240,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Premium vector/icon fallback if file does not exist yet
+                                  return Container(
+                                    width: 170,
+                                    height: 170,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(38),
+                                      border: Border.all(
+                                          color: Colors.white.withOpacity(0.2)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Positioned(
+                                          top: 25,
+                                          child: Icon(
+                                            Icons.face_rounded,
+                                            size: 60,
+                                            color:
+                                                Colors.white.withOpacity(0.9),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 25,
+                                          child: Icon(
+                                            Icons.shopping_cart_rounded,
+                                            size: 55,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 35),
+
+                        // App Titles & Subtitles
+                        Text(
+                          isArabic
+                              ? "مرحباً بك في\nالبيرق هايبر ماركت"
+                              : "Welcome to\nAl-Bairaq Hypermarket",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                            height: 1.3,
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        Text(
+                          isArabic
+                              ? "تسوق كل ما يحتاجه منزلك من البقالة، الخضروات الطازجة، والمنظفات بأفضل الأسعار وتوصيل سريع لباب بيتك."
+                              : "Shop all your home needs from groceries, fresh vegetables, and detergents at the best prices with fast delivery to your door.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 16,
+                            height: 1.7,
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        // Action Buttons at Bottom
+                        Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              height: 58,
+                              child: ElevatedButton(
+                                onPressed: () =>
+                                    _completeOnboarding(AppRoutes.home),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppColors.primaryDark,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      isArabic ? "ابدأ الآن" : "Get Started",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.rocket_launch_rounded,
+                                        size: 20),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 56,
+                              child: OutlinedButton(
+                                onPressed: () =>
+                                    _completeOnboarding(AppRoutes.login),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: BorderSide(
+                                    color: Colors.white.withOpacity(.25),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                ),
+                                child: Text(
+                                  isArabic
+                                      ? "لدي حساب بالفعل"
+                                      : "I already have an account",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 25),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
-
-class _OnboardPage {
-  final IconData icon;
-  final String title, desc;
-  final List<Color> colors;
-  const _OnboardPage(this.icon, this.title, this.desc, this.colors);
-}
-
-class _PageView extends StatelessWidget {
-  final _OnboardPage page;
-  const _PageView({required this.page});
-  @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: page.colors,
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft),
-        ),
-        child: SafeArea(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                    child: Icon(page.icon, size: 100, color: Colors.white))),
-            const SizedBox(height: 48),
-            Text(page.title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Text(page.desc,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.88),
-                      fontSize: 16,
-                      height: 1.6)),
-            ),
-            const SizedBox(height: 120),
-          ]),
-        ),
-      );
 }
