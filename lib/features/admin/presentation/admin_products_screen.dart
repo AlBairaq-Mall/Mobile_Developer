@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../../core/widgets/empty_state.dart';
-import '../../../core/widgets/loading_widget.dart';
 import '../../home/providers/home_provider.dart';
 
 class AdminProductsScreen extends StatefulWidget {

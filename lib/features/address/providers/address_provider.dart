@@ -17,15 +17,18 @@ class AddressProvider extends ChangeNotifier {
   AddressModel? get selectedAddress {
     if (_addresses.isEmpty) return null;
 
-    try {
-      return _addresses.firstWhere((e) => e.isDefault);
-    } catch (_) {
-      return _addresses.first;
+    for (final e in _addresses) {
+      if (e.isDefault) {
+        return e;
+      }
     }
+
+    return _addresses.first;
   }
 
   Future<void> loadAddresses() async {
     if (_loading) return;
+
     _loading = true;
     notifyListeners();
 
@@ -54,9 +57,13 @@ class AddressProvider extends ChangeNotifier {
       isDefault: isDefault,
     );
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      return false;
+    }
 
     await loadAddresses();
+
+    notifyListeners();
 
     return true;
   }
@@ -78,9 +85,13 @@ class AddressProvider extends ChangeNotifier {
       isDefault: isDefault,
     );
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      return false;
+    }
 
     await loadAddresses();
+
+    notifyListeners();
 
     return true;
   }
@@ -88,9 +99,13 @@ class AddressProvider extends ChangeNotifier {
   Future<bool> deleteAddress(int id) async {
     final response = await _repository.deleteLocation(id);
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      return false;
+    }
 
     await loadAddresses();
+
+    notifyListeners();
 
     return true;
   }
@@ -104,8 +119,8 @@ class AddressProvider extends ChangeNotifier {
       id: int.parse(id),
       title: address.title,
       address: address.address,
-      latitude: null,
-      longitude: null,
+      latitude: address.latitude,
+      longitude: address.longitude,
       isDefault: true,
     );
 
@@ -114,6 +129,8 @@ class AddressProvider extends ChangeNotifier {
     }
 
     await loadAddresses();
+
+    notifyListeners();
 
     return true;
   }

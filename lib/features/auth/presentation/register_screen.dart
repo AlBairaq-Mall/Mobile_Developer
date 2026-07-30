@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../../app/router/app_routes.dart';
 
 /// شاشة إنشاء حساب جديد (متطلب وظيفي رقم 05 في وثيقة المتطلبات).
 class RegisterScreen extends StatefulWidget {

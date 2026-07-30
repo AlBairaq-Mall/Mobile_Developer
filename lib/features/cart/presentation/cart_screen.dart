@@ -16,6 +16,10 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => context.push(AppRoutes.home),
+        ),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -99,7 +103,9 @@ class CartScreen extends StatelessWidget {
                       style: TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 28),
                   ElevatedButton.icon(
-                    onPressed: () => context.go('/home'),
+                    onPressed: () {
+                      context.push(AppRoutes.home);
+                    },
                     icon: const Icon(Icons.shopping_bag_outlined),
                     label: const Text('تسوق الآن'),
                     style: ElevatedButton.styleFrom(
@@ -173,7 +179,7 @@ class CartScreen extends StatelessWidget {
                         onPressed: () => context.push(AppRoutes.checkout),
                         icon:
                             const Icon(Icons.arrow_back_ios_rounded, size: 16),
-                        label: const Text('متابعة لإتمام الطلب'),
+                        label: const Text('متابعةإتمام الطلب'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,

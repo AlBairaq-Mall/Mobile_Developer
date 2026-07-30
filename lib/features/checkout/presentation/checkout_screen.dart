@@ -60,15 +60,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (created == true) {
         await addressProvider.loadAddresses();
       }
-
       if (addressProvider.selectedAddress == null) {
         return;
       }
     }
 
-    setState(() {
-      _isPlacing = true;
-    });
+    // setState(() {
+    //   _isPlacing = true;
+    // });
     final discountAmount = cart.subtotal * (_discount / 100);
 
     try {
@@ -135,7 +134,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final finalTotal = cart.grandTotal - discountAmount;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('إتمام الطلب')),
+      appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => context.go(AppRoutes.cart),
+          ),
+          title: const Text('إتمام الطلب')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

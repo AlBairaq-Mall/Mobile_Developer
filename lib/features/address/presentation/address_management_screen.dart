@@ -4,13 +4,16 @@ import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../models/address_model.dart';
 import '../providers/address_provider.dart';
+import '../widgets/pick_location_sheet.dart';
 
 class AddressManagementScreen extends StatefulWidget {
   final bool fromCheckout;
+  // final PickedLocation? pickedLocation;
 
   const AddressManagementScreen({
     super.key,
     this.fromCheckout = false,
+    // this.pickedLocation,
   });
 
   @override
@@ -140,6 +143,31 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
   void _showAddressDialog(
     BuildContext context, {
     AddressModel? existing,
+  }) async {
+    final pickedLocation = await showModalBottomSheet<PickedLocation>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28),
+        ),
+      ),
+      builder: (_) => const PickLocationSheet(),
+    );
+
+    if (!context.mounted) return;
+
+    _showManualForm(
+      existing,
+      picked: pickedLocation,
+    );
+  }
+
+  void _showManualForm(
+    AddressModel? existing, {
+    PickedLocation? picked,
   }) {
     showModalBottomSheet(
       context: context,
@@ -148,6 +176,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       builder: (_) => _AddressFormSheet(
         existing: existing,
         fromCheckout: widget.fromCheckout,
+        pickedLocation: picked,
       ),
     );
   }
@@ -297,11 +326,15 @@ class _AddressTile extends StatelessWidget {
 class _AddressFormSheet extends StatefulWidget {
   final AddressModel? existing;
   final bool fromCheckout;
+  final PickedLocation? pickedLocation;
 
   const _AddressFormSheet({
+    super.key,
     this.existing,
     this.fromCheckout = false,
+    this.pickedLocation,
   });
+
   @override
   State<_AddressFormSheet> createState() => _AddressFormSheetState();
 }
@@ -313,6 +346,10 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
 
   bool _isDefault = false;
 
+  bool _loadingLocation = false;
+  double? _latitude;
+  double? _longitude;
+
   @override
   void initState() {
     super.initState();
@@ -323,6 +360,14 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
       _titleCtrl.text = e.title;
       _streetCtrl.text = e.address;
       _isDefault = e.isDefault;
+      _latitude = e.latitude;
+      _longitude = e.longitude;
+    }
+
+    if (widget.pickedLocation != null) {
+      _streetCtrl.text = widget.pickedLocation!.address;
+      _latitude = widget.pickedLocation!.latitude;
+      _longitude = widget.pickedLocation!.longitude;
     }
   }
 
@@ -350,16 +395,22 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
     bool success;
 
     if (widget.existing == null) {
+      // --- Adding a new address ---
       success = await provider.addAddress(
         title: _titleCtrl.text.trim(),
         address: address,
         isDefault: _isDefault,
+        latitude: _latitude,
+        longitude: _longitude,
       );
     } else {
+      // --- Editing an existing address ---
       success = await provider.editAddress(
         id: int.parse(widget.existing!.id),
         title: _titleCtrl.text.trim(),
         address: address,
+        latitude: _latitude,
+        longitude: _longitude,
         isDefault: _isDefault,
       );
     }
@@ -425,6 +476,48 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
               "الشارع",
               _streetCtrl,
             ),
+            const SizedBox(height: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () async {
+                final pickedLocation =
+                    await showModalBottomSheet<PickedLocation>(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => const PickLocationSheet(),
+                );
+
+                if (pickedLocation == null) return;
+
+                setState(() {
+                  _latitude = pickedLocation.latitude;
+                  _longitude = pickedLocation.longitude;
+                  _streetCtrl.text = pickedLocation.address;
+                });
+              },
+              child: Container(
+                height: 70,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.map, color: Colors.green),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "اختيار الموقع من الخريطة",
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             _field(
               "الهاتف",
               _phoneCtrl,

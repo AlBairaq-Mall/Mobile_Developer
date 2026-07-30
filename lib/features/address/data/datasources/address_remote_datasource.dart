@@ -22,20 +22,29 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
     double? latitude,
     double? longitude,
     bool isDefault = false,
-  }) =>
-      postEnvelope<AddressModel>(
-        ApiEndpoints.locations,
-        data: {
-          "title": title,
-          "address": address,
-          "latitude": latitude,
-          "longitude": longitude,
-          "is_default": isDefault,
-        },
-        parser: (json) => AddressModel.fromJson(
-          JsonParser.map(json),
-        ),
-      );
+  }) {
+    final data = <String, dynamic>{
+      "title": title,
+      "address": address,
+      "is_default": isDefault,
+    };
+
+    if (latitude != null) {
+      data["latitude"] = latitude;
+    }
+
+    if (longitude != null) {
+      data["longitude"] = longitude;
+    }
+
+    return postEnvelope<AddressModel>(
+      ApiEndpoints.locations,
+      data: data,
+      parser: (json) => AddressModel.fromJson(
+        JsonParser.map(json),
+      ),
+    );
+  }
 
   Future<ApiResponse<AddressModel>> updateLocation({
     required int id,
@@ -44,20 +53,29 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
     double? latitude,
     double? longitude,
     bool isDefault = false,
-  }) =>
-      putEnvelope<AddressModel>(
-        "${ApiEndpoints.locations}/$id",
-        data: {
-          "title": title,
-          "address": address,
-          "latitude": latitude,
-          "longitude": longitude,
-          "is_default": isDefault,
-        },
-        parser: (json) => AddressModel.fromJson(
-          JsonParser.map(json),
-        ),
-      );
+  }) {
+    final data = <String, dynamic>{
+      "title": title,
+      "address": address,
+      "is_default": isDefault,
+    };
+
+    if (latitude != null) {
+      data["latitude"] = latitude;
+    }
+
+    if (longitude != null) {
+      data["longitude"] = longitude;
+    }
+
+    return putEnvelope<AddressModel>(
+      "${ApiEndpoints.locations}/$id",
+      data: data,
+      parser: (json) => AddressModel.fromJson(
+        JsonParser.map(json),
+      ),
+    );
+  }
 
   Future<ApiResponse<void>> deleteLocation(int id) =>
       deleteEnvelope("${ApiEndpoints.locations}/$id");

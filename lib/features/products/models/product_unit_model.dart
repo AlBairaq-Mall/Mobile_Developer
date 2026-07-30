@@ -29,20 +29,33 @@ class ProductUnitModel {
 
   factory ProductUnitModel.fromJson(Map<String, dynamic> json) {
     final unitName = JsonParser.string(
-      json['name_${JsonParser.currentLanguage}'],
+      json['unit_name'] ?? json['name_ar'] ?? json['name_en'] ?? json['name_${JsonParser.currentLanguage}'],
     );
 
     return ProductUnitModel(
       id: JsonParser.string(json['id']),
-      itemCode: '',
+      itemCode: JsonParser.string(json['item_code'] ?? ''),
       unitName: unitName,
       price: JsonParser.doubleValue(json['price']),
-      package: JsonParser.string(json['quantity']),
-      description: '',
-      unit: unitName,
-      label: null,
-      oldPrice: null,
-      isDefault: false,
+      package: JsonParser.string(json['quantity'] ?? json['package'] ?? ''),
+      description: JsonParser.string(json['description'] ?? ''),
+      unit: JsonParser.string(json['unit'] ?? unitName),
+      label: json['label'],
+      oldPrice: JsonParser.doubleValue(json['old_price']),
+      isDefault: JsonParser.boolValue(json['is_default'] ?? false),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'item_code': itemCode,
+        'unit_name': unitName,
+        'price': price,
+        'package': package,
+        'description': description,
+        'unit': unit,
+        'label': label,
+        'old_price': oldPrice,
+        'is_default': isDefault,
+      };
 }

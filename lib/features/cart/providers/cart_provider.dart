@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cart_item_model.dart';
 import '../../../core/models/product_model.dart';
@@ -11,6 +13,35 @@ class CartProvider extends ChangeNotifier {
 
   bool get isNotEmpty => _items.isNotEmpty;
   int get itemsCount => _items.length;
+
+  CartProvider() {
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cartJson = prefs.getString('cart_items');
+      if (cartJson != null) {
+        final List<dynamic> decoded = jsonDecode(cartJson);
+        _items.clear();
+        _items.addAll(decoded.map((item) => CartItemModel.fromJson(item)));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading cart: $e');
+    }
+  }
+
+  Future<void> _saveCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String encoded = jsonEncode(_items.map((item) => item.toJson()).toList());
+      await prefs.setString('cart_items', encoded);
+    } catch (e) {
+      debugPrint('Error saving cart: $e');
+    }
+  }
 
   int get totalQuantity {
     return _items.fold(
@@ -52,6 +83,7 @@ class CartProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+    _saveCart();
   }
 
   void add(ProductModel product) {
@@ -93,6 +125,7 @@ class CartProvider extends ChangeNotifier {
     );
 
     notifyListeners();
+    _saveCart();
   }
 
   void decrease(int index) {
@@ -110,11 +143,13 @@ class CartProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+    _saveCart();
   }
 
   void clear() {
     _items.clear();
     notifyListeners();
+    _saveCart();
   }
 
   double get subtotal {

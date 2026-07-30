@@ -8,6 +8,10 @@ class AddressModel {
   final double? latitude;
   final double? longitude;
 
+  final String? street;
+  final String? city;
+  final String? country;
+
   const AddressModel({
     required this.id,
     required this.title,
@@ -15,6 +19,9 @@ class AddressModel {
     this.latitude,
     this.longitude,
     this.isDefault = false,
+    this.street,
+    this.city,
+    this.country,
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +39,10 @@ class AddressModel {
       longitude: json['longitude'] == null
           ? null
           : JsonParser.doubleValue(json['longitude']),
+      street: json['street'] == null ? null : JsonParser.string(json['street']),
+      city: json['city'] == null ? null : JsonParser.string(json['city']),
+      country:
+          json['country'] == null ? null : JsonParser.string(json['country']),
     );
   }
 
@@ -43,6 +54,9 @@ class AddressModel {
       "latitude": latitude,
       "longitude": longitude,
       "is_default": isDefault,
+      "street": street,
+      "city": city,
+      "country": country,
     };
   }
 }

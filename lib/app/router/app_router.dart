@@ -1,5 +1,4 @@
 import 'package:bhm_supermarket/features/orders/models/order_model.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/orders/presentation/order_details_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -36,7 +35,6 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
-import '../../features/orders/presentation/order_details_screen.dart';
 
 import 'app_routes.dart';
 

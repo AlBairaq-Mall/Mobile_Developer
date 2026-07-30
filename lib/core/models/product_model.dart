@@ -81,46 +81,53 @@ class ProductModel {
 
     final firstUnit = units.isNotEmpty ? units.first : null;
 
+    final imageList = json['images'] as List?;
+    final parsedImages = imageList?.map((e) {
+      if (e is Map) {
+        return JsonParser.string(e['image']);
+      }
+      return JsonParser.string(e);
+    }).toList() ?? <String>[];
+
     return ProductModel(
         units: units,
-        barcode: JsonParser.string(json['barcode']),
-        categoryNameAr: JsonParser.string(json['category']?['name_ar']),
-        categoryNameEn: JsonParser.string(json['category']?['name_en']),
+        barcode: JsonParser.string(json['barcode'] ?? ''),
+        categoryNameAr: JsonParser.string(json['category']?['name_ar'] ?? json['category_name_ar'] ?? ''),
+        categoryNameEn: JsonParser.string(json['category']?['name_en'] ?? json['category_name_en'] ?? ''),
         id: JsonParser.string(json['id']),
         itemCode: JsonParser.string(json['unique_number']),
-        categoryId: JsonParser.string(json['category']?['id']),
+        categoryId: JsonParser.string(json['category']?['id'] ?? json['category_id'] ?? ''),
         nameAr: JsonParser.string(json['name_ar']),
         nameEn: JsonParser.string(json['name_en']),
         descriptionAr: JsonParser.string(json['description_ar']),
         descriptionEn: JsonParser.string(json['description_en']),
-        images: JsonParser.list(
-          json['images'],
-          (e) => JsonParser.string(e['image']),
-        ),
-        price: firstUnit?.price ?? 0,
-        unit: firstUnit?.unitName ?? '',
-        package: firstUnit?.package ?? '',
-        oldPrice: null,
-        label: null,
-        isFavorite: false,
-        isAvailable: JsonParser.boolValue(json['status'], fallback: true),
+        images: parsedImages,
+        price: JsonParser.doubleValue(json['price'] ?? firstUnit?.price ?? 0),
+        unit: JsonParser.string(json['unit'] ?? firstUnit?.unitName ?? ''),
+        package: JsonParser.string(json['package'] ?? firstUnit?.package ?? ''),
+        oldPrice: JsonParser.doubleValue(json['old_price']),
+        label: json['label'],
+        isFavorite: JsonParser.boolValue(json['is_favorite'] ?? false),
+        isAvailable: JsonParser.boolValue(json['status'] ?? json['is_available'] ?? true),
         brand: JsonParser.string(
-          json['category']?['name_${JsonParser.currentLanguage}'],
+          json['brand'] ?? json['category']?['name_${JsonParser.currentLanguage}'] ?? '',
         ),
-        isRecommended: false,
-        isFlashDeal: false,
-        isBestSeller: false);
+        isRecommended: JsonParser.boolValue(json['is_recommended'] ?? false),
+        isFlashDeal: JsonParser.boolValue(json['is_flash_deal'] ?? false),
+        isBestSeller: JsonParser.boolValue(json['is_best_seller'] ?? false));
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'unique_number': itemCode,
         'category_id': categoryId,
+        'category_name_ar': categoryNameAr,
+        'category_name_en': categoryNameEn,
         'name_ar': nameAr,
         'name_en': nameEn,
         'description_ar': descriptionAr,
         'description_en': descriptionEn,
-        'images': images,
+        'images': images.map((e) => {'image': e}).toList(),
         'price': price,
         'old_price': oldPrice,
         'unit': unit,
@@ -132,6 +139,7 @@ class ProductModel {
         'is_recommended': isRecommended,
         'is_flash_deal': isFlashDeal,
         'is_best_seller': isBestSeller,
+        'units': units.map((u) => u.toJson()).toList(),
       };
 
   ProductModel copyWith({

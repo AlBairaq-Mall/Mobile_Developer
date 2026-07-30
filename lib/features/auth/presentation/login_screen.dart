@@ -73,15 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final redirect = auth.consumePendingRedirect();
+    final pendingRoute = auth.consumePendingRedirect();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final target =
-          widget.redirectTo ?? auth.pendingRedirect ?? AppRoutes.home;
-
-      auth.clearPendingRedirect();
+      final target = widget.redirectTo ?? pendingRoute ?? AppRoutes.home;
 
       context.go(target);
     });

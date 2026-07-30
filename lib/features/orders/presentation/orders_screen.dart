@@ -1,5 +1,7 @@
+import 'package:bhm_supermarket/app/router/app_router.dart';
 import 'package:bhm_supermarket/features/orders/providers/orders_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/order_card.dart';
@@ -25,6 +27,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => context.push('/checkout_screen')),
         title: const Text("طلباتي"),
       ),
       body: Consumer<OrdersProvider>(
