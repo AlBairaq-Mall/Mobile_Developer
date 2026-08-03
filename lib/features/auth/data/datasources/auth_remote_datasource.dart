@@ -36,24 +36,28 @@ class AuthRemoteDataSource extends BaseRemoteDataSource {
     required String password,
     required String passwordConfirmation,
   }) async {
-    final response = await dio.post(ApiEndpoints.authRegister, data: {
-      'name': name,
-      'phone': phone,
-      'email': email,
-      'password': password,
-      'password_confirmation': passwordConfirmation,
-    });
+    try {
+      final response = await dio.post(ApiEndpoints.authRegister, data: {
+        'name': name,
+        'phone': phone,
+        'email': email,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      });
 
-    final user = UserModel.fromJson({
-      ...response.data["user"],
-      "token": null,
-    });
+      final user = UserModel.fromJson({
+        ...response.data["user"],
+        "token": null,
+      });
 
-    return ApiResponse.success(
-      user,
-      message: response.data["message"] ?? "",
-      statusCode: response.statusCode,
-    );
+      return ApiResponse.success(
+        user,
+        message: response.data["message"] ?? "",
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return apiResponseFromDioError(e);
+    }
   }
 
   Future<ApiResponse<UserModel>> login({

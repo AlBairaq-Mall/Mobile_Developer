@@ -250,10 +250,6 @@ class AppRouter {
             builder: (_, __) => const DeliveryMainScreen(),
           ),
           GoRoute(
-            path: AppRoutes.orders,
-            builder: (_, __) => const OrdersScreen(),
-          ),
-          GoRoute(
             path: AppRoutes.orderDetails,
             builder: (_, state) {
               return OrderDetailsScreen(

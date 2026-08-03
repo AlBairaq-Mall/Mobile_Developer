@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-
 import '../network/api_response.dart';
 import '../network/dio_exception_mapper.dart';
 import '../utils/json_parser.dart';
@@ -27,8 +26,10 @@ abstract class BaseRemoteDataSource {
         queryParameters: query,
       );
 
+      final body = response.data;
+
       return ApiResponse.success(
-        parser(response.data['data']),
+        parser(body['data']),
         statusCode: response.statusCode,
       );
     } on DioException catch (error) {

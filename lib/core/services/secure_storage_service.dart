@@ -17,7 +17,7 @@ class SecureStorageService {
   static const _userProfileKey = '_bhm_user_profile';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(),
     iOptions: IOSOptions(),
   );
 

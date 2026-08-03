@@ -1,5 +1,4 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: 230,
                 height: 230,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.05),
+                  color: Colors.white.withValues(alpha: .05),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -100,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: 280,
                 height: 280,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.04),
+                  color: Colors.white.withValues(alpha: .04),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -128,12 +127,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                     ),
                     style: TextButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.12),
+                      backgroundColor: Colors.white.withValues(alpha: 0.12),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15)),
                       ),
                     ),
                   ),
@@ -164,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 height: 270,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(.05),
+                                  color: Colors.white.withValues(alpha: .05),
                                 ),
                               ),
                               Container(
@@ -172,7 +172,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 height: 210,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(.08),
+                                  color: Colors.white.withValues(alpha: .08),
                                 ),
                               ),
 
@@ -187,13 +187,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     width: 170,
                                     height: 170,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.12),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(38),
                                       border: Border.all(
-                                          color: Colors.white.withOpacity(0.2)),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.2)),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.1),
                                           blurRadius: 20,
                                           offset: const Offset(0, 10),
                                         ),
@@ -207,8 +210,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                           child: Icon(
                                             Icons.face_rounded,
                                             size: 60,
-                                            color:
-                                                Colors.white.withOpacity(0.9),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.9),
                                           ),
                                         ),
                                         Positioned(
@@ -252,7 +255,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               : "Shop all your home needs from groceries, fresh vegetables, and detergents at the best prices with fast delivery to your door.",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 16,
                             height: 1.7,
                           ),
@@ -304,7 +307,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.white,
                                   side: BorderSide(
-                                    color: Colors.white.withOpacity(.25),
+                                    color: Colors.white.withValues(alpha: .25),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(18),

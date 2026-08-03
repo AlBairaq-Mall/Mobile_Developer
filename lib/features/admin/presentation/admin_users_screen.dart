@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 class AdminUsersScreen extends StatelessWidget {
   const AdminUsersScreen({super.key});
@@ -36,6 +37,7 @@ class AdminUsersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('إدارة المستخدمين'),
         actions: [
           IconButton(
@@ -71,7 +73,7 @@ class AdminUsersScreen extends StatelessWidget {
                   child: Material(
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: _roleColor(u.role).withOpacity(0.15),
+                        backgroundColor: _roleColor(u.role).withValues(alpha: 0.15),
                         child:
                             Icon(_roleIcon(u.role), color: _roleColor(u.role)),
                       ),
@@ -86,7 +88,7 @@ class AdminUsersScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: _roleColor(u.role).withOpacity(0.1),
+                              color: _roleColor(u.role).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(_roleName(u.role),

@@ -1,46 +1,67 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_radius.dart';
+import '../theme/app_shadows.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_colors.dart';
+
 class AppCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
+
   final VoidCallback? onTap;
+
+  final EdgeInsetsGeometry? margin;
+
+  final EdgeInsetsGeometry? padding;
+
+  final Color? color;
+
+  final BorderRadius? borderRadius;
+
+  final List<BoxShadow>? shadows;
+
+  final Border? border;
+
+  final Clip clipBehavior;
 
   const AppCard({
     super.key,
     required this.child,
-    this.padding,
-    this.margin,
     this.onTap,
+    this.margin,
+    this.padding,
+    this.color,
+    this.borderRadius,
+    this.shadows,
+    this.border,
+    this.clipBehavior = Clip.antiAlias,
   });
 
   @override
   Widget build(BuildContext context) {
+    final radius = borderRadius ?? BorderRadius.circular(AppRadius.lg);
+
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: color ?? AppColors.surface,
+        borderRadius: radius,
+        boxShadow: AppShadows.subtle,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: radius,
+        clipBehavior: clipBehavior,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: padding ?? EdgeInsets.zero,
-              child: child,
-            ),
+          borderRadius: radius,
+          splashColor: AppColors.primary.withValues(alpha: .08),
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: EdgeInsets.zero,
+            // padding:
+            //     padding ?? const EdgeInsets.all(AppSpacing.md),
+            child: child,
           ),
         ),
       ),

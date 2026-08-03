@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 /// شاشة الأرباح للسائق
 class DeliveryEarningsScreen extends StatelessWidget {
@@ -9,7 +10,10 @@ class DeliveryEarningsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: GET /api/delivery/earnings
     return Scaffold(
-      appBar: AppBar(title: const Text('أرباحي')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('أرباحي'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});
@@ -61,6 +62,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('إدارة الطلبات'),
         bottom: TabBar(
           controller: _tabs,
@@ -125,7 +127,7 @@ class _OrderList extends StatelessWidget {
           child: Material(
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: _statusColor(o.status).withOpacity(0.1),
+                backgroundColor: _statusColor(o.status).withValues(alpha: 0.1),
                 child: Text('#${o.id}',
                     style:
                         TextStyle(fontSize: 10, color: _statusColor(o.status))),
@@ -141,7 +143,7 @@ class _OrderList extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: _statusColor(o.status).withOpacity(0.1),
+                      color: _statusColor(o.status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(o.status,

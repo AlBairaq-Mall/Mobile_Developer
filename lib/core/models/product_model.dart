@@ -30,6 +30,7 @@ class ProductModel {
   final double? oldPrice;
   final String? label;
   final bool isFavorite;
+  final String? favoriteId;
   final bool isAvailable;
   final String brand;
   final bool isRecommended;
@@ -55,6 +56,7 @@ class ProductModel {
     this.oldPrice,
     this.label,
     this.isFavorite = false,
+    this.favoriteId,
     this.isAvailable = true,
     required this.brand,
     required this.isRecommended,
@@ -69,9 +71,7 @@ class ProductModel {
   String get categoryName =>
       JsonParser.currentLanguage == 'ar' ? categoryNameAr : categoryNameEn;
 
-  String get image => images.isEmpty
-      ? ''
-      : 'https://backend-albarqy.onrender.com/storage/${images.first}';
+  String get image => images.isEmpty ? '' : images.first;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     final units = JsonParser.list(
@@ -83,20 +83,24 @@ class ProductModel {
 
     final imageList = json['images'] as List?;
     final parsedImages = imageList?.map((e) {
-      if (e is Map) {
-        return JsonParser.string(e['image']);
-      }
-      return JsonParser.string(e);
-    }).toList() ?? <String>[];
+          if (e is Map) {
+            return JsonParser.string(e['image']);
+          }
+          return JsonParser.string(e);
+        }).toList() ??
+        <String>[];
 
     return ProductModel(
         units: units,
         barcode: JsonParser.string(json['barcode'] ?? ''),
-        categoryNameAr: JsonParser.string(json['category']?['name_ar'] ?? json['category_name_ar'] ?? ''),
-        categoryNameEn: JsonParser.string(json['category']?['name_en'] ?? json['category_name_en'] ?? ''),
+        categoryNameAr: JsonParser.string(
+            json['category']?['name_ar'] ?? json['category_name_ar'] ?? ''),
+        categoryNameEn: JsonParser.string(
+            json['category']?['name_en'] ?? json['category_name_en'] ?? ''),
         id: JsonParser.string(json['id']),
         itemCode: JsonParser.string(json['unique_number']),
-        categoryId: JsonParser.string(json['category']?['id'] ?? json['category_id'] ?? ''),
+        categoryId: JsonParser.string(
+            json['category']?['id'] ?? json['category_id'] ?? ''),
         nameAr: JsonParser.string(json['name_ar']),
         nameEn: JsonParser.string(json['name_en']),
         descriptionAr: JsonParser.string(json['description_ar']),
@@ -108,9 +112,11 @@ class ProductModel {
         oldPrice: JsonParser.doubleValue(json['old_price']),
         label: json['label'],
         isFavorite: JsonParser.boolValue(json['is_favorite'] ?? false),
-        isAvailable: JsonParser.boolValue(json['status'] ?? json['is_available'] ?? true),
+        favoriteId: json['favorite_id']?.toString(),
+        isAvailable: JsonParser.boolValue(
+            json['status'] ?? json['is_available'] ?? true),
         brand: JsonParser.string(
-          json['brand'] ?? json['category']?['name_${JsonParser.currentLanguage}'] ?? '',
+          json['brand'] ?? '',
         ),
         isRecommended: JsonParser.boolValue(json['is_recommended'] ?? false),
         isFlashDeal: JsonParser.boolValue(json['is_flash_deal'] ?? false),
@@ -134,6 +140,7 @@ class ProductModel {
         'package': package,
         'label': label,
         'is_favorite': isFavorite,
+        'favorite_id': favoriteId,
         'is_available': isAvailable,
         'brand': brand,
         'is_recommended': isRecommended,
@@ -158,11 +165,15 @@ class ProductModel {
     List<ProductUnitModel>? units,
     String? label,
     bool? isFavorite,
+    String? favoriteId,
     bool? isAvailable,
     String? brand,
     bool? isRecommended,
     bool? isFlashDeal,
     bool? isBestSeller,
+    String? barcode,
+    String? categoryNameAr,
+    String? categoryNameEn,
   }) {
     return ProductModel(
       barcode: barcode ?? this.barcode,
@@ -184,6 +195,7 @@ class ProductModel {
       label: label ?? this.label,
       isFavorite: isFavorite ?? this.isFavorite,
       isAvailable: isAvailable ?? this.isAvailable,
+      favoriteId: favoriteId ?? this.favoriteId,
       brand: brand ?? this.brand,
       isRecommended: isRecommended ?? this.isRecommended,
       isFlashDeal: isFlashDeal ?? this.isFlashDeal,

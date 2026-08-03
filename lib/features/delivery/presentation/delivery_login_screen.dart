@@ -37,6 +37,9 @@ class _DeliveryLoginScreenState extends State<DeliveryLoginScreen> {
       email: _emailCtrl.text.trim(),
       password: _passCtrl.text.trim(),
     );
+
+    if (!mounted) return;
+
     if (loginError == null) {
       if (auth.user?.role == UserRole.delivery) {
         context.go(AppRoutes.deliveryHome);

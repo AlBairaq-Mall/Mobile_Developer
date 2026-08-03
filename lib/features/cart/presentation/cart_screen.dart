@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
@@ -62,9 +62,10 @@ class CartScreen extends StatelessWidget {
                         onPressed: () => Navigator.pop(ctx),
                         child: const Text('إلغاء')),
                     TextButton(
-                      onPressed: () {
-                        cart.clear();
+                      onPressed: () async {
                         Navigator.pop(ctx);
+
+                        await cart.clear();
                       },
                       child: const Text('حذف',
                           style: TextStyle(color: AppColors.error)),
@@ -88,7 +89,7 @@ class CartScreen extends StatelessWidget {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.08),
+                      color: AppColors.primary.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
@@ -128,8 +129,12 @@ class CartScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: CartItemCard(
                         item: cart.items[index],
-                        onIncrease: () => cart.increase(index),
-                        onDecrease: () => cart.decrease(index),
+                        onIncrease: () async {
+                          await cart.increase(index);
+                        },
+                        onDecrease: () async {
+                          await cart.decrease(index);
+                        },
                       ),
                     ),
                   ),
@@ -144,7 +149,7 @@ class CartScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withValues(alpha: 0.06),
                         blurRadius: 20,
                         offset: const Offset(0, -4),
                       ),

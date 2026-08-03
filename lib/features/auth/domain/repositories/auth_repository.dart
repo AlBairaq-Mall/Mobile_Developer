@@ -1,6 +1,5 @@
 import '../../../../core/network/api_response.dart';
 import '../../models/user_model.dart';
-import '../../models/login_flow_model.dart';
 
 abstract class AuthRepository {
   Future<ApiResponse<UserModel>> register({

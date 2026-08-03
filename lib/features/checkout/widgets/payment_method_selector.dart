@@ -11,40 +11,29 @@ class PaymentMethodSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<CheckoutProvider>();
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        RadioListTile<PaymentMethod>(
-          value: PaymentMethod.cash,
-          groupValue: provider.paymentMethod,
-          title: const Text('الدفع عند الاستلام'),
-          onChanged: (value) {
-            if (value != null) {
-              provider.setPaymentMethod(value);
-            }
-          },
-        ),
-        RadioListTile<PaymentMethod>(
-          value: PaymentMethod.wallet,
-          groupValue: provider.paymentMethod,
-          title: const Text('المحفظة'),
-          onChanged: (value) {
-            if (value != null) {
-              provider.setPaymentMethod(value);
-            }
-          },
-        ),
-        RadioListTile<PaymentMethod>(
-          value: PaymentMethod.card,
-          groupValue: provider.paymentMethod,
-          title: const Text('بطاقة بنكية'),
-          onChanged: (value) {
-            if (value != null) {
-              provider.setPaymentMethod(value);
-            }
-          },
-        ),
-      ],
+    return RadioGroup<PaymentMethod>(
+      groupValue: provider.paymentMethod,
+      onChanged: (value) {
+        if (value != null) {
+          provider.setPaymentMethod(value);
+        }
+      },
+      child: Column(
+        children: const [
+          RadioListTile<PaymentMethod>(
+            value: PaymentMethod.cash,
+            title: Text("الدفع عند الاستلام"),
+          ),
+          RadioListTile<PaymentMethod>(
+            value: PaymentMethod.wallet,
+            title: Text("المحفظة"),
+          ),
+          RadioListTile<PaymentMethod>(
+            value: PaymentMethod.card,
+            title: Text("بطاقة بنكية"),
+          ),
+        ],
+      ),
     );
   }
 }

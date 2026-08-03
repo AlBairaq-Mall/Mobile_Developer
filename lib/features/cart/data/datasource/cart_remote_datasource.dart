@@ -1,50 +1,58 @@
-// import '../../../../core/api/api_endpoints.dart';
-// import '../../../../core/datasource/base_remote_datasource.dart';
-// import '../../../../core/network/api_response.dart';
-// import '../../../../core/utils/json_parser.dart';
+import 'package:bhm_supermarket/core/datasource/base_remote_datasource.dart';
+import '../../../../core/network/api_response.dart';
+import '../../models/cart_item_model.dart';
 
-// class CartRemoteDataSource extends BaseRemoteDataSource {
-//   CartRemoteDataSource(super.dio);
+class CartRemoteDataSource extends BaseRemoteDataSource {
+  CartRemoteDataSource(super.dio);
 
-//   Future<ApiResponse<List<Map<String, dynamic>>>> getCart() =>
-//       getEnvelope<List<Map<String, dynamic>>>(
-//         ApiEndpoints.cart,
-//         parser: (json) => JsonParser.list<Map<String, dynamic>>(
-//           json,
-//           (e) => JsonParser.map(e),
-//         ),
-//       );
+  /// GET /cart
+  Future<ApiResponse<List<CartItemModel>>> getCart() {
+    return getPaginated(
+      '/cart',
+      parser: (json) {
+        return (json as List).map((e) => CartItemModel.fromJson(e)).toList();
+      },
+    );
+  }
 
-//   Future<ApiResponse<void>> addItem({
-//     required String productId,
-//     required String unitId,
-//     required int quantity,
-//   }) =>
-//       postEnvelope<void>(
-//         ApiEndpoints.cart,
-//         data: {
-//           "product_id": int.parse(productId),
-//           "unit_id": int.parse(unitId),
-//           "quantity": quantity,
-//         },
-//       );
+  /// POST /cart
+  Future<ApiResponse<void>> addToCart({
+    required String productId,
+    required String unitId,
+    required int quantity,
+  }) {
+    return postEnvelope<void>(
+      '/cart',
+      data: {
+        'product_id': productId,
+        'unit_id': unitId,
+        'quantity': quantity,
+      },
+      parser: (_) {},
+    );
+  }
 
-//   Future<ApiResponse<void>> updateQuantity({
-//     required String cartItemId,
-//     required int quantity,
-//   }) =>
-//       putEnvelope<void>(
-//         "${ApiEndpoints.cart}/$cartItemId",
-//         data: {
-//           "quantity": quantity,
-//         },
-//       );
+  /// PUT /cart/{id}
+  Future<ApiResponse<void>> updateQuantity({
+    required String cartId,
+    required int quantity,
+  }) {
+    return putEnvelope<void>(
+      '/cart/$cartId',
+      data: {
+        'quantity': quantity,
+      },
+      parser: (_) {},
+    );
+  }
 
-//   Future<ApiResponse<void>> removeItem(String cartItemId) => deleteEnvelope(
-//         "${ApiEndpoints.cart}/$cartItemId",
-//       );
+  /// DELETE /cart/{id}
+  Future<ApiResponse<void>> removeItem(String cartId) {
+    return deleteEnvelope('/cart/$cartId');
+  }
 
-//   Future<ApiResponse<void>> clearCart() => deleteEnvelope(
-//         "${ApiEndpoints.cart}/clear",
-//       );
-// }
+  /// DELETE /cart
+  Future<ApiResponse<void>> clearCart() {
+    return deleteEnvelope('/cart');
+  }
+}

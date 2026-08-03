@@ -78,8 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final target = widget.redirectTo ?? pendingRoute ?? AppRoutes.home;
-
+      final target = widget.redirectTo ?? pendingRoute;
       context.go(target);
     });
   }

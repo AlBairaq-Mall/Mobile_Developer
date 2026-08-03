@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
 
 /// Shimmer/Skeleton Loading - يعطي انطباعاً أن البيانات تُحمَّل بدلاً من دائرة التحميل.
 /// يُستخدم بدلاً من CircularProgressIndicator في كل صفحة تجلب بيانات.

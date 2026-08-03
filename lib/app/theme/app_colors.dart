@@ -3,60 +3,218 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // ── Primary Brand ──────────────────────────────
-  static const primary = Color.fromARGB(255, 226, 166, 0); // Emerald Green
-  static const primaryDark = Color.fromARGB(255, 148, 108, 0);
-  static const primaryLight = Color.fromARGB(255, 240, 193, 91);
+  static const imageBackground = Color(0xffF8F9FB);
 
-  // ── Secondary / Accent ─────────────────────────
-  static const accent = Color(0xFFFFA726); // Warm Amber
-  static const accentDark = Color(0xFFE65100);
+  static const badgeSale = Color(0xffE53935);
 
-  // ── Gradient Pairs ─────────────────────────────
-  static const gradientStart = Color.fromARGB(255, 255, 187, 0);
-  static const gradientEnd = Color.fromARGB(255, 184, 125, 0);
+  static const badgeBest = Color(0xffFF9800);
 
-  static const adminGradientStart = Color.fromARGB(255, 126, 108, 26);
-  static const adminGradientEnd = Color.fromARGB(255, 189, 186, 2);
+  static const gradientStart = Color(0xFFFFC107);
 
-  static const deliveryGradientStart = Color(0xFF004D40);
-  static const deliveryGradientEnd = Color(0xFF00695C);
+  static const gradientEnd = Color(0xFFE2A600);
 
-  // ── Backgrounds ────────────────────────────────
-  static const background = Color(0xFFF5F7FA);
-  static const backgroundDark = Color(0xFF0D1117);
-  static const surface = Color(0xFFFFFFFF);
-  static const surfaceDark = Color(0xFF161B22);
-  static const cardDark = Color(0xFF21262D);
+  static const adminGradientStart = Color(0xFFF5C84C);
 
-  // ── Text ───────────────────────────────────────
-  static const textPrimary = Color(0xFF0D1117);
-  static const textSecondary = Color(0xFF57606A);
-  static const textHint = Color(0xFF8B949E);
+  static const adminGradientEnd = Color(0xFFE2A600);
 
-  // ── Status ─────────────────────────────────────
-  static const success = Color(0xFF00BF6F);
-  static const error = Color(0xFFFF4C4C);
-  static const warning = Color(0xFFFFA726);
-  static const info = Color(0xFF0277BD);
+  //══════════════════════════════════════════════════════
+  // BRAND
+  //══════════════════════════════════════════════════════
 
-  // ── Misc ───────────────────────────────────────
-  static const border = Color(0xFFE8ECF0);
-  static const divider = Color(0xFFEBEDF0);
-  static const black = Color(0xFF0D1117);
-  static const white = Color(0xFFFFFFFF);
-  static const secondary = Color(0xFFFFA726);
+  static const brand = Color(0xffD4A017);
 
-  // ── Gradients ──────────────────────────────────
+  static const primary = Color(0xffD4A017);
+
+  static const primaryDark = Color(0xffB8860B);
+
+  static const primaryLight = Color(0xffF8D568);
+
+  static const primaryExtraLight = Color(0xffFFF7DF);
+
+  static const secondary = Color(0xffFFB300);
+
+  static const accent = Color(0xffF59E0B);
+
+  static const primarySoft = Color(0xFFFFF4D6);
+
+  //══════════════════════════════════════════════════════
+  // BACKGROUND
+  //══════════════════════════════════════════════════════
+
+  static const background = Color(0xffF8F9FB);
+
+  static const background2 = Color(0xffF4F6F8);
+
+  static const backgroundDark = Color(0xff101317);
+
+  //══════════════════════════════════════════════════════
+  // SURFACE
+  //══════════════════════════════════════════════════════
+
+  static const surface = Colors.white;
+
+  static const surface2 = Color(0xffFCFCFD);
+
+  static const surfaceVariant = Color(0xffF5F5F7);
+
+  static const surfaceDark = Color(0xff1A1D22);
+
+  static const card = Colors.white;
+
+  static const cardDark = Color(0xff22262C);
+
+  //══════════════════════════════════════════════════════
+  // TEXT
+  //══════════════════════════════════════════════════════
+
+  static const textPrimary = Color(0xff171717);
+
+  static const textSecondary = Color(0xff666666);
+
+  static const textLight = Color(0xff888888);
+
+  static const textHint = Color(0xffA0A4AB);
+
+  static const textWhite = Colors.white;
+
+  static const textOnPrimary = Colors.white;
+
+  //══════════════════════════════════════════════════════
+  // BORDER
+  //══════════════════════════════════════════════════════
+
+  static const border = Color(0xffE7E8EC);
+
+  static const borderLight = Color(0xffF1F2F4);
+
+  static const divider = Color(0xffECECEC);
+
+  static const outline = Color(0xffD8DCE2);
+
+  //══════════════════════════════════════════════════════
+  // STATUS
+  //══════════════════════════════════════════════════════
+
+  static const success = Color(0xff16A34A);
+
+  static const successLight = Color(0xffDCFCE7);
+
+  static const warning = Color(0xffF59E0B);
+
+  static const warningLight = Color(0xffFEF3C7);
+
+  static const error = Color(0xffEF4444);
+
+  static const errorLight = Color(0xffFEE2E2);
+
+  static const info = Color(0xff2563EB);
+
+  static const infoLight = Color(0xffDBEAFE);
+  //══════════════════════════════════════════════════════
+  // PRODUCT
+  //══════════════════════════════════════════════════════
+
+  static const price = Color(0xff171717);
+
+  static const oldPrice = Color(0xff9CA3AF);
+
+  static const discount = Color(0xffE53935);
+
+  static const rating = Color(0xffF5B301);
+
+  static const favorite = Color(0xffFF4D6D);
+
+  static const newBadge = Color(0xff22C55E);
+
+  static const saleBadge = Color(0xffEF4444);
+
+  static const outOfStock = Color(0xff9CA3AF);
+
+  //══════════════════════════════════════════════════════
+  // DELIVERY
+  //══════════════════════════════════════════════════════
+
+  static const preparing = Color(0xffF59E0B);
+
+  static const shipping = Color(0xff2563EB);
+
+  static const delivered = Color(0xff16A34A);
+
+  static const cancelled = Color(0xffEF4444);
+
+  //══════════════════════════════════════════════════════
+  // EFFECTS
+  //══════════════════════════════════════════════════════
+
+  static const overlay = Color(0x55000000);
+
+  static const shimmerBase = Color(0xffECECEC);
+
+  static const shimmerHighlight = Color(0xffF7F7F7);
+
+  static const shadow = Color(0x12000000);
+
+  //══════════════════════════════════════════════════════
+  // COMMON
+  //══════════════════════════════════════════════════════
+
+  static const white = Colors.white;
+
+  static const black = Colors.black;
+
+  static const transparent = Colors.transparent;
+
+  //══════════════════════════════════════════════════════
+  // GRADIENTS
+  //══════════════════════════════════════════════════════
+
   static const mainGradient = LinearGradient(
-    colors: [gradientStart, gradientEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+    colors: [
+      Color(0xffF4C430),
+      Color(0xffC69214),
+    ],
   );
 
-  static const headerGradient = LinearGradient(
-    colors: [Color(0xFF00BF6F), Color(0xFF0099CC)],
-    begin: Alignment.topRight,
-    end: Alignment.bottomLeft,
+  static const primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      primaryLight,
+      primaryDark,
+    ],
+  );
+
+  static const cardGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xffFFFFFF),
+      Color(0xffFBFBFB),
+    ],
+  );
+
+  static const offerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xffF59E0B),
+      Color(0xffD97706),
+    ],
+  );
+
+  static const successGradient = LinearGradient(
+    colors: [
+      Color(0xff22C55E),
+      Color(0xff16A34A),
+    ],
+  );
+
+  static const errorGradient = LinearGradient(
+    colors: [
+      Color(0xffF87171),
+      Color(0xffDC2626),
+    ],
   );
 }

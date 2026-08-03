@@ -92,7 +92,7 @@ class _PickLocationSheetState extends State<PickLocationSheet> {
           p.subAdministrativeArea,
           p.administrativeArea,
           p.country,
-        ].where((e) => e != null && e!.trim().isNotEmpty).join("، ");
+        ].where((e) => e != null && e.trim().isNotEmpty).join("، ");
 
         setState(() {
           _address = address;
@@ -105,11 +105,11 @@ class _PickLocationSheetState extends State<PickLocationSheet> {
         _address = "تعذر تحديد العنوان";
       });
     } finally {
-      if (!mounted || _isClosing) return;
-
-      setState(() {
-        _loading = false;
-      });
+      if (mounted && !_isClosing) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 

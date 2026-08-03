@@ -44,10 +44,9 @@ class FavoritesScreen extends StatelessWidget {
             TextButton.icon(
               onPressed: () {
                 for (final p in favProducts) {
-                  final unit = p.units.firstWhere(
-                    (u) => u.isDefault,
-                    orElse: () => p.units.first,
-                  );
+                  for (final p in favProducts) {
+                    cartProv.add(p);
+                  }
 
                   cartProv.add(p);
                 }

@@ -5,6 +5,7 @@ import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../app/localization/language_provider.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -15,7 +16,10 @@ class SettingsScreen extends StatelessWidget {
     final lang = context.watch<LanguageProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('الإعدادات'),
+      ),
       body: ListView(
         children: [
           // المظهر
@@ -26,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('الوضع الليلي'),
             subtitle: Text(theme.isDark ? 'مفعّل' : 'معطّل'),
             value: theme.isDark,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             onChanged: theme.setDark,
           ),
           ListTile(

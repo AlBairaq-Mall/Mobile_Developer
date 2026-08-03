@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
+import '../../../app/widgets/app_back_button.dart';
 import '../models/order_model.dart';
 import '../utils/order_status_color.dart';
 import '../utils/payment_method_text.dart';
@@ -17,6 +18,7 @@ class OrderDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text("تفاصيل الطلب"),
       ),
       body: ListView(
@@ -41,7 +43,7 @@ class OrderDetailsScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: orderStatusColor(order.status).withOpacity(.15),
+                  color: orderStatusColor(order.status).withValues(alpha: .15),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(

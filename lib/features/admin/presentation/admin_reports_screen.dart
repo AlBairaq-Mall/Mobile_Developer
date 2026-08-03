@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../app/widgets/app_back_button.dart';
 import '../../../app/theme/app_colors.dart';
 
 class AdminReportsScreen extends StatelessWidget {
@@ -8,7 +9,10 @@ class AdminReportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: ربط بـ GET /api/admin/reports
     return Scaffold(
-      appBar: AppBar(title: const Text('التقارير')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('التقارير'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -70,7 +74,7 @@ class _ReportCard extends StatelessWidget {
             trailing: Chip(
               label: Text(change),
               backgroundColor:
-                  (positive ? AppColors.success : Colors.red).withOpacity(0.1),
+                  (positive ? AppColors.success : Colors.red).withValues(alpha: 0.1),
               labelStyle: TextStyle(
                   color: positive ? AppColors.success : Colors.red,
                   fontWeight: FontWeight.bold),

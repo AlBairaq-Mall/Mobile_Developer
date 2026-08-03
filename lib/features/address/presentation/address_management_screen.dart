@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 import '../models/address_model.dart';
 import '../providers/address_provider.dart';
 import '../widgets/pick_location_sheet.dart';
@@ -41,6 +42,16 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: AppBackButton(
+          onPressed: () {
+            final nav = Navigator.of(context);
+            if (nav.canPop()) {
+              nav.pop(widget.fromCheckout);
+            } else {
+              Navigator.of(context).pop(false);
+            }
+          },
+        ),
         title: const Text("عناوين التوصيل"),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -277,7 +288,7 @@ class _AddressTile extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(.1),
+                      color: AppColors.primary.withValues(alpha: .1),
                       borderRadius: BorderRadius.circular(
                         12,
                       ),
@@ -329,7 +340,6 @@ class _AddressFormSheet extends StatefulWidget {
   final PickedLocation? pickedLocation;
 
   const _AddressFormSheet({
-    super.key,
     this.existing,
     this.fromCheckout = false,
     this.pickedLocation,
@@ -346,7 +356,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
 
   bool _isDefault = false;
 
-  bool _loadingLocation = false;
+  // Reserved for future Google Maps location picker integration
   double? _latitude;
   double? _longitude;
 

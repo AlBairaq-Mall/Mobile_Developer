@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 import '../../home/providers/home_provider.dart';
 
 class AdminProductsScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('إدارة المنتجات'),
         actions: [
           IconButton(
@@ -58,7 +60,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
+                          color: AppColors.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.inventory_2_outlined,
@@ -77,8 +79,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: p.isAvailable
-                                  ? AppColors.success.withOpacity(0.1)
-                                  : Colors.red.withOpacity(0.1),
+                                  ? AppColors.success.withValues(alpha: 0.1)
+                                  : Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(p.isAvailable ? 'متوفر' : 'غير متوفر',

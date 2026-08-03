@@ -1,80 +1,162 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
 
-/// زر موحد يدعم Loading State لمنع الضغط المزدوج وإرسال الطلب مرتين.
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
+
+enum AppButtonStyle {
+  primary,
+  secondary,
+  outlined,
+  ghost,
+}
+
 class AppButton extends StatelessWidget {
-  final String    text;
+  final String text;
+
   final VoidCallback? onPressed;
-  final bool      isLoading;
-  final bool      isOutlined;
-  final Color?    color;
+
+  final bool isLoading;
+
+  final bool enabled;
+
   final IconData? icon;
-  final double    height;
+
+  final double height;
+
+  final double? width;
+
+  final AppButtonStyle style;
 
   const AppButton({
     super.key,
     required this.text,
     this.onPressed,
-    this.isLoading  = false,
-    this.isOutlined = false,
-    this.color,
+    this.isLoading = false,
+    this.enabled = true,
     this.icon,
-    this.height = 52,
+    this.height = 54,
+    this.width,
+    this.style = AppButtonStyle.primary,
   });
+
+  bool get _disabled => !enabled || isLoading;
 
   @override
   Widget build(BuildContext context) {
-    final bg = color ?? AppColors.primary;
+    final background = _background();
 
-    if (isOutlined) {
-      return SizedBox(
-        width: double.infinity,
-        height: height,
-        child: OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: bg, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          child: _child(bg),
-        ),
-      );
-    }
+    final foreground = _foreground();
+
+    final border = _border();
 
     return SizedBox(
-      width: double.infinity,
+      width: width ?? double.infinity,
       height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bg,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _disabled ? null : onPressed,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: border,
+              boxShadow: style == AppButtonStyle.primary
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: .22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      )
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: isLoading
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: foreground,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(
+                            icon,
+                            size: 18,
+                            color: foreground,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Text(
+                          text,
+                          style: AppTypography.button.copyWith(
+                            color: foreground,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
         ),
-        child: _child(Colors.white),
       ),
     );
   }
 
-  Widget _child(Color color) {
-    if (isLoading) {
-      return SizedBox(
-        width: 22, height: 22,
-        child: CircularProgressIndicator(
-          color: color, strokeWidth: 2.5,
-        ),
-      );
+  Color _background() {
+    if (_disabled) {
+      return Colors.grey.shade300;
     }
-    if (icon != null) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Text(text, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
-        ],
-      );
+
+    switch (style) {
+      case AppButtonStyle.primary:
+        return AppColors.primary;
+
+      case AppButtonStyle.secondary:
+        return AppColors.secondary;
+
+      case AppButtonStyle.outlined:
+        return Colors.transparent;
+
+      case AppButtonStyle.ghost:
+        return AppColors.primary.withValues(alpha: .08);
     }
-    return Text(text, style: TextStyle(fontWeight: FontWeight.bold, color: color));
+  }
+
+  Color _foreground() {
+    if (_disabled) {
+      return Colors.grey.shade600;
+    }
+
+    switch (style) {
+      case AppButtonStyle.primary:
+      case AppButtonStyle.secondary:
+        return Colors.white;
+
+      case AppButtonStyle.outlined:
+      case AppButtonStyle.ghost:
+        return AppColors.primary;
+    }
+  }
+
+  Border? _border() {
+    switch (style) {
+      case AppButtonStyle.outlined:
+        return Border.all(
+          color: AppColors.primary,
+          width: 1.4,
+        );
+
+      default:
+        return null;
+    }
   }
 }

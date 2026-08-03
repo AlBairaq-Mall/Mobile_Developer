@@ -30,7 +30,7 @@ class EmptyState extends StatelessWidget {
             Container(
               width: 110, height: 110,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Center(child: Text(emoji, style: const TextStyle(fontSize: 52))),

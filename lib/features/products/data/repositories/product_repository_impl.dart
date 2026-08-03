@@ -1,6 +1,5 @@
 import '../../../../core/models/product_model.dart';
 import '../../../../core/network/api_response.dart';
-import '../../models/product_unit_model.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_datasource.dart';
 

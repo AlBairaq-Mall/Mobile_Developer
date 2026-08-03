@@ -47,8 +47,6 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email,
       password: password,
     );
-    print(response.data?.token);
-
     if (response.isSuccess && response.data != null) {
       final user = response.data!;
       await _storage.saveUserProfile(user);

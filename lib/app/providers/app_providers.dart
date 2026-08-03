@@ -22,15 +22,23 @@ class AppProviders {
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(
-          create: (_) =>
-              FavoritesProvider(DependencyInjection.productRepository),
+          create: (_) => CartProvider(
+            DependencyInjection.cartRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FavoritesProvider(
+            DependencyInjection.favoritesRepository,
+            DependencyInjection.productRepository,
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => SearchProvider(DependencyInjection.productRepository),
         ),
-        ChangeNotifierProvider(create: (_) => AddressProvider()),
+        ChangeNotifierProvider(
+          create: (_) => AddressProvider(DependencyInjection.addressRepository),
+        ),
         ChangeNotifierProvider(create: (_) => CheckoutProvider()),
         ChangeNotifierProvider(
           create: (_) => HomeProvider(DependencyInjection.productRepository),
@@ -43,7 +51,7 @@ class AppProviders {
               CategoryProvider(DependencyInjection.categoryRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => OrdersProvider(),
+          create: (_) => OrdersProvider(DependencyInjection.orderRepository),
         ),
       ];
 }

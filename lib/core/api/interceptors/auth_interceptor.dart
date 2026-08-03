@@ -37,7 +37,8 @@ class AuthInterceptor extends Interceptor {
       if (context != null && context.mounted) {
         final logged = await SecureStorageService.instance.isLoggedIn();
 
-        if (logged) {
+        // Re-check mounted after the async gap
+        if (logged && context.mounted) {
           final location = GoRouter.of(context).state.uri.toString();
 
           context.go(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/widgets/app_back_button.dart';
+
 /// صفحة نصية عامة تُستخدم لعرض: من نحن، اتصل بنا، الأسئلة الشائعة،
 /// سياسة الخصوصية، شروط الاستخدام. هذه الصفحات مذكورة في الوثيقة
 /// ("صفحات إضافية مهمة") ولم تكن موجودة في المشروع إطلاقاً.
@@ -19,7 +21,10 @@ class StaticInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: Text(title),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Text(content, style: const TextStyle(height: 1.8, fontSize: 15)),
@@ -34,7 +39,10 @@ class _ContactUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('اتصل بنا')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('اتصل بنا'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: const [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import '../../../app/widgets/app_back_button.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_widget.dart';
@@ -31,14 +32,13 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<ProductProvider>().loadCategory(widget.categoryId);
     });
   }
 
-  List<ProductModel> get _filtered {
-    final provider = context.read<ProductProvider>();
-
-    var filtered = List<ProductModel>.from(provider.products);
+  List<ProductModel> _applyFilters(List<ProductModel> products) {
+    var filtered = List<ProductModel>.from(products);
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered
@@ -67,13 +67,14 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ProductProvider>();
 
-    final products = provider.products;
-    final isLoading = provider.isLoading;
-    final error = provider.error;
+    // final products = provider.products;
+    // final isLoading = provider.isLoading;
+    // final error = provider.error;
     final title = widget.categoryName ?? 'المنتجات';
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(title),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
@@ -109,13 +110,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ),
         ],
       ),
-      body: _buildBody(),
+      body: _buildBody(provider),
     );
   }
 
-  Widget _buildBody() {
-    final provider = context.watch<ProductProvider>();
-
+  Widget _buildBody(ProductProvider provider) {
     if (provider.isLoading) {
       return const LoadingWidget();
     }
@@ -130,7 +129,13 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       );
     }
 
-    final filtered = _filtered;
+    final filtered = _applyFilters(
+      provider.products
+          .where(
+            (product) => product.categoryId == widget.categoryId,
+          )
+          .toList(),
+    );
 
     if (filtered.isEmpty) {
       return const EmptyState(

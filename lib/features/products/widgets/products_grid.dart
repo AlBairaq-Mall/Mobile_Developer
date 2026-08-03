@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
+import '../../../app/theme/app_spacing.dart';
 import '../../../core/models/product_model.dart';
 import 'product_card.dart';
 
@@ -12,32 +15,22 @@ class ProductsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    int columns = 2;
-
-    if (width >= 600) {
-      columns = 3;
-    }
-
-    if (width >= 900) {
-      columns = 4;
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      physics: const AlwaysScrollableScrollPhysics(),
+    return MasonryGridView.count(
       shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      crossAxisCount: 2,
+      mainAxisSpacing: AppSpacing.lg,
+      crossAxisSpacing: AppSpacing.md,
       itemCount: products.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: .72,
-      ),
-      itemBuilder: (_, index) {
-        return ProductCard(
-          product: products[index],
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(
+            bottom: AppSpacing.sm,
+          ),
+          child: ProductCard(
+            product: products[index],
+          ),
         );
       },
     );

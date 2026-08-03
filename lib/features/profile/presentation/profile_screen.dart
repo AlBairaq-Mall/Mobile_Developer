@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
@@ -48,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 16)
                       ],
                     ),
@@ -76,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     user?.phone ?? user?.email ?? '',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.85), fontSize: 14),
+                        color: Colors.white.withValues(alpha: 0.85), fontSize: 14),
                   ),
                   const SizedBox(height: 16),
                   // Stats
@@ -172,10 +172,10 @@ class ProfileScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.06),
+                        color: AppColors.error.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(16),
                         border:
-                            Border.all(color: AppColors.error.withOpacity(0.2)),
+                            Border.all(color: AppColors.error.withValues(alpha: 0.2)),
                       ),
                       child: const Row(
                         children: [
@@ -213,7 +213,7 @@ class _StatBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12)),
         child: Column(
           children: [
@@ -224,7 +224,7 @@ class _StatBadge extends StatelessWidget {
                     fontSize: 18)),
             Text(label,
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.85), fontSize: 11)),
+                    color: Colors.white.withValues(alpha: 0.85), fontSize: 11)),
           ],
         ),
       );
@@ -272,7 +272,7 @@ class _MenuSection extends StatelessWidget {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                            color: item.color.withOpacity(0.1),
+                            color: item.color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12)),
                         child: Icon(item.icon, color: item.color, size: 20),
                       ),

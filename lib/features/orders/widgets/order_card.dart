@@ -1,4 +1,4 @@
-import 'package:bhm_supermarket/features/orders/utils/payment_method_text.dart';
+﻿import 'package:bhm_supermarket/features/orders/utils/payment_method_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -47,7 +47,7 @@ class OrderCard extends StatelessWidget {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: orderStatusColor(order.status).withOpacity(.15),
+                    color: orderStatusColor(order.status).withValues(alpha: .15),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(

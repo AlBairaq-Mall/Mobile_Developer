@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 class AdminDeliveryScreen extends StatelessWidget {
   const AdminDeliveryScreen({super.key});
@@ -16,6 +17,7 @@ class AdminDeliveryScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppBackButton(),
           title: const Text('إدارة التوصيل'),
           actions: [
             IconButton(icon: const Icon(Icons.person_add_outlined), onPressed: () {}, tooltip: 'إضافة سائق'),
@@ -39,7 +41,7 @@ class AdminDeliveryScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: _statusColor(d.status).withOpacity(0.1),
+                          backgroundColor: _statusColor(d.status).withValues(alpha: 0.1),
                           radius: 26,
                           child: Icon(Icons.delivery_dining, color: _statusColor(d.status), size: 28),
                         ),
@@ -69,7 +71,7 @@ class AdminDeliveryScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _statusColor(d.status).withOpacity(0.1),
+                                color: _statusColor(d.status).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(d.status,

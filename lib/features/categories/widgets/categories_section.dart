@@ -1,11 +1,15 @@
-import 'package:bhm_supermarket/app/localization/language_provider.dart';
-import 'package:bhm_supermarket/app/widgets/app_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/router/app_routes.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_shadows.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../app/widgets/app_cached_image.dart';
+import '../../../app/widgets/app_section.dart';
+import '../../../core/models/category_model.dart';
 import '../providers/category_provider.dart';
 
 class CategoriesSection extends StatelessWidget {
@@ -13,69 +17,89 @@ class CategoriesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final catProv = context.watch<CategoryProvider>();
-    final isArabic = context.watch<LanguageProvider>().isArabic;
+    final provider = context.watch<CategoryProvider>();
 
-    if (catProv.isLoading) {
-      return const SizedBox(height: 110, child: LoadingWidget());
+    final categories = provider.mainCategories;
+
+    if (categories.isEmpty) {
+      return const SizedBox.shrink();
     }
 
-    final mainCategories = catProv.mainCategories;
-    if (mainCategories.isEmpty) {
-      return const SizedBox(
-        height: 110,
-        child: Center(
-          child: Text('لا توجد أقسام متاحة',
-              style: TextStyle(color: Colors.grey, fontSize: 13)),
+    return AppSection(
+      title: 'الأقسام',
+      onSeeAll: () => context.push(AppRoutes.categories),
+      child: SizedBox(
+        height: 118,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          padding: EdgeInsets.zero,
+          separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+          itemBuilder: (_, index) {
+            return _CategoryCard(
+              category: categories[index],
+            );
+          },
         ),
-      );
-    }
+      ),
+    );
+  }
+}
 
-    return SizedBox(
-      height: 110,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: mainCategories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
-        itemBuilder: (context, index) {
-          final category = mainCategories[index];
+class _CategoryCard extends StatelessWidget {
+  final CategoryModel category;
 
-          return SizedBox(
-            width: 85,
-            child: InkWell(
-              onTap: () => context.push(
-                '${AppRoutes.categories}/${category.id}?name=${Uri.encodeComponent(isArabic ? category.nameAr : category.nameEn)}',
-              ),
-              borderRadius: BorderRadius.circular(18),
-              child: Column(
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: category.image.isEmpty
-                        ? const Icon(Icons.category)
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: AppCachedImage(
-                              imageUrl: category.imageUrl,
-                            )),
+  const _CategoryCard({
+    required this.category,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      onTap: () {
+        context.push(
+          '${AppRoutes.categories}/${category.id}?name=${Uri.encodeComponent(category.name)}',
+        );
+      },
+      child: Ink(
+        width: 92,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          boxShadow: AppShadows.card,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isArabic ? category.nameAr : category.nameEn,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  child: category.imageUrl.isNotEmpty
+                      ? AppCachedImage(
+                          imageUrl: category.imageUrl,
+                          fit: BoxFit.contain,
+                        )
+                      : Icon(
+                          Icons.category_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                ),
               ),
-            ),
-          );
-        },
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                category.name,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.labelMedium,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/di/dependency_injection.dart';
+import '../domain/repositories/address_repository.dart';
 import '../models/address_model.dart';
 
 class AddressProvider extends ChangeNotifier {
-  final _repository = DependencyInjection.addressRepository;
+  AddressProvider(this._repository);
+
+  final AddressRepository _repository;
 
   List<AddressModel> _addresses = [];
 

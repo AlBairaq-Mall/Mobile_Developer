@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../app/widgets/app_back_button.dart';
 import '../../../app/theme/app_colors.dart';
 
 /// إدارة الإعلانات - بانرات الصفحة الرئيسية
@@ -30,7 +31,10 @@ class _AdminAdsScreenState extends State<AdminAdsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('إدارة الإعلانات')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('إدارة الإعلانات'),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAdDialog(context),
         backgroundColor: AppColors.primary,
@@ -52,8 +56,8 @@ class _AdminAdsScreenState extends State<AdminAdsScreen> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: ad.active
-                        ? AppColors.primary.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.campaign_outlined,
@@ -67,7 +71,7 @@ class _AdminAdsScreenState extends State<AdminAdsScreen> {
                   children: [
                     Switch(
                       value: ad.active,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       onChanged: (v) {
                         setState(() => _ads[i] = _AdItem(
                             id: ad.id,

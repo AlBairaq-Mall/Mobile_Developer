@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 class DeliveryHistoryScreen extends StatelessWidget {
   const DeliveryHistoryScreen({super.key});
@@ -39,7 +40,10 @@ class DeliveryHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('سجل التوصيل')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('سجل التوصيل'),
+      ),
       body: Column(
         children: [
           // ملخص
@@ -47,9 +51,9 @@ class DeliveryHistoryScreen extends StatelessWidget {
             margin: const EdgeInsets.all(14),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -71,7 +75,7 @@ class DeliveryHistoryScreen extends StatelessWidget {
                   child: Material(
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppColors.success.withOpacity(0.1),
+                        backgroundColor: AppColors.success.withValues(alpha: 0.1),
                         child: const Icon(Icons.check_circle_outline,
                             color: AppColors.success),
                       ),

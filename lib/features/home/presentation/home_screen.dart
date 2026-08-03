@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../categories/widgets/categories_section.dart';
+import '../providers/home_provider.dart';
+import '../widgets/home_banner.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_search_bar.dart';
-import '../widgets/home_banner.dart';
-import '../../categories/widgets/categories_section.dart';
 import '../widgets/product_section.dart';
-import '../providers/home_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -20,58 +20,102 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: provider.refresh,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // HomeHeader already handles notifications navigation
-                const HomeHeader(),
-                const SizedBox(height: 20),
-
-                // HomeSearchBar already handles navigation to search
-                const HomeSearchBar(),
-                const SizedBox(height: 20),
-
-                const HomeBanner(),
-                const SizedBox(height: 28),
-
-                const CategoriesSection(),
-                const SizedBox(height: 28),
-
-                if (provider.isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else ...[
-                  if (provider.products.isNotEmpty) ...[
-                    ProductSection(
-                      title: 'كل المنتجات',
-                      products: provider.products,
-                    ),
-                    const SizedBox(height: 28),
-                  ],
-                  if (provider.recommendedProducts.isNotEmpty) ...[
-                    ProductSection(
-                      title: 'مقترحة لك',
-                      products: provider.recommendedProducts,
-                    ),
-                    const SizedBox(height: 28),
-                  ],
-                  if (provider.flashDeals.isNotEmpty) ...[
-                    ProductSection(
-                      title: 'عروض اليوم 🔥',
-                      products: provider.flashDeals,
-                    ),
-                    const SizedBox(height: 28),
-                  ],
-                  if (provider.bestSellerProducts.isNotEmpty)
-                    ProductSection(
-                      title: 'الأكثر مبيعاً',
-                      products: provider.bestSellerProducts,
-                    ),
-                ]
-              ],
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
             ),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      //----------------------------------------------------
+                      // Header
+                      //----------------------------------------------------
+
+                      const HomeHeader(),
+
+                      const SizedBox(height: AppSpacing.lg),
+
+                      //----------------------------------------------------
+                      // Search
+                      //----------------------------------------------------
+
+                      const HomeSearchBar(),
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      //----------------------------------------------------
+                      // Banner
+                      //----------------------------------------------------
+
+                      const HomeBanner(),
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      //----------------------------------------------------
+                      // Categories
+                      //----------------------------------------------------
+
+                      const CategoriesSection(),
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      //----------------------------------------------------
+                      // Loading
+                      //----------------------------------------------------
+
+                      if (provider.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: AppSpacing.xxl,
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+
+                      //----------------------------------------------------
+                      // Content
+                      //----------------------------------------------------
+
+                      if (!provider.isLoading) ...[
+                        if (provider.flashDeals.isNotEmpty) ...[
+                          ProductSection(
+                            title: 'العروض',
+                            products: provider.flashDeals.take(4).toList(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
+                        if (provider.bestSellerProducts.isNotEmpty) ...[
+                          ProductSection(
+                            title: 'الأكثر مبيعاً',
+                            products:
+                                provider.bestSellerProducts.take(4).toList(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
+                        if (provider.recommendedProducts.isNotEmpty) ...[
+                          ProductSection(
+                            title: 'مختارة لك',
+                            products:
+                                provider.recommendedProducts.take(4).toList(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
+                        if (provider.products.isNotEmpty)
+                          ProductSection(
+                            title: 'جميع المنتجات',
+                            products: provider.products,
+                          ),
+                        const SizedBox(height: AppSpacing.xxl),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

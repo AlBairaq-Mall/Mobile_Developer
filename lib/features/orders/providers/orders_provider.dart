@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/di/dependency_injection.dart';
+import '../domain/repositories/order_repository.dart';
 import '../models/order_model.dart';
 
 class OrdersProvider extends ChangeNotifier {
-  final _repository = DependencyInjection.orderRepository;
+  OrdersProvider(this._repository);
+
+  final OrderRepository _repository;
 
   List<OrderModel> _orders = [];
 

@@ -42,6 +42,9 @@ class ProductProvider extends ChangeNotifier {
   Future<void> loadProduct(String productId) async {
     _isLoading = true;
     _error = null;
+    _isLoading = true;
+    _error = null;
+
     notifyListeners();
 
     final productResponse = await _repository.getProductById(productId);
@@ -50,7 +53,7 @@ class ProductProvider extends ChangeNotifier {
       _product = null;
       _units = [];
       _related = [];
-      _error = productResponse.message ?? 'تعذر تحميل المنتج';
+      _error = productResponse.message;
       _isLoading = false;
       notifyListeners();
       return;
@@ -59,7 +62,9 @@ class ProductProvider extends ChangeNotifier {
     _product = productResponse.data!;
     // الوحدات تأتي مع المنتج نفسه من Laravel
     _units = _product!.units;
-    if (_product?.categoryId != null) {
+
+    // تحميل المنتجات ذات الصلة إذا كان القسم معروفاً
+    if (_product!.categoryId.isNotEmpty) {
       final relatedResponse = await _repository.getProducts(
         categoryId: _product!.categoryId,
       );
@@ -67,21 +72,14 @@ class ProductProvider extends ChangeNotifier {
           .where((e) => e.id != _product!.id)
           .take(6)
           .toList();
-
-      if (_units.isEmpty) {
-        _selectedUnitIndex = 0;
-      } else {
-        _selectedUnitIndex = _units.isNotEmpty ? 0 : -1;
-        // final defaultIndex = _units.indexWhere((e) => e.isDefault);
-
-        // _selectedUnitIndex = defaultIndex >= 0 ? defaultIndex : 0;
-      }
-
-      _quantity = 1;
-
-      _isLoading = false;
-      notifyListeners();
+    } else {
+      _related = [];
     }
+
+    _selectedUnitIndex = _units.isNotEmpty ? 0 : 0;
+    _quantity = 1;
+    _isLoading = false;
+    notifyListeners();
   }
 
   void selectUnit(int index) {
@@ -117,19 +115,29 @@ class ProductProvider extends ChangeNotifier {
   }
 
   Future<void> loadCategory(String categoryId) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    try {
+      _products.clear();
 
-    final response = await _repository.getProducts(
-      categoryId: categoryId,
-    );
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
 
-    if (response.isSuccess) {
-      _products = response.data ?? [];
-    } else {
+      final response = await _repository.getProducts(
+        categoryId: categoryId,
+      );
+
+      if (response.isSuccess) {
+        _products = response.data ?? [];
+      } else {
+        _products = [];
+        _error = response.message;
+      }
+    } catch (e, s) {
+      debugPrint(e.toString());
+      debugPrint(s.toString());
+
       _products = [];
-      _error = response.message;
+      _error = e.toString();
     }
 
     _isLoading = false;

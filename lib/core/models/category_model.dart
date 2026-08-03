@@ -23,9 +23,13 @@ class CategoryModel {
 
   String get name => JsonParser.currentLanguage == 'ar' ? nameAr : nameEn;
 
-  String get imageUrl => image.isEmpty
-      ? ''
-      : 'https://backend-albarqy.onrender.com/storage/$image';
+  String get imageUrl {
+    if (image == null || image!.isEmpty) {
+      return "";
+    }
+
+    return "https://backend-albarqy.onrender.com/storage/$image";
+  }
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(

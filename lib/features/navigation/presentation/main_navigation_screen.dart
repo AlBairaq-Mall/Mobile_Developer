@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../cart/presentation/cart_screen.dart';
@@ -37,7 +37,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
@@ -109,7 +109,9 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: sel ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: sel
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -159,9 +161,9 @@ class _CartBtn extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: sel
                       ? const LinearGradient(
-                          colors: [AppColors.primary, AppColors.gradientEnd])
+                          colors: [AppColors.primary, AppColors.brand])
                       : null,
-                  color: sel ? null : AppColors.primary.withOpacity(0.08),
+                  color: sel ? null : AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Icon(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/widgets/app_back_button.dart';
 
 enum OrderStatus { pending, preparing, ready, outForDelivery, delivered, cancelled }
 
@@ -55,6 +56,7 @@ class OrderTrackingScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text('تتبع الطلب #$orderNumber'),
       ),
 

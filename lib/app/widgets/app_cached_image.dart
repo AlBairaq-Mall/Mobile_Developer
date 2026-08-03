@@ -1,12 +1,25 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../core/config/api_config.dart';
+
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
 
 class AppCachedImage extends StatelessWidget {
   final String imageUrl;
+
   final double? width;
+
   final double? height;
+
   final BoxFit fit;
+
   final double radius;
+
+  final Widget? placeholder;
+
+  final Widget? errorWidget;
+
+  final Color? backgroundColor;
 
   const AppCachedImage({
     super.key,
@@ -14,69 +27,68 @@ class AppCachedImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.radius = 0,
+    this.radius = AppRadius.md,
+    this.placeholder,
+    this.errorWidget,
+    this.backgroundColor,
   });
+
+  String get _url {
+    if (imageUrl.isEmpty) {
+      return '';
+    }
+
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+
+    return 'https://backend-albarqy.onrender.com/storage/$imageUrl';
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl.isEmpty) {
-      return Container(
+    if (_url.isEmpty) {
+      return _error();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: CachedNetworkImage(
+        imageUrl: _url,
         width: width,
         height: height,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        child: const Center(
-          child: Icon(Icons.image_outlined),
-        ),
-      );
-    }
-
-    String url = imageUrl;
-
-    if (!url.startsWith('http')) {
-      url = 'https://backend-albarqy.onrender.com/storage/$url';
-    }
-
-    final image = Image.network(
-      url,
-      width: width,
-      height: height,
-      fit: fit,
-      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
-
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+        fit: fit,
+        fadeInDuration: const Duration(milliseconds: 250),
+        fadeOutDuration: const Duration(milliseconds: 150),
+        placeholder: (_, __) =>
+            placeholder ??
+            Container(
+              color: backgroundColor ?? AppColors.background,
+              child: const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+            ),
+        errorWidget: (_, __, ___) => errorWidget ?? _error(),
+      ),
     );
-
-    if (radius > 0) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: image,
-      );
-    }
-
-    return image;
   }
 
-  Widget _placeholder(BuildContext context) {
+  Widget _error() {
     return Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(radius),
-      ),
+      color: backgroundColor ?? AppColors.background,
       child: const Center(
         child: Icon(
           Icons.image_outlined,
-          color: Colors.grey,
-          size: 40,
+          size: 42,
+          color: AppColors.textHint,
         ),
       ),
     );

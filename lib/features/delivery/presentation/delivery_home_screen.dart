@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -16,8 +14,20 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
 
   // TODO: GET /api/delivery/current-orders
   final _pendingOrders = const [
-    _DeliveryOrder(id: '1045', customer: 'أحمد علي', address: 'عدن - المنصورة - شارع الأمين', distance: '2.5 كم', total: 4500, phone: '777123456'),
-    _DeliveryOrder(id: '1044', customer: 'سارة محمد', address: 'عدن - خور مكسر - شارع الجمهورية', distance: '1.8 كم', total: 8000, phone: '771456789'),
+    _DeliveryOrder(
+        id: '1045',
+        customer: 'أحمد علي',
+        address: 'عدن - المنصورة - شارع الأمين',
+        distance: '2.5 كم',
+        total: 4500,
+        phone: '777123456'),
+    _DeliveryOrder(
+        id: '1044',
+        customer: 'سارة محمد',
+        address: 'عدن - خور مكسر - شارع الجمهورية',
+        distance: '1.8 كم',
+        total: 8000,
+        phone: '771456789'),
   ];
 
   @override
@@ -33,23 +43,32 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue.shade700, Colors.blue.shade500],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
               child: Column(
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(radius: 24, backgroundColor: Colors.white24,
-                          child: Icon(Icons.delivery_dining, color: Colors.white, size: 28)),
+                      const CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.white24,
+                          child: Icon(Icons.delivery_dining,
+                              color: Colors.white, size: 28)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('مرحباً، ${user?.name ?? 'السائق'}',
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                            const Text('سائق التوصيل', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16)),
+                            const Text('سائق التوصيل',
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 12)),
                           ],
                         ),
                       ),
@@ -59,11 +78,12 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                           Switch(
                             value: _isOnline,
                             onChanged: (v) => setState(() => _isOnline = v),
-                            activeColor: Colors.greenAccent,
+                            activeThumbColor: Colors.greenAccent,
                             inactiveThumbColor: Colors.grey,
                           ),
                           Text(_isOnline ? 'متاح' : 'غير متاح',
-                              style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 11)),
                         ],
                       ),
                     ],
@@ -87,12 +107,15 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
             Expanded(
               child: _isOnline
                   ? (_pendingOrders.isEmpty
-                      ? const Center(child: Column(
+                      ? const Center(
+                          child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                            Icon(Icons.inbox_outlined,
+                                size: 64, color: Colors.grey),
                             SizedBox(height: 12),
-                            Text('لا توجد طلبات حالياً', style: TextStyle(color: Colors.grey)),
+                            Text('لا توجد طلبات حالياً',
+                                style: TextStyle(color: Colors.grey)),
                           ],
                         ))
                       : Column(
@@ -101,14 +124,19 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                             const Padding(
                               padding: EdgeInsets.fromLTRB(16, 20, 16, 10),
                               child: Text('طلبات بانتظار التوصيل',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                             ),
                             Expanded(
                               child: ListView.separated(
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 14),
                                 itemCount: _pendingOrders.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                                itemBuilder: (_, i) => _OrderCard(order: _pendingOrders[i]),
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 10),
+                                itemBuilder: (_, i) =>
+                                    _OrderCard(order: _pendingOrders[i]),
                               ),
                             ),
                           ],
@@ -117,10 +145,15 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.wifi_off_outlined, size: 64, color: Colors.grey),
+                          Icon(Icons.wifi_off_outlined,
+                              size: 64, color: Colors.grey),
                           SizedBox(height: 12),
-                          Text('أنت غير متاح حالياً', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                          Text('فعّل الحالة للاستقبال', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          Text('أنت غير متاح حالياً',
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 16)),
+                          Text('فعّل الحالة للاستقبال',
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -138,26 +171,38 @@ class _StatPill extends StatelessWidget {
   const _StatPill(this.label, this.value, this.icon);
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
-        ],
-      ),
-    ),
-  );
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10)),
+          child: Column(
+            children: [
+              Icon(icon, color: Colors.white, size: 16),
+              const SizedBox(height: 4),
+              Text(value,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
+              Text(label,
+                  style: const TextStyle(color: Colors.white70, fontSize: 10)),
+            ],
+          ),
+        ),
+      );
 }
 
 class _DeliveryOrder {
   final String id, customer, address, distance, phone;
   final double total;
-  const _DeliveryOrder({required this.id, required this.customer,
-      required this.address, required this.distance, required this.total, required this.phone});
+  const _DeliveryOrder(
+      {required this.id,
+      required this.customer,
+      required this.address,
+      required this.distance,
+      required this.total,
+      required this.phone});
 }
 
 class _OrderCard extends StatefulWidget {
@@ -182,36 +227,47 @@ class _OrderCardState extends State<_OrderCard> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text('طلب #${o.id}',
-                      style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.bold)),
                 ),
                 const Spacer(),
                 Text('${o.total.toStringAsFixed(0)} ر.ي',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
               ],
             ),
             const SizedBox(height: 12),
             Row(children: [
               const Icon(Icons.person_outline, size: 16, color: Colors.grey),
               const SizedBox(width: 6),
-              Text(o.customer, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(o.customer,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
             ]),
             const SizedBox(height: 6),
             Row(children: [
-              const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+              const Icon(Icons.location_on_outlined,
+                  size: 16, color: Colors.grey),
               const SizedBox(width: 6),
-              Expanded(child: Text(o.address, style: const TextStyle(color: Colors.grey, fontSize: 13))),
+              Expanded(
+                  child: Text(o.address,
+                      style:
+                          const TextStyle(color: Colors.grey, fontSize: 13))),
             ]),
             const SizedBox(height: 6),
             Row(children: [
-              const Icon(Icons.directions_car_outlined, size: 16, color: Colors.grey),
+              const Icon(Icons.directions_car_outlined,
+                  size: 16, color: Colors.grey),
               const SizedBox(width: 6),
-              Text(o.distance, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+              Text(o.distance,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13)),
             ]),
             const SizedBox(height: 14),
             Row(
@@ -236,16 +292,22 @@ class _OrderCardState extends State<_OrderCard> {
                       if (_started) {
                         // TODO: PATCH /api/delivery/orders/{id}/complete
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('تم تسليم الطلب بنجاح ✓')));
+                            const SnackBar(
+                                content: Text('تم تسليم الطلب بنجاح ✓')));
                       } else {
                         // TODO: PATCH /api/delivery/orders/{id}/start
                         setState(() => _started = true);
                       }
                     },
-                    icon: Icon(_started ? Icons.check_circle_outline : Icons.delivery_dining_outlined, size: 16),
+                    icon: Icon(
+                        _started
+                            ? Icons.check_circle_outline
+                            : Icons.delivery_dining_outlined,
+                        size: 16),
                     label: Text(_started ? 'تم التسليم' : 'بدء التوصيل'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _started ? AppColors.success : Colors.blue.shade700,
+                      backgroundColor:
+                          _started ? AppColors.success : Colors.blue.shade700,
                       foregroundColor: Colors.white,
                     ),
                   ),

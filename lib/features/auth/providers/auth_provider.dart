@@ -56,12 +56,7 @@ class AuthProvider extends ChangeNotifier {
 
     if (response.isSuccess && response.data != null) {
       _user = response.data;
-      _user = response.data;
-
-      Future.microtask(() {
-        notifyListeners();
-      });
-
+      notifyListeners();
       return null;
     }
 

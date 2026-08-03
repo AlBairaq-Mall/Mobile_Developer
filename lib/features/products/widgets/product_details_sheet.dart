@@ -8,7 +8,6 @@ import '../../../core/models/product_model.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../models/product_unit_model.dart';
-import '../../products/presentation/product_details_screen.dart';
 
 /// شاشة تفاصيل المنتج مع Accordion للوحدات المرتبطة بنفس الـ Item Code.
 /// الفكرة: كل وحدة (حبة / شدة / كرتون / باكت) تشترك في نفس Item Code
@@ -68,7 +67,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   side: const BorderSide(color: AppColors.primary),
                 ),
                 IconButton(
@@ -216,8 +215,8 @@ class _UnitAccordionCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.06)
-              : cs.surfaceContainerHighest.withOpacity(0.4),
+              ? AppColors.primary.withValues(alpha: 0.06)
+              : cs.surfaceContainerHighest.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.transparent,
@@ -273,7 +272,8 @@ class _UnitAccordionCard extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: AppColors.success.withOpacity(0.15),
+                                  color:
+                                      AppColors.success.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
@@ -378,7 +378,7 @@ class _UnitAccordionCard extends StatelessWidget {
                           'مشترك مع وحدات المنتج الأخرى بنفس الرمز',
                           style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.primary.withOpacity(0.8)),
+                              color: AppColors.primary.withValues(alpha: 0.8)),
                         ),
                       ],
                     ),
@@ -434,7 +434,7 @@ class _AddToCartBar extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -468,7 +468,11 @@ class _AddToCartBar extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () {
                 final cart = context.read<CartProvider>();
-                cart.add(product);
+                cart.addItem(
+                  product: product,
+                  selectedUnit: unit,
+                  unitPrice: unit.price,
+                );
 
                 final messenger = ScaffoldMessenger.of(context);
                 Navigator.pop(context);
@@ -533,7 +537,7 @@ class _NoUnitsWarning extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.orange.shade300),
       ),
