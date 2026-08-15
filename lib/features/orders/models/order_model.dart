@@ -23,6 +23,8 @@ class OrderModel {
 
   final String createdAt;
 
+  final double couponDiscount;
+
   const OrderModel({
     required this.id,
     required this.orderNumber,
@@ -37,21 +39,27 @@ class OrderModel {
     required this.status,
     this.notes,
     required this.createdAt,
+    required this.couponDiscount,
   });
+
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    final backendDiscount = JsonParser.doubleValue(json["discount"]);
+
+    final couponDiscount = JsonParser.doubleValue(json["coupon_discount"]);
+
     return OrderModel(
       id: JsonParser.string(json["id"]),
       orderNumber: JsonParser.string(json["order_number"]),
-      location: AddressModel.fromJson(
-        JsonParser.map(json["location"]),
-      ),
-      items: JsonParser.list(
-        json["items"],
-        OrderItemModel.fromJson,
-      ),
+      location: AddressModel.fromJson(JsonParser.map(json["location"])),
+      items: JsonParser.list(json["items"], OrderItemModel.fromJson),
       subtotal: JsonParser.doubleValue(json["subtotal"]),
       deliveryFee: JsonParser.doubleValue(json["delivery_fee"]),
-      discount: JsonParser.doubleValue(json["discount"]),
+
+      // الخصم النهائي الذي نعرضه للعميل
+      discount: couponDiscount > 0 ? couponDiscount : backendDiscount,
+
+      couponDiscount: couponDiscount,
+
       total: JsonParser.doubleValue(json["total"]),
       paymentMethod: JsonParser.string(json["payment_method"]),
       paymentStatus: JsonParser.string(json["payment_status"]),
@@ -60,6 +68,23 @@ class OrderModel {
       createdAt: JsonParser.string(json["created_at"]),
     );
   }
+
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     "id": id,
+  //     "order_number": orderNumber,
+  //     "subtotal": subtotal,
+  //     "delivery_fee": deliveryFee,
+  //     "discount": discount,
+  //     "total": total,
+  //     "payment_method": paymentMethod,
+  //     "payment_status": paymentStatus,
+  //     "status": status,
+  //     "notes": notes,
+  //     "created_at": createdAt,
+  //   };
+  // }
+
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -67,6 +92,7 @@ class OrderModel {
       "subtotal": subtotal,
       "delivery_fee": deliveryFee,
       "discount": discount,
+      "coupon_discount": couponDiscount,
       "total": total,
       "payment_method": paymentMethod,
       "payment_status": paymentStatus,

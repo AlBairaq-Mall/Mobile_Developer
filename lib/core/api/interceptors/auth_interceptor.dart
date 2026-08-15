@@ -32,13 +32,19 @@ class AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode == 401) {
-      final context = rootNavigatorKey.currentContext;
+      // Skip redirect for the logout endpoint itself — it may return 401
+      // if the token is already expired, and we don't want a redirect loop.
+      final path = err.requestOptions.path;
+      final isLogoutRequest = path.contains(AppRoutes.login.replaceAll('/', '')) == false &&
+          (path == '/logout' || path.endsWith('/logout'));
 
-      if (context != null && context.mounted) {
-        final logged = await SecureStorageService.instance.isLoggedIn();
+      if (!isLogoutRequest) {
+        // Clear local credentials immediately so the UI reflects the logged-out state.
+        await SecureStorageService.instance.clearAll();
 
-        // Re-check mounted after the async gap
-        if (logged && context.mounted) {
+        final context = rootNavigatorKey.currentContext;
+
+        if (context != null && context.mounted) {
           final location = GoRouter.of(context).state.uri.toString();
 
           context.go(

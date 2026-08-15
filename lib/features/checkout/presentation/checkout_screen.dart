@@ -1,15 +1,19 @@
 import 'package:bhm_supermarket/app/router/app_routes.dart';
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:bhm_supermarket/features/orders/providers/orders_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
+import '../../coupons/providers/coupon_provider.dart';
+import '../../ads/models/offer_model.dart';
+import '../../ads/providers/offers_provider.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../app/widgets/app_back_button.dart';
+import '../../../core/widgets/app_message.dart';
 import '../../address/providers/address_provider.dart';
 import '../../address/widgets/address_card.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/checkout_provider.dart';
+import '../models/coupon_totals.dart';
 import '../widgets/payment_method_selector.dart';
 import '../models/payment_method.dart';
 import '../../orders/utils/payment_mapper.dart';
@@ -24,7 +28,10 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _couponController = TextEditingController();
-  double _discount = 0;
+  double _discountAmount = 0;
+  double? _couponSubtotal;
+  String? _appliedCouponCode;
+  bool _couponLoading = false;
   bool _isPlacing = false;
 
   @override
@@ -33,23 +40,87 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
-  void _applyCoupon() {
-    // TODO: ربط بـ API الكوبونات
+  Future<void> _applyCoupon() async {
     final code = _couponController.text.trim().toUpperCase();
-    if (code == 'WELCOME10') {
-      setState(() => _discount = 10);
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم تطبيق الكوبون: خصم 10%')));
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('كود الكوبون غير صحيح')));
+
+    if (code.isEmpty) {
+      AppMessage.warning(context, 'أدخل كود الكوبون أولاً');
+      return;
     }
+
+    final cart = context.read<CartProvider>();
+    final couponProvider = context.read<CouponProvider>();
+
+    setState(() {
+      _couponLoading = true;
+    });
+
+    final result = await couponProvider.checkCoupon(
+      code: code,
+      orderAmount: cart.subtotal,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _couponLoading = false;
+    });
+
+    if (result == null || !result.valid) {
+      setState(() {
+        _discountAmount = 0;
+        _couponSubtotal = null;
+        _appliedCouponCode = null;
+      });
+
+      AppMessage.error(
+        context,
+        result?.message ?? couponProvider.error ?? 'الكوبون غير صالح',
+        title: 'كوبون غير صالح',
+      );
+
+      return;
+    }
+
+    final safeDiscount = result.discountAmount
+        .clamp(0, cart.subtotal)
+        .toDouble();
+
+    setState(() {
+      _discountAmount = safeDiscount;
+      _couponSubtotal = cart.subtotal;
+      _appliedCouponCode = code;
+    });
+
+    AppMessage.success(
+      context,
+      'تم تطبيق الكوبون، الخصم ${result.discountAmount.toStringAsFixed(0)} ر.ي',
+      title: 'تم تطبيق الكوبون ✓',
+    );
   }
 
   Future<void> _placeOrder() async {
     final addressProvider = context.read<AddressProvider>();
     final cart = context.read<CartProvider>();
     final checkout = context.read<CheckoutProvider>();
+    final couponDiscount = CouponTotals.effectiveCouponDiscount(
+      apiDiscountAmount: _discountAmount,
+      currentSubtotal: cart.subtotal,
+      appliedSubtotal: _couponSubtotal,
+    );
+
+    if (_appliedCouponCode != null &&
+        !CouponTotals.isCouponCurrent(
+          appliedSubtotal: _couponSubtotal,
+          currentSubtotal: cart.subtotal,
+        )) {
+      AppMessage.warning(
+        context,
+        'تغيرت محتويات السلة، يرجى إعادة التحقق من الكوبون.',
+        title: 'انتهت صلاحية الكوبون',
+      );
+      return;
+    }
 
     if (addressProvider.selectedAddress == null) {
       final created = await context.push<bool>(
@@ -69,15 +140,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _isPlacing = true;
     });
 
-    final discountAmount = cart.subtotal * (_discount / 100);
-
     try {
       final response = await DependencyInjection.orderRepository.createOrder(
         addressId: addressProvider.selectedAddress!.id,
         paymentMethod: paymentApiValue(checkout.paymentMethod),
         deliveryFee: cart.deliveryFee,
-        discount: discountAmount,
+        discount: couponDiscount,
         notes: null,
+        couponCode: _appliedCouponCode,
         items: cart.items.map((e) {
           return {
             "product_id": int.parse(e.product.id),
@@ -90,12 +160,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response.message.isEmpty ? "فشل إنشاء الطلب" : response.message,
-            ),
-          ),
+        AppMessage.error(
+          context,
+          response.message.isEmpty ? 'فشل إنشاء الطلب، حاول مرة أخرى' : response.message,
+          title: 'فشل إرسال الطلب',
         );
         return;
       }
@@ -113,11 +181,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       context.go(AppRoutes.orderSuccess, extra: orderNumber);
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
+      AppMessage.error(
+        context,
+        'حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى.',
+        title: 'فشل إرسال الطلب',
       );
     } finally {
       if (mounted) {
@@ -132,27 +199,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final addressProvider = context.watch<AddressProvider>();
     final cart = context.watch<CartProvider>();
+    final offers = context.watch<OffersProvider>();
+    final giftRewards = offers.giftRewardsFor(
+      cart.items.map(
+        (item) => OfferCartLine(
+          productId: item.product.id,
+          unitId: item.selectedUnit.id,
+          quantity: item.quantity,
+        ),
+      ),
+    );
     final checkout = context.watch<CheckoutProvider>();
-    final discountAmount = cart.subtotal * (_discount / 100);
-    final finalTotal = cart.grandTotal - discountAmount;
+    final couponDiscount = CouponTotals.effectiveCouponDiscount(
+      apiDiscountAmount: _discountAmount,
+      currentSubtotal: cart.subtotal,
+      appliedSubtotal: _couponSubtotal,
+    );
+    final couponNeedsRecheck =
+        _appliedCouponCode != null &&
+        !CouponTotals.isCouponCurrent(
+          appliedSubtotal: _couponSubtotal,
+          currentSubtotal: cart.subtotal,
+        );
+    final total = CouponTotals.grandTotal(
+      subtotal: cart.subtotal,
+      deliveryFee: cart.deliveryFee,
+      couponDiscount: couponDiscount,
+    );
 
     return PopScope(
       // منع الخروج العرضي أثناء معالجة الطلب
       canPop: !_isPlacing,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _isPlacing) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('يُرجى الانتظار حتى اكتمال إرسال الطلب...'),
-              duration: Duration(seconds: 2),
-            ),
+          AppMessage.info(
+            context,
+            'يُرجى الانتظار حتى اكتمال إرسال الطلب...',
+            duration: const Duration(seconds: 2),
           );
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-            leading: AppBackButton(fallbackRoute: AppRoutes.cart),
-            title: const Text('إتمام الطلب')),
+        appBar: AppPageHeader(title: ('إتمام الطلب')),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -163,9 +251,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 _sectionTitle('عنوان التوصيل'),
                 const SizedBox(height: 12),
                 if (addressProvider.selectedAddress != null) ...[
-                  AddressCard(
-                    address: addressProvider.selectedAddress!,
-                  ),
+                  AddressCard(address: addressProvider.selectedAddress!),
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
@@ -202,9 +288,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               Expanded(
                                 child: Text(
                                   "لا يوجد عنوان",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
@@ -216,8 +300,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () async {
-                                final addressProvider =
-                                    context.read<AddressProvider>();
+                                final addressProvider = context
+                                    .read<AddressProvider>();
 
                                 final result = await context.push<bool>(
                                   AppRoutes.addresses,
@@ -236,7 +320,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
 
                 const SizedBox(height: 24),
@@ -256,7 +340,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       icon: const Icon(Icons.upload_outlined),
                       label: const Text("رفع صورة إيصال الدفع"),
                     ),
-                  )
+                  ),
                 ],
 
                 const SizedBox(height: 24),
@@ -277,7 +361,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 14),
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -286,12 +372,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       width: 100,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: _applyCoupon,
-                        child: const Text("تطبيق"),
+                        onPressed: _couponLoading ? null : _applyCoupon,
+                        child: _couponLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text("تطبيق"),
                       ),
                     ),
                   ],
                 ),
+                if (couponNeedsRecheck) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'تغيرت قيمة السلة، أعد تطبيق الكوبون للتحقق من الخصم.',
+                    style: TextStyle(color: AppColors.error, fontSize: 12),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 
@@ -316,7 +418,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                 ),
                                 Text(
-                                    '${item.totalPrice.toStringAsFixed(0)} ر.ي'),
+                                  '${item.totalPrice.toStringAsFixed(0)} ر.ي',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        ...giftRewards.map(
+                          (reward) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'هدية مجانية: ${reward.gift.productName} × ${reward.quantity}',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                const Text(
+                                  '0 ر.ي',
+                                  style: TextStyle(color: AppColors.success),
+                                ),
                               ],
                             ),
                           ),
@@ -324,11 +451,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const Divider(),
                         _summaryRow('المجموع', cart.subtotal),
                         _summaryRow('التوصيل', cart.deliveryFee),
-                        if (_discount > 0)
-                          _summaryRow('الخصم ($_discount%)', -discountAmount,
-                              color: Colors.green),
+                        if (couponDiscount > 0)
+                          _summaryRow(
+                            'الخصم',
+                            -couponDiscount,
+                            color: Colors.green,
+                          ),
                         const Divider(),
-                        _summaryRow('الإجمالي', finalTotal, bold: true),
+                        _summaryRow('الإجمالي', total, bold: true),
                       ],
                     ),
                   ),
@@ -354,10 +484,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2),
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : const Text('تأكيد الطلب',
-                            style: TextStyle(fontSize: 17)),
+                        : const Text(
+                            'تأكيد الطلب',
+                            style: TextStyle(fontSize: 17),
+                          ),
                   ),
                 ),
 
@@ -371,12 +505,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _sectionTitle(String title) => Text(
-        title,
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-      );
+    title,
+    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+  );
 
-  Widget _summaryRow(String label, double value,
-      {bool bold = false, Color? color}) {
+  Widget _summaryRow(
+    String label,
+    double value, {
+    bool bold = false,
+    Color? color,
+  }) {
     final style = TextStyle(
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
       color: color,

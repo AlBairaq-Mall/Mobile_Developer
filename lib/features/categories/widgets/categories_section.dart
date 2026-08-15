@@ -1,104 +1,54 @@
+import 'package:bhm_supermarket/features/navigation/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_radius.dart';
-import '../../../app/theme/app_shadows.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../app/widgets/app_cached_image.dart';
 import '../../../app/widgets/app_section.dart';
-import '../../../core/models/category_model.dart';
+import '../../home/providers/home_provider.dart';
 import '../providers/category_provider.dart';
+import 'category_chip.dart';
 
 class CategoriesSection extends StatelessWidget {
   const CategoriesSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CategoryProvider>();
+    final categoryProvider = context.watch<CategoryProvider>();
+    final homeProvider = context.watch<HomeProvider>();
 
-    final categories = provider.mainCategories;
-
-    if (categories.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final categories = categoryProvider.mainCategories;
 
     return AppSection(
       title: 'الأقسام',
-      onSeeAll: () => context.push(AppRoutes.categories),
+      onSeeAll: () => context.read<NavigationProvider>().changeTab(1),
       child: SizedBox(
-        height: 118,
+        height: 86,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          itemCount: categories.length,
-          padding: EdgeInsets.zero,
-          separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          physics: const BouncingScrollPhysics(),
+          itemCount: categories.length + 1,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
           itemBuilder: (_, index) {
-            return _CategoryCard(
-              category: categories[index],
+            if (index == 0) {
+              return CategoryChip(
+                category: null,
+                selected: homeProvider.selectedCategory.isEmpty,
+                onTap: () {
+                  homeProvider.clearCategory();
+                },
+              );
+            }
+
+            final category = categories[index - 1];
+
+            return CategoryChip(
+              category: category,
+              selected: homeProvider.selectedCategory == category.id,
+              onTap: () {
+                homeProvider.selectCategory(category.id);
+              },
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryCard extends StatelessWidget {
-  final CategoryModel category;
-
-  const _CategoryCard({
-    required this.category,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      onTap: () {
-        context.push(
-          '${AppRoutes.categories}/${category.id}?name=${Uri.encodeComponent(category.name)}',
-        );
-      },
-      child: Ink(
-        width: 92,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          boxShadow: AppShadows.card,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: category.imageUrl.isNotEmpty
-                      ? AppCachedImage(
-                          imageUrl: category.imageUrl,
-                          fit: BoxFit.contain,
-                        )
-                      : Icon(
-                          Icons.category_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                category.name,
-                maxLines: 2,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.labelMedium,
-              ),
-            ],
-          ),
         ),
       ),
     );

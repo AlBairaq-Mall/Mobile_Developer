@@ -72,10 +72,7 @@ class SecureStorageService {
   }
 
   Future<void> saveLanguage(String languageCode) async {
-    await _storage.write(
-      key: _languageKey,
-      value: languageCode,
-    );
+    await _storage.write(key: _languageKey, value: languageCode);
   }
 
   Future<String> readLanguage() async {

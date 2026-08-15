@@ -1,4 +1,5 @@
 // import 'package:bhm_supermarket/features/auth/models/login_flow_model';
+import 'package:bhm_supermarket/features/auth/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -57,10 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthProvider>();
 
-    final error = await auth.login(
-      email: email,
-      password: password,
-    );
+    final error = await auth.login(email: email, password: password);
 
     if (!mounted) return;
 
@@ -73,13 +71,25 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final pendingRoute = auth.consumePendingRedirect();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final target = widget.redirectTo ?? pendingRoute;
-      context.go(target);
+      switch (auth.user?.role) {
+        case UserRole.admin:
+          context.go(AppRoutes.adminDashboard);
+          return;
+
+        case UserRole.delivery:
+          context.go(AppRoutes.deliveryHome);
+          return;
+
+        case UserRole.customer:
+        default:
+          final target = widget.redirectTo ?? auth.consumePendingRedirect();
+
+          context.go(target);
+          return;
+      }
     });
   }
 
@@ -117,20 +127,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.storefront_rounded,
-                        size: 50, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.storefront_rounded,
+                      size: 50,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('البيرق هايبر ماركت',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    'البيرق هايبر ماركت',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('تسوق ذكي • توصيل سريع',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 13)),
+                  Text(
+                    'تسوق ذكي • توصيل سريع',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -148,16 +167,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('تسجيل الدخول',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'تسجيل الدخول',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 6),
-                        Text('مرحباً بك! سجّل دخولك للمتابعة',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.outline,
-                                fontSize: 14)),
+                        Text(
+                          'مرحباً بك! سجّل دخولك للمتابعة',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.outline,
+                            fontSize: 14,
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         TextField(
                           controller: _emailController,
@@ -178,6 +200,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        if (_error != null) ...[
+                          Text(
+                            _error!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 13,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         _loading
                             ? const Center(child: CircularProgressIndicator())
                             : ElevatedButton(
@@ -194,15 +227,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               text: TextSpan(
                                 text: 'ليس لديك حساب؟  ',
                                 style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.outline,
-                                    fontFamily: 'Cairo'),
+                                  color: Theme.of(context).colorScheme.outline,
+                                  fontFamily: 'Cairo',
+                                ),
                                 children: const [
                                   TextSpan(
-                                      text: 'إنشاء حساب',
-                                      style: TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold))
+                                    text: 'إنشاء حساب',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

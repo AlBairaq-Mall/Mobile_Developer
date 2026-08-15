@@ -40,8 +40,11 @@ class ProductProvider extends ChangeNotifier {
       _units.isEmpty ? null : _units[_selectedUnitIndex];
 
   Future<void> loadProduct(String productId) async {
-    _isLoading = true;
-    _error = null;
+    _product = null;
+    _units = [];
+    _related = [];
+    _selectedUnitIndex = 0;
+    _quantity = 1;
     _isLoading = true;
     _error = null;
 
@@ -76,9 +79,22 @@ class ProductProvider extends ChangeNotifier {
       _related = [];
     }
 
-    _selectedUnitIndex = _units.isNotEmpty ? 0 : 0;
+    _selectedUnitIndex = 0;
     _quantity = 1;
     _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Sets a product directly from an already-loaded [ProductModel].
+  /// Use this when the product (with its units) is already available in
+  /// memory, so no unnecessary API call is made.
+  void setProduct(ProductModel product) {
+    _product = product;
+    _units = product.units;
+    _selectedUnitIndex = 0;
+    _quantity = 1;
+    _isLoading = false;
+    _error = null;
     notifyListeners();
   }
 
@@ -122,9 +138,7 @@ class ProductProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      final response = await _repository.getProducts(
-        categoryId: categoryId,
-      );
+      final response = await _repository.getProducts(categoryId: categoryId);
 
       if (response.isSuccess) {
         _products = response.data ?? [];

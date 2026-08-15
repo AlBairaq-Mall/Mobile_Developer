@@ -19,26 +19,14 @@ class OrderItemModel {
     required this.total,
   });
 
-  factory OrderItemModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
       id: JsonParser.string(json["id"]),
-      product: ProductModel.fromJson(
-        json["product"] ?? {},
-      ),
-      unit: ProductUnitModel.fromJson(
-        json["unit"] ?? {},
-      ),
-      quantity: JsonParser.intValue(
-        json["quantity"],
-      ),
-      price: JsonParser.doubleValue(
-        json["price"],
-      ),
-      total: JsonParser.doubleValue(
-        json["total"],
-      ),
+      product: ProductModel.fromJson(json["product"] ?? {}),
+      unit: ProductUnitModel.fromJson(json["unit"] ?? {}),
+      quantity: JsonParser.intValue(json["quantity"]),
+      price: JsonParser.doubleValue(json["price"]),
+      total: JsonParser.doubleValue(json["total"]),
     );
   }
 }

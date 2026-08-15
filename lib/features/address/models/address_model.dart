@@ -29,10 +29,7 @@ class AddressModel {
       id: JsonParser.string(json['id']),
       title: JsonParser.string(json['title']),
       address: JsonParser.string(json['address']),
-      isDefault: JsonParser.boolValue(
-        json['is_default'],
-        fallback: false,
-      ),
+      isDefault: JsonParser.boolValue(json['is_default'], fallback: false),
       latitude: json['latitude'] == null
           ? null
           : JsonParser.doubleValue(json['latitude']),
@@ -41,8 +38,9 @@ class AddressModel {
           : JsonParser.doubleValue(json['longitude']),
       street: json['street'] == null ? null : JsonParser.string(json['street']),
       city: json['city'] == null ? null : JsonParser.string(json['city']),
-      country:
-          json['country'] == null ? null : JsonParser.string(json['country']),
+      country: json['country'] == null
+          ? null
+          : JsonParser.string(json['country']),
     );
   }
 

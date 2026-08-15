@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 
+import '../router/navigation_helper.dart';
 import '../theme/app_colors.dart';
 
 /// ```
@@ -34,23 +34,16 @@ class AppBackButton extends StatelessWidget {
       onPressed!();
       return;
     }
-    final nav = Navigator.of(context);
-    if (nav.canPop()) {
-      nav.pop();
-    } else if (fallbackRoute != null) {
-      context.go(fallbackRoute!);
-    } else {
-      context.go('/home');
-    }
+
+    NavigationHelper.back(context, fallbackRoute: fallbackRoute);
   }
 
   @override
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final resolvedIcon = icon ??
-        (isRtl
-            ? Icons.arrow_forward_ios_rounded
-            : Icons.arrow_back_ios_rounded);
+    final resolvedIcon =
+        icon ??
+        (isRtl ? Icons.arrow_back_ios_rounded : Icons.arrow_back_ios_rounded);
     final resolvedIconColor =
         iconColor ?? IconTheme.of(context).color ?? AppColors.textPrimary;
 
@@ -69,11 +62,7 @@ class AppBackButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
-              child: Icon(
-                resolvedIcon,
-                size: 20,
-                color: resolvedIconColor,
-              ),
+              child: Icon(resolvedIcon, size: 20, color: resolvedIconColor),
             ),
           ),
         ),
@@ -102,14 +91,8 @@ class AppBackButtonOverlay extends StatelessWidget {
       onPressed!();
       return;
     }
-    final nav = Navigator.of(context);
-    if (nav.canPop()) {
-      nav.pop();
-    } else if (fallbackRoute != null) {
-      context.go(fallbackRoute!);
-    } else {
-      context.go('/home');
-    }
+
+    NavigationHelper.back(context, fallbackRoute: fallbackRoute);
   }
 
   @override
@@ -132,13 +115,7 @@ class AppBackButtonOverlay extends StatelessWidget {
               ),
             ],
           ),
-          child: Center(
-            child: Icon(
-              icon,
-              size: 18,
-              color: iconColor,
-            ),
-          ),
+          child: Center(child: Icon(icon, size: 18, color: iconColor)),
         ),
       ),
     );

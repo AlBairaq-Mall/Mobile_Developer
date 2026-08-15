@@ -3,33 +3,30 @@ import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
-import '../../../app/theme/app_shadows.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../app/widgets/app_cached_image.dart';
-import '../../../app/widgets/app_card.dart';
-import '../../../app/widgets/app_price.dart';
-import '../../../core/models/product_model.dart';
-import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
+import '../../../core/models/product_model.dart';
 import '../widgets/product_details_sheet.dart';
+
+import 'product_badge.dart';
+import 'product_card_container.dart';
+import 'product_favorite_button.dart';
+import 'product_image.dart';
+import 'product_info.dart';
+import 'product_cart_control.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
 
-  const ProductCard({
-    super.key,
-    required this.product,
-  });
+  const ProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final favorites = context.watch<FavoritesProvider>();
-    final isFavorite = favorites.isFavorite(product.id);
+    // select: only rebuilds this card when THIS product's favorite state changes.
+    final isFavorite = context.select<FavoritesProvider, bool>(
+      (f) => f.isFavorite(product.id),
+    );
 
-    return AppCard(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
+    return ProductCardContainer(
       onTap: () {
         showModalBottomSheet(
           context: context,
@@ -48,221 +45,68 @@ class ProductCard extends StatelessWidget {
                     top: Radius.circular(AppRadius.sheet),
                   ),
                 ),
-                child: ProductDetailsSheet(
-                  product: product,
-                ),
+                child: ProductDetailsSheet(product: product),
               );
             },
           ),
         );
       },
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          //--------------------------------------------------
-          // IMAGE
-          //--------------------------------------------------
-
-          Expanded(
-            flex: 15,
+          SizedBox(
+            height: 180,
             child: Stack(
-              clipBehavior: Clip.none,
               children: [
                 Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.md,
-                      left: AppSpacing.md,
-                      right: AppSpacing.md,
-                    ),
-                    child: Hero(
-                      tag: 'product_${product.id}',
-                      child: AppCachedImage(
-                        imageUrl: product.image,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
+                  child: ProductImage(
+                    image: product.image,
+                    heroTag: 'product_${product.id}',
                   ),
                 ),
 
-                //------------------------------------------------
-                // OFFER
-                //------------------------------------------------
+                /// Favorite
+                PositionedDirectional(
+                  top: 8,
+                  end: 8,
+                  child: ProductFavoriteButton(
+                    isFavorite: isFavorite,
+                    onTap: () =>
+                        context.read<FavoritesProvider>().toggle(product.id),
+                  ),
+                ),
 
+                /// Badge
                 if (product.isFlashDeal)
-                  PositionedDirectional(
-                    top: AppSpacing.sm,
-                    end: AppSpacing.sm,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.badgeSale,
-                        borderRadius: BorderRadius.circular(
-                          AppRadius.chip,
-                        ),
-                      ),
-                      child: Text(
-                        "عرض السوبر",
-                        style: AppTypography.badge,
-                      ),
+                  const PositionedDirectional(
+                    top: 10,
+                    start: 10,
+                    child: ProductBadge(
+                      title: 'عرض السوبر',
+                      color: AppColors.badgeSale,
                     ),
                   ),
 
                 if (product.isBestSeller && !product.isFlashDeal)
-                  PositionedDirectional(
-                    top: AppSpacing.sm,
-                    end: AppSpacing.sm,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.badgeBest,
-                        borderRadius: BorderRadius.circular(
-                          AppRadius.chip,
-                        ),
-                      ),
-                      child: Text(
-                        "الأكثر",
-                        style: AppTypography.badge,
-                      ),
+                  const PositionedDirectional(
+                    top: 10,
+                    start: 10,
+                    child: ProductBadge(
+                      title: 'الأكثر',
+                      color: AppColors.badgeBest,
                     ),
                   ),
 
-                //------------------------------------------------
-                // FAVORITE
-                //------------------------------------------------
-
-                PositionedDirectional(
-                  top: AppSpacing.sm,
-                  start: AppSpacing.sm,
-                  child: Material(
-                    color: Colors.white,
-                    shape: const CircleBorder(),
-                    elevation: 2,
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () {
-                        favorites.toggle(product.id);
-                      },
-                      child: SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite
-                              ? AppColors.favorite
-                              : AppColors.textHint,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                //------------------------------------------------
-                // ADD BUTTON
-                //------------------------------------------------
-
-                PositionedDirectional(
-                  bottom: -10,
-                  start: AppSpacing.md,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(
-                        AppRadius.button,
-                      ),
-                      onTap: () async {
-                        final response =
-                            await context.read<CartProvider>().add(product);
-
-                        if (!context.mounted) return;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              response.isSuccess
-                                  ? "تمت إضافة ${product.name}"
-                                  : response.message,
-                            ),
-                            backgroundColor: response.isSuccess
-                                ? AppColors.primary
-                                : AppColors.error,
-                          ),
-                        );
-                      },
-                      child: Ink(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(
-                            AppRadius.button,
-                          ),
-                          boxShadow: AppShadows.floating,
-                        ),
-                        child: const Icon(
-                          Icons.add_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                /// Add button (Removed from here, now unified inside ProductInfo)
               ],
             ),
           ),
-
-          //--------------------------------------------------
-          // CONTENT
-          //--------------------------------------------------
-
           Expanded(
-            flex: 8,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (product.brand.isNotEmpty)
-                    Text(
-                      product.brand,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.productBrand.copyWith(
-                        color: AppColors.textHint,
-                      ),
-                    ),
-                  const SizedBox(
-                    height: AppSpacing.xs,
-                  ),
-                  SizedBox(
-                    height: 38,
-                    child: Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.productName,
-                    ),
-                  ),
-                  const Spacer(),
-                  AppPrice(
-                    price: product.price,
-                    oldPrice: product.oldPrice,
-                  ),
-                  const SizedBox(
-                    height: AppSpacing.xs,
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+              child: ProductInfo(
+                product: product,
+                quantityWidget: ProductCartControl(product: product),
               ),
             ),
           ),

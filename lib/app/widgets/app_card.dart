@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_colors.dart';
 
 class AppCard extends StatelessWidget {
@@ -57,12 +56,7 @@ class AppCard extends StatelessWidget {
           borderRadius: radius,
           splashColor: AppColors.primary.withValues(alpha: .08),
           highlightColor: Colors.transparent,
-          child: Padding(
-            padding: EdgeInsets.zero,
-            // padding:
-            //     padding ?? const EdgeInsets.all(AppSpacing.md),
-            child: child,
-          ),
+          child: child,
         ),
       ),
     );

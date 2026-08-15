@@ -26,8 +26,10 @@ class AppSpacing {
   // Page Padding
   //══════════════════════════════════════
 
-  static const EdgeInsets page =
-      EdgeInsets.symmetric(horizontal: 16, vertical: 16);
+  static const EdgeInsets page = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 16,
+  );
 
   static const EdgeInsets pageHorizontal = EdgeInsets.symmetric(horizontal: 16);
 
@@ -47,22 +49,28 @@ class AppSpacing {
   // Buttons
   //══════════════════════════════════════
 
-  static const EdgeInsets button =
-      EdgeInsets.symmetric(horizontal: 20, vertical: 14);
+  static const EdgeInsets button = EdgeInsets.symmetric(
+    horizontal: 20,
+    vertical: 14,
+  );
 
   //══════════════════════════════════════
   // Inputs
   //══════════════════════════════════════
 
-  static const EdgeInsets input =
-      EdgeInsets.symmetric(horizontal: 18, vertical: 16);
+  static const EdgeInsets input = EdgeInsets.symmetric(
+    horizontal: 18,
+    vertical: 16,
+  );
 
   //══════════════════════════════════════
   // Lists
   //══════════════════════════════════════
 
-  static const EdgeInsets listItem =
-      EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+  static const EdgeInsets listItem = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 12,
+  );
 
   //══════════════════════════════════════
   // Sections

@@ -32,7 +32,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _authProvider = AuthProvider(DependencyInjection.authRepository);
     _router = AppRouter.create(_authProvider);
-    _authProvider.initSession();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _authProvider.initSession();
+    });
   }
 
   @override

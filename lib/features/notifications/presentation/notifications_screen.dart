@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import '../../../app/widgets/app_back_button.dart';
+import '../../../core/widgets/app_page_header.dart';
 
 class NotificationModel {
   final String title;
@@ -38,10 +38,7 @@ class NotificationsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('الإشعارات'),
-      ),
+      appBar: const AppPageHeader(title: 'الإشعارات'),
       body: notifications.isEmpty
           ? const Center(child: Text('لا توجد إشعارات حالياً'))
           : ListView.separated(
@@ -61,8 +58,11 @@ class NotificationsScreen extends StatelessWidget {
                       ),
                       subtitle: Text(n.body),
                       trailing: !n.read
-                          ? const Icon(Icons.circle,
-                              size: 10, color: Colors.green)
+                          ? const Icon(
+                              Icons.circle,
+                              size: 10,
+                              color: Colors.green,
+                            )
                           : null,
                     ),
                   ),

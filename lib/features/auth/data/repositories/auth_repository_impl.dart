@@ -17,6 +17,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String passwordConfirmation,
+    String role = 'customer',
   }) async {
     final response = await _remote.register(
       name: name,
@@ -24,16 +25,14 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email,
       password: password,
       passwordConfirmation: passwordConfirmation,
+      role: role,
     );
 
-// Backend currently doesn't return access_token after register.
-// We login automatically to obtain the token.
+    // Backend currently doesn't return access_token after register.
+    // We login automatically to obtain the token.
 
     if (response.isSuccess) {
-      return await login(
-        email: email,
-        password: password,
-      );
+      return await login(email: email, password: password);
     }
     return response;
   }
@@ -43,10 +42,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final response = await _remote.login(
-      email: email,
-      password: password,
-    );
+    final response = await _remote.login(email: email, password: password);
     if (response.isSuccess && response.data != null) {
       final user = response.data!;
       await _storage.saveUserProfile(user);

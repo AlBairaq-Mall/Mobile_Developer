@@ -1,8 +1,8 @@
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
-import '../../../app/widgets/app_back_button.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_widget.dart';
@@ -42,9 +42,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered
-          .where((p) =>
-              p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              p.brand.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                p.brand.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
           .toList();
     }
 
@@ -73,9 +75,23 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     final title = widget.categoryName ?? 'المنتجات';
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: Text(title),
+      appBar: AppPageHeader(
+        title: title,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            onSelected: (val) => setState(() => _sortBy = val),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'default', child: Text('الترتيب الافتراضي')),
+              PopupMenuItem(value: 'price_asc', child: Text('السعر: من الأقل')),
+              PopupMenuItem(
+                value: 'price_desc',
+                child: Text('السعر: من الأعلى'),
+              ),
+              PopupMenuItem(value: 'name', child: Text('الاسم')),
+            ],
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -96,19 +112,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             ),
           ),
         ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: (val) => setState(() => _sortBy = val),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'default', child: Text('الترتيب الافتراضي')),
-              PopupMenuItem(value: 'price_asc', child: Text('السعر: من الأقل')),
-              PopupMenuItem(
-                  value: 'price_desc', child: Text('السعر: من الأعلى')),
-              PopupMenuItem(value: 'name', child: Text('الاسم')),
-            ],
-          ),
-        ],
       ),
       body: _buildBody(provider),
     );
@@ -131,9 +134,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
     final filtered = _applyFilters(
       provider.products
-          .where(
-            (product) => product.categoryId == widget.categoryId,
-          )
+          .where((product) => product.categoryId == widget.categoryId)
           .toList(),
     );
 

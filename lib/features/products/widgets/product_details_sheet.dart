@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../app/widgets/app_cached_image.dart';
-import '../providers/product_provider.dart';
+import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../app/widgets/app_cached_image.dart';
 import '../../../core/models/product_model.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../ads/models/offer_model.dart';
+import '../../ads/providers/offers_provider.dart';
+import '../../../core/widgets/app_message.dart';
+import '../../../core/widgets/app_dialog.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../models/product_unit_model.dart';
+import '../providers/product_provider.dart';
 
-/// شاشة تفاصيل المنتج مع Accordion للوحدات المرتبطة بنفس الـ Item Code.
-/// الفكرة: كل وحدة (حبة / شدة / كرتون / باكت) تشترك في نفس Item Code
-/// ويُعرضها بشكل Expandable بدون الخروج من الصفحة.
+// ══════════════════════════════════════════════════════════════════════════════
+// ProductDetailsSheet
+// ══════════════════════════════════════════════════════════════════════════════
+
+/// Bottom-sheet احترافي لعرض تفاصيل المنتج.
+///
+/// إذا كانت وحدات المنتج محملة مسبقاً في [product.units]، يُستخدم
+/// [ProductProvider.setProduct] لتجنب طلب API إضافي.
+/// في حال لم تكن الوحدات متوفرة يُجرى [ProductProvider.loadProduct].
 class ProductDetailsSheet extends StatefulWidget {
   final ProductModel product;
 
@@ -22,470 +37,707 @@ class ProductDetailsSheet extends StatefulWidget {
 }
 
 class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
-  int? _expandedIndex;
+  int _quantity = 1;
+  bool _isAddingToCart = false;
+  int _imageIndex = 0;
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductProvider>().loadProduct(widget.product.id);
+      if (!mounted) return;
+      final provider = context.read<ProductProvider>();
+      if (widget.product.units.isNotEmpty) {
+        // الوحدات موجودة → لا حاجة لطلب API
+        provider.setProduct(widget.product);
+      } else {
+        // الوحدات غير موجودة → جلب من API
+        provider.loadProduct(widget.product.id);
+      }
     });
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // ── Cart Actions ─────────────────────────────────────────────────────────
+
+  Future<void> _addToCart() async {
+    // التحقق من تسجيل الدخول أولاً
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) {
+      _showLoginRequired();
+      return;
+    }
+
+    final provider = context.read<ProductProvider>();
+    final selectedUnit = provider.selectedUnit;
+    if (selectedUnit == null) return;
+
+    setState(() => _isAddingToCart = true);
+
+    final cart = context.read<CartProvider>();
+    final offerUnit = context.read<OffersProvider>().productUnitOffer(
+      productId: widget.product.id,
+      unitId: selectedUnit.id,
+    );
+    final response = await cart.addItem(
+      product: widget.product,
+      selectedUnit: selectedUnit,
+      unitPrice: offerUnit?.price ?? selectedUnit.price,
+      quantity: _quantity,
+    );
+
+    if (!mounted) return;
+    setState(() => _isAddingToCart = false);
+
+    if (response.isSuccess) {
+      // احفظ ScaffoldMessenger قبل pop
+      final messenger = ScaffoldMessenger.of(context);
+      context.pop();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppMessage.success(
+          messenger.context,
+          'تمت إضافة ${widget.product.name} (${selectedUnit.unitName}) للسلة',
+        );
+      });
+    } else {
+      AppMessage.error(
+        context,
+        response.message.isNotEmpty
+            ? response.message
+            : 'حدث خطأ، حاول مرة أخرى',
+      );
+    }
+  }
+
+  void _showLoginRequired() {
+    AppDialog.loginRequired(
+      context,
+      message: 'يجب تسجيل الدخول لإضافة منتجات إلى سلة التسوق.',
+    ).then((confirmed) {
+      if (confirmed == true && mounted) {
+        context.pop(); // إغلاق الـ sheet
+        context.push(AppRoutes.login);
+      }
+    });
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
+
+  @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProductProvider>();
+    final isFavorite = context.select<FavoritesProvider, bool>(
+      (f) => f.isFavorite(widget.product.id),
+    );
 
     final units = provider.units;
-    final selected = provider.selectedUnit;
-    final selectedIndex = provider.selectedUnitIndex;
-    final favProvider = context.watch<FavoritesProvider>();
-    final isFavorite = favProvider.isFavorite(widget.product.id);
-    final cs = Theme.of(context).colorScheme;
+    final selectedUnit = provider.selectedUnit;
+    final selectedOffer = selectedUnit == null
+        ? null
+        : context.select<OffersProvider, OfferProductUnitModel?>(
+            (offers) => offers.productUnitOffer(
+              productId: widget.product.id,
+              unitId: selectedUnit.id,
+            ),
+          );
+    final images = widget.product.images;
 
     return SafeArea(
+      top: false,
       child: Column(
         children: [
-          // ── شريط الأزرار العلوي ────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-                // كود الصنف - يظهر كـ Chip مميز
-                Chip(
-                  label: Text(
-                    'SKU: ${widget.product.itemCode}',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  side: const BorderSide(color: AppColors.primary),
-                ),
-                IconButton(
-                  onPressed: () => favProvider.toggle(widget.product.id),
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // ── Drag Handle ────────────────────────────────────────────────
+          const _DragHandle(),
 
-          // ── محتوى قابل للتمرير ────────────────────────
+          // ── Scrollable Content ─────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // صورة المنتج
-                  _ProductImage(product: widget.product),
-
-                  const SizedBox(height: 16),
-
-                  // اسم المنتج + البراند
-                  Text(
-                    widget.product.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                  _ImageSection(
+                    images: images,
+                    productId: widget.product.id,
+                    isFavorite: isFavorite,
+                    currentIndex: _imageIndex,
+                    pageController: _pageController,
+                    onPageChanged: (i) => setState(() => _imageIndex = i),
+                    onClose: () => context.pop(),
+                    onFavoriteToggle: () => context
+                        .read<FavoritesProvider>()
+                        .toggle(widget.product.id),
                   ),
-                  if (widget.product.brand.isNotEmpty)
-                    Text(
-                      widget.product.brand,
-                      style: TextStyle(color: cs.outline),
-                    ),
 
-                  if (widget.product.description.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(widget.product.description,
-                        style: TextStyle(color: cs.outline, height: 1.6)),
-                  ],
-
-                  const SizedBox(height: 24),
-
-                  // ── قسم الوحدات (Accordion/Accordion) ──
-                  if (units.isNotEmpty) ...[
-                    Row(
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.inventory_2_outlined,
-                            size: 18, color: AppColors.primary),
-                        const SizedBox(width: 6),
+                        // التصنيف
+                        if (widget.product.categoryName.isNotEmpty)
+                          _CategoryChip(label: widget.product.categoryName),
+
+                        const SizedBox(height: 10),
+
+                        // اسم المنتج
                         Text(
-                          'الوحدات المتاحة',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          widget.product.name,
+                          style: AppTypography.headlineSmall,
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(10),
+
+                        // البراند
+                        if (widget.product.brand.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.product.brand,
+                            style: AppTypography.bodySmall,
                           ),
-                          child: Text(
-                            '${units.length} وحدة',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold),
+                        ],
+
+                        // الوصف
+                        if (widget.product.description.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            widget.product.description,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                              height: 1.65,
+                            ),
                           ),
-                        ),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // ── قسم الوحدات ──────────────────────────────
+                        if (provider.isLoading)
+                          const _UnitsLoadingState()
+                        else if (provider.error != null)
+                          _UnitsErrorState(error: provider.error!)
+                        else if (units.isNotEmpty)
+                          _UnitsSection(
+                            units: units,
+                            selectedIndex: provider.selectedUnitIndex,
+                            onSelect: (i) =>
+                                context.read<ProductProvider>().selectUnit(i),
+                          )
+                        else
+                          const _NoUnitsWarning(),
+
+                        // مسافة لشريط الأسفل
+                        const SizedBox(height: 110),
                       ],
                     ),
-                    const SizedBox(height: 12),
-
-                    // كل وحدة = بطاقة قابلة للتوسع + راديو للاختيار
-                    ...List.generate(units.length, (i) {
-                      final unit = units[i];
-                      final isSelected = selectedIndex == i;
-                      final isExpanded = _expandedIndex == i;
-
-                      return _UnitAccordionCard(
-                        unit: unit,
-                        isSelected: isSelected,
-                        isExpanded: isExpanded,
-                        onSelect: () =>
-                            context.read<ProductProvider>().selectUnit(i),
-                        onToggleExpand: () => setState(() {
-                          _expandedIndex = isExpanded ? null : i;
-                        }),
-                      );
-                    }),
-                  ] else
-                    const _NoUnitsWarning(),
-
-                  const SizedBox(height: 80),
+                  ),
                 ],
               ),
             ),
           ),
 
-          // ── شريط الإضافة السفلي ───────────────────────
-          if (selected != null)
-            _AddToCartBar(
-              unit: selected,
-              product: widget.product,
-            ),
+          // ── Bottom Action Bar ──────────────────────────────────────────
+          if (selectedUnit != null)
+            _BottomBar(
+              selectedUnit: selectedUnit,
+              price: selectedOffer?.price ?? selectedUnit.price,
+              oldPrice: selectedOffer?.hasDiscount == true
+                  ? selectedOffer!.oldPrice
+                  : selectedUnit.oldPrice,
+              quantity: _quantity,
+              isLoading: _isAddingToCart,
+              onIncrease: () => setState(() => _quantity++),
+              onDecrease: () {
+                if (_quantity > 1) setState(() => _quantity--);
+              },
+              onAddToCart: _addToCart,
+            )
+          else if (!provider.isLoading)
+            const _UnavailableBottomBar(),
         ],
       ),
     );
   }
 }
 
-// ══════════════════════════════════════════════════════
-// بطاقة الوحدة (Accordion)
-// ══════════════════════════════════════════════════════
-class _UnitAccordionCard extends StatelessWidget {
-  final ProductUnitModel unit;
-  final bool isSelected;
-  final bool isExpanded;
-  final VoidCallback onSelect;
-  final VoidCallback onToggleExpand;
+// ══════════════════════════════════════════════════════════════════════════════
+// _DragHandle
+// ══════════════════════════════════════════════════════════════════════════════
 
-  const _UnitAccordionCard({
-    required this.unit,
-    required this.isSelected,
-    required this.isExpanded,
-    required this.onSelect,
-    required this.onToggleExpand,
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 4),
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: AppColors.outline,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// _ImageSection
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _ImageSection extends StatelessWidget {
+  final List<String> images;
+  final String productId;
+  final bool isFavorite;
+  final int currentIndex;
+  final PageController pageController;
+  final ValueChanged<int> onPageChanged;
+  final VoidCallback onClose;
+  final VoidCallback onFavoriteToggle;
+
+  const _ImageSection({
+    required this.images,
+    required this.productId,
+    required this.isFavorite,
+    required this.currentIndex,
+    required this.pageController,
+    required this.onPageChanged,
+    required this.onClose,
+    required this.onFavoriteToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final hasImages = images.isNotEmpty;
 
+    return SizedBox(
+      height: 260,
+      child: Stack(
+        children: [
+          // ── الصورة / المعرض ──────────────────────────────────────────
+          if (hasImages)
+            PageView.builder(
+              controller: pageController,
+              onPageChanged: onPageChanged,
+              itemCount: images.length,
+              itemBuilder: (_, i) => Hero(
+                tag: 'product_$productId',
+                child: AppCachedImage(
+                  imageUrl: images[i],
+                  width: double.infinity,
+                  height: 260,
+                  radius: 0,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              color: AppColors.surfaceVariant,
+              child: const Center(
+                child: Icon(
+                  Icons.shopping_bag_rounded,
+                  size: 80,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+
+          // ── Dot Indicators (عند تعدد الصور) ─────────────────────────
+          if (images.length > 1)
+            Positioned(
+              bottom: 12,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  images.length,
+                  (i) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: currentIndex == i ? 20 : 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: currentIndex == i
+                          ? AppColors.primary
+                          : Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // ── زر الإغلاق ───────────────────────────────────────────────
+          PositionedDirectional(
+            top: 12,
+            start: 12,
+            child: _CircleButton(icon: Icons.close_rounded, onTap: onClose),
+          ),
+
+          // ── زر المفضلة ───────────────────────────────────────────────
+          PositionedDirectional(
+            top: 12,
+            end: 12,
+            child: _CircleButton(
+              icon: isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              iconColor: isFavorite ? AppColors.favorite : null,
+              onTap: onFavoriteToggle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// _CircleButton
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _CircleButton extends StatelessWidget {
+  final IconData icon;
+  final Color? iconColor;
+  final VoidCallback onTap;
+
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.9),
+      shape: const CircleBorder(),
+      elevation: 1,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            icon,
+            size: 22,
+            color: iconColor ?? AppColors.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// _CategoryChip
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  const _CategoryChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primaryExtraLight,
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.labelSmall.copyWith(color: AppColors.primaryDark),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// _UnitsSection
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _UnitsSection extends StatelessWidget {
+  final List<ProductUnitModel> units;
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+
+  const _UnitsSection({
+    required this.units,
+    required this.selectedIndex,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // عنوان القسم
+        Row(
+          children: [
+            const Icon(
+              Icons.layers_outlined,
+              size: 18,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 6),
+            Text('اختر الوحدة', style: AppTypography.titleSmall),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(AppRadius.chip),
+              ),
+              child: Text('${units.length}', style: AppTypography.badge),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // بطاقات الوحدات
+        ...List.generate(units.length, (i) {
+          return _UnitCard(
+            unit: units[i],
+            isSelected: selectedIndex == i,
+            onTap: () => onSelect(i),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// _UnitCard
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _UnitCard extends StatelessWidget {
+  final ProductUnitModel unit;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _UnitCard({
+    required this.unit,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onSelect,
+      onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.06)
-              : cs.surfaceContainerHighest.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(14),
+              ? AppColors.primaryExtraLight
+              : AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.transparent,
             width: 1.5,
           ),
         ),
-        child: Column(
+        child: Row(
           children: [
-            // ── رأس البطاقة ──────────────────────────────
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
+            // ── مؤشر الاختيار (radio) ────────────────────────────────
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.outline,
+                  width: 2,
+                ),
+                color: isSelected ? AppColors.primary : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
+
+            const SizedBox(width: 12),
+
+            // ── اسم الوحدة + الكمية ──────────────────────────────────
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // راديو الاختيار
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.grey,
-                        width: 2,
-                      ),
-                      color:
-                          isSelected ? AppColors.primary : Colors.transparent,
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, size: 14, color: Colors.white)
-                        : null,
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // اسم الوحدة + العبوة
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              unit.unitName,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isSelected ? AppColors.primary : null,
-                              ),
-                            ),
-                            if (unit.isDefault) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color:
-                                      AppColors.success.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'افتراضية',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.success,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        Text(unit.package,
-                            style: TextStyle(fontSize: 12, color: cs.outline)),
-                      ],
+                  Text(
+                    unit.unitName,
+                    style: AppTypography.titleSmall.copyWith(
+                      color: isSelected
+                          ? AppColors.primaryDark
+                          : AppColors.textPrimary,
                     ),
                   ),
-
-                  // السعر
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (unit.oldPrice != null)
-                        Text(
-                          '${unit.oldPrice!.toStringAsFixed(0)} ر.ي',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                      Text(
-                        '${unit.price.toStringAsFixed(0)} ر.ي',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: isSelected ? AppColors.primary : null,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  // زر التوسع
-                  GestureDetector(
-                    onTap: onToggleExpand,
-                    child: AnimatedRotation(
-                      turns: isExpanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: isSelected ? AppColors.primary : Colors.grey,
-                      ),
-                    ),
-                  ),
+                  if (unit.quantity > 1) ...[
+                    const SizedBox(height: 2),
+                    Text('${unit.quantity}', style: AppTypography.bodySmall),
+                  ],
                 ],
               ),
             ),
 
-            // ── محتوى التوسع ─────────────────────────────
-            AnimatedCrossFade(
-              duration: const Duration(milliseconds: 250),
-              crossFadeState: isExpanded
-                  ? CrossFadeState.showFirst
-                  : CrossFadeState.showSecond,
-              firstChild: Container(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Divider(height: 1),
-                    const SizedBox(height: 12),
-
-                    // تفاصيل الوحدة
-                    _detailRow('العبوة', unit.package),
-                    _detailRow('السعر', '${unit.price.toStringAsFixed(0)} ر.ي'),
-                    if (unit.oldPrice != null)
-                      _detailRow('السعر القديم',
-                          '${unit.oldPrice!.toStringAsFixed(0)} ر.ي'),
-                    if (unit.description.isNotEmpty)
-                      _detailRow('الوصف', unit.description),
-                    if (unit.label != null) _detailRow('التصنيف', unit.label!),
-
-                    // حساب التحويل للوحدات الأخرى (معلومة إضافية)
-                    const SizedBox(height: 12),
-                    const Text(
-                      'SKU (رمز الصنف)',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            // ── السعر ───────────────────────────────────────────────
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (unit.oldPrice != null)
+                  Text(
+                    '${unit.oldPrice!.toStringAsFixed(2)} ر.ي',
+                    style: AppTypography.caption.copyWith(
+                      decoration: TextDecoration.lineThrough,
+                      color: AppColors.textHint,
                     ),
-                    const SizedBox(height: 4),
-                    // TODO: استبدل بـ itemCode من API
-                    Row(
-                      children: [
-                        const Icon(Icons.qr_code_2,
-                            size: 16, color: AppColors.primary),
-                        const SizedBox(width: 6),
-                        Text(
-                          'مشترك مع وحدات المنتج الأخرى بنفس الرمز',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.primary.withValues(alpha: 0.8)),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
+                Text(
+                  '${unit.price.toStringAsFixed(2)} ر.ي',
+                  style: AppTypography.priceMedium.copyWith(
+                    color: isSelected ? AppColors.primaryDark : AppColors.price,
+                    fontSize: 17,
+                  ),
                 ),
-              ),
-              secondChild: const SizedBox(height: 0),
+              ],
             ),
           ],
         ),
       ),
     );
   }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(label,
-                style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(value,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ══════════════════════════════════════════════════════
-// شريط الإضافة للسلة السفلي
-// ══════════════════════════════════════════════════════
-class _AddToCartBar extends StatelessWidget {
-  final ProductUnitModel unit;
-  final ProductModel product;
+// ══════════════════════════════════════════════════════════════════════════════
+// _BottomBar
+// ══════════════════════════════════════════════════════════════════════════════
 
-  const _AddToCartBar({required this.unit, required this.product});
+class _BottomBar extends StatelessWidget {
+  final ProductUnitModel selectedUnit;
+  final double price;
+  final double? oldPrice;
+  final int quantity;
+  final bool isLoading;
+  final VoidCallback onIncrease;
+  final VoidCallback onDecrease;
+  final VoidCallback onAddToCart;
+
+  const _BottomBar({
+    required this.selectedUnit,
+    required this.price,
+    this.oldPrice,
+    required this.quantity,
+    required this.isLoading,
+    required this.onIncrease,
+    required this.onDecrease,
+    required this.onAddToCart,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(20, 14, 20, bottomPadding + 14),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 20,
             offset: const Offset(0, -4),
           ),
         ],
       ),
       child: Row(
         children: [
-          // السعر
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('السعر', style: TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(
-                '${unit.price.toStringAsFixed(0)} ر.ي',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-              Text(unit.unitName,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            ],
+          // ── اختيار الكمية ± ───────────────────────────────────────
+          _QuantitySelector(
+            quantity: quantity,
+            onIncrease: onIncrease,
+            onDecrease: onDecrease,
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
 
-          // زر الإضافة
+          // ── السعر الإجمالي ────────────────────────────────────────
           Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final cart = context.read<CartProvider>();
-                cart.addItem(
-                  product: product,
-                  selectedUnit: unit,
-                  unitPrice: unit.price,
-                );
-
-                final messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('تمت إضافة (${unit.unitName}) للسلة'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (oldPrice != null && oldPrice! > price)
+                  Text(
+                    '${(oldPrice! * quantity).toStringAsFixed(2)} ر.ي',
+                    style: AppTypography.caption.copyWith(
+                      decoration: TextDecoration.lineThrough,
+                      color: AppColors.textHint,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.shopping_cart_outlined),
-              label: const Text('إضافة للسلة'),
+                Text(
+                  '${(price * quantity).toStringAsFixed(2)} ر.ي',
+                  style: AppTypography.priceLarge,
+                ),
+                Text(selectedUnit.unitName, style: AppTypography.caption),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // ── زر الإضافة للسلة ─────────────────────────────────────
+          SizedBox(
+            height: 48,
+            child: FilledButton.icon(
+              onPressed: isLoading ? null : onAddToCart,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.primary.withValues(
+                  alpha: 0.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+              ),
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.shopping_cart_outlined, size: 20),
+              label: Text(
+                isLoading ? 'جاري الإضافة...' : 'أضف للسلة',
+                style: AppTypography.button,
+              ),
             ),
           ),
         ],
@@ -494,37 +746,121 @@ class _AddToCartBar extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-// صورة المنتج
-// ══════════════════════════════════════════════════════
-class _ProductImage extends StatelessWidget {
-  final ProductModel product;
-  const _ProductImage({required this.product});
+// ══════════════════════════════════════════════════════════════════════════════
+// _QuantitySelector
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _QuantitySelector extends StatelessWidget {
+  final int quantity;
+  final VoidCallback onIncrease;
+  final VoidCallback onDecrease;
+
+  const _QuantitySelector({
+    required this.quantity,
+    required this.onIncrease,
+    required this.onDecrease,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 220,
-      width: double.infinity,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: product.image.isEmpty
-          ? const Center(
-              child: Icon(
-                Icons.image_outlined,
-                size: 70,
-                color: Colors.grey,
-              ),
-            )
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: AppCachedImage(
-                imageUrl: product.image,
-                fit: BoxFit.cover,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
+          SizedBox(
+            width: 36,
+            child: Center(
+              child: Text('$quantity', style: AppTypography.titleSmall),
             ),
+          ),
+          _QtyButton(
+            icon: Icons.remove_rounded,
+            onTap: quantity > 1 ? onDecrease : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QtyButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _QtyButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Icon(
+          icon,
+          size: 18,
+          color: onTap != null ? AppColors.primary : AppColors.textHint,
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// State Widgets
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _UnitsLoadingState extends StatelessWidget {
+  const _UnitsLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        2,
+        (_) => Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          height: 62,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UnitsErrorState extends StatelessWidget {
+  final String error;
+  const _UnitsErrorState({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.errorLight,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline_rounded, color: AppColors.error),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              error.isNotEmpty ? error : 'تعذر تحميل بيانات المنتج',
+              style: AppTypography.bodySmall.copyWith(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -537,19 +873,52 @@ class _NoUnitsWarning extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade300),
+        color: AppColors.warningLight,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.warning_outlined, color: Colors.orange),
-          SizedBox(width: 10),
+          const Icon(Icons.info_outline_rounded, color: AppColors.warning),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               'لم يتم ربط وحدات بهذا المنتج بعد.',
-              style: TextStyle(color: Colors.orange),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.warning),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UnavailableBottomBar extends StatelessWidget {
+  const _UnavailableBottomBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 14, 20, bottomPadding + 14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.block_rounded, color: AppColors.textHint, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            'هذا المنتج غير متاح للشراء حالياً',
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textHint),
           ),
         ],
       ),

@@ -1,22 +1,28 @@
-import '../../../core/mock/product_units_data.dart' as data;
 import '../../../core/models/product_model.dart';
-
-import '../datasource/home_remote_datasource.dart';
+import '../../products/domain/repositories/product_repository.dart';
 
 class HomeRepository {
-  final HomeRemoteDatasource datasource;
+  final ProductRepository productRepository;
 
-  HomeRepository(this.datasource);
+  HomeRepository(this.productRepository);
 
-  Future<List<ProductModel>> getProducts() async {
+  Future<List<ProductModel>> getProducts({
+    String? search,
+    String? categoryId,
+  }) async {
     try {
-      // مستقبلاً
-      // final json = await datasource.getProducts();
-      // return ProductMapper.fromList(json);
+      final response = await productRepository.getProducts(
+        search: search,
+        categoryId: categoryId,
+      );
 
-      return List.from(data.productUnits);
+      if (!response.isSuccess) {
+        return [];
+      }
+
+      return response.data ?? [];
     } catch (_) {
-      return List.from(data.productUnits);
+      return [];
     }
   }
 }

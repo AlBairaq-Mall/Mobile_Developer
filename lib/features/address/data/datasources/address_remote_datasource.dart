@@ -10,10 +10,7 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
   Future<ApiResponse<List<AddressModel>>> getLocations() =>
       getPaginated<List<AddressModel>>(
         ApiEndpoints.locations,
-        parser: (json) => JsonParser.list(
-          json,
-          AddressModel.fromJson,
-        ),
+        parser: (json) => JsonParser.list(json, AddressModel.fromJson),
       );
 
   Future<ApiResponse<AddressModel>> createLocation({
@@ -40,9 +37,7 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
     return postEnvelope<AddressModel>(
       ApiEndpoints.locations,
       data: data,
-      parser: (json) => AddressModel.fromJson(
-        JsonParser.map(json),
-      ),
+      parser: (json) => AddressModel.fromJson(JsonParser.map(json)),
     );
   }
 
@@ -71,9 +66,7 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
     return putEnvelope<AddressModel>(
       "${ApiEndpoints.locations}/$id",
       data: data,
-      parser: (json) => AddressModel.fromJson(
-        JsonParser.map(json),
-      ),
+      parser: (json) => AddressModel.fromJson(JsonParser.map(json)),
     );
   }
 

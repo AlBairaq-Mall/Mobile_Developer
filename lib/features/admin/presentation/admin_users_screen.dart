@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../app/widgets/app_back_button.dart';
 
 class AdminUsersScreen extends StatelessWidget {
   const AdminUsersScreen({super.key});
@@ -8,42 +8,46 @@ class AdminUsersScreen extends StatelessWidget {
   // TODO: استبدل بـ GET /api/admin/users
   static const _users = [
     _UserRow(
-        name: 'أحمد علي',
-        phone: '777123456',
-        role: 'customer',
-        orders: 12,
-        joined: '2025-01'),
+      name: 'أحمد علي',
+      phone: '777123456',
+      role: 'customer',
+      orders: 12,
+      joined: '2025-01',
+    ),
     _UserRow(
-        name: 'سارة محمد',
-        phone: '771456789',
-        role: 'customer',
-        orders: 8,
-        joined: '2025-02'),
+      name: 'سارة محمد',
+      phone: '771456789',
+      role: 'customer',
+      orders: 8,
+      joined: '2025-02',
+    ),
     _UserRow(
-        name: 'محمد التوصيل',
-        phone: '733000001',
-        role: 'delivery',
-        orders: 145,
-        joined: '2024-12'),
+      name: 'محمد التوصيل',
+      phone: '733000001',
+      role: 'delivery',
+      orders: 145,
+      joined: '2024-12',
+    ),
     _UserRow(
-        name: 'مدير النظام',
-        phone: '000000001',
-        role: 'admin',
-        orders: 0,
-        joined: '2024-01'),
+      name: 'مدير النظام',
+      phone: '000000001',
+      role: 'admin',
+      orders: 0,
+      joined: '2024-01',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('إدارة المستخدمين'),
+      appBar: AppPageHeader(
+        title: 'إدارة المستخدمين',
         actions: [
           IconButton(
-              icon: const Icon(Icons.person_add_outlined),
-              onPressed: () {},
-              tooltip: 'إضافة مستخدم'),
+            icon: const Icon(Icons.person_add_outlined),
+            tooltip: 'إضافة مستخدم',
+            onPressed: () {},
+          ),
         ],
       ),
       body: Column(
@@ -73,12 +77,18 @@ class AdminUsersScreen extends StatelessWidget {
                   child: Material(
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: _roleColor(u.role).withValues(alpha: 0.15),
-                        child:
-                            Icon(_roleIcon(u.role), color: _roleColor(u.role)),
+                        backgroundColor: _roleColor(
+                          u.role,
+                        ).withValues(alpha: 0.15),
+                        child: Icon(
+                          _roleIcon(u.role),
+                          color: _roleColor(u.role),
+                        ),
                       ),
-                      title: Text(u.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        u.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Text('${u.phone}  •  ${u.orders} طلب'),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -86,20 +96,29 @@ class AdminUsersScreen extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: _roleColor(u.role).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(_roleName(u.role),
-                                style: TextStyle(
-                                    color: _roleColor(u.role),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold)),
+                            child: Text(
+                              _roleName(u.role),
+                              style: TextStyle(
+                                color: _roleColor(u.role),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          Text(u.joined,
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.grey)),
+                          Text(
+                            u.joined,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -144,10 +163,11 @@ class _FilterChip extends StatelessWidget {
 class _UserRow {
   final String name, phone, role, joined;
   final int orders;
-  const _UserRow(
-      {required this.name,
-      required this.phone,
-      required this.role,
-      required this.orders,
-      required this.joined});
+  const _UserRow({
+    required this.name,
+    required this.phone,
+    required this.role,
+    required this.orders,
+    required this.joined,
+  });
 }

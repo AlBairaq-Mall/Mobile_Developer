@@ -8,11 +8,7 @@ class AppSectionTitle extends StatelessWidget {
 
   final Widget? action;
 
-  const AppSectionTitle({
-    super.key,
-    required this.title,
-    this.action,
-  });
+  const AppSectionTitle({super.key, required this.title, this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +19,7 @@ class AppSectionTitle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              title,
-              style: AppTypography.titleLarge,
-            ),
-          ),
+          Expanded(child: Text(title, style: AppTypography.titleLarge)),
           if (action != null) action!,
         ],
       ),

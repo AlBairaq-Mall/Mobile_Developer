@@ -1,8 +1,10 @@
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../../app/widgets/app_back_button.dart';
+import '../../../core/widgets/app_message.dart';
+import '../../../core/widgets/app_dialog.dart';
 import '../models/address_model.dart';
 import '../providers/address_provider.dart';
 import '../widgets/pick_location_sheet.dart';
@@ -41,18 +43,11 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: AppBackButton(
-          onPressed: () {
-            final nav = Navigator.of(context);
-            if (nav.canPop()) {
-              nav.pop(widget.fromCheckout);
-            } else {
-              Navigator.of(context).pop(false);
-            }
-          },
-        ),
-        title: const Text("عناوين التوصيل"),
+      appBar: AppPageHeader(
+        title: "عناوين التوصيل",
+        onBack: () {
+          Navigator.of(context).pop(widget.fromCheckout);
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
@@ -66,9 +61,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       body: Consumer<AddressProvider>(
         builder: (context, provider, _) {
           if (provider.loading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (provider.addresses.isEmpty) {
@@ -114,12 +107,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              100,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             itemCount: provider.addresses.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (_, index) {
@@ -128,17 +116,10 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               return _AddressTile(
                 address: address,
                 onEdit: () {
-                  _showAddressDialog(
-                    context,
-                    existing: address,
-                  );
+                  _showAddressDialog(context, existing: address);
                 },
                 onDelete: () {
-                  _confirmDelete(
-                    context,
-                    provider,
-                    address.id,
-                  );
+                  _confirmDelete(context, provider, address.id);
                 },
                 onSetDefault: () async {
                   await provider.setDefault(address.id);
@@ -151,7 +132,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
     );
   }
 
-  void _showAddressDialog(
+  Future<void> _showAddressDialog(
     BuildContext context, {
     AddressModel? existing,
   }) async {
@@ -161,26 +142,21 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       useSafeArea: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) => const PickLocationSheet(),
     );
 
     if (!context.mounted) return;
 
-    _showManualForm(
-      existing,
-      picked: pickedLocation,
-    );
+    await _showManualForm(existing, picked: pickedLocation);
   }
 
-  void _showManualForm(
+  Future<void> _showManualForm(
     AddressModel? existing, {
     PickedLocation? picked,
-  }) {
-    showModalBottomSheet(
+  }) async {
+    final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -190,6 +166,13 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
         pickedLocation: picked,
       ),
     );
+
+    if (!mounted) return;
+
+    // الـ BottomSheet أُغلق بنجاح
+    if (saved == true && widget.fromCheckout) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   void _confirmDelete(
@@ -197,48 +180,24 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
     AddressProvider provider,
     String id,
   ) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("حذف العنوان"),
-        content: const Text(
-          "هل تريد حذف هذا العنوان؟",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("إلغاء"),
-          ),
-          TextButton(
-            onPressed: () async {
-              final success = await provider.deleteAddress(
-                int.parse(id),
-              );
+    AppDialog.confirm(
+      context,
+      title: 'حذف العنوان',
+      message: 'هل تريد حذف هذا العنوان نهائياً؟',
+      confirmText: 'حذف',
+      isDanger: true,
+    ).then((confirmed) async {
+      if (confirmed != true || !context.mounted) return;
 
-              if (context.mounted) {
-                Navigator.pop(context);
+      final success = await provider.deleteAddress(int.parse(id));
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success ? "تم حذف العنوان" : "فشل حذف العنوان",
-                    ),
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              "حذف",
-              style: TextStyle(
-                color: Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      if (!context.mounted) return;
+      if (success) {
+        AppMessage.success(context, 'تم حذف العنوان بنجاح');
+      } else {
+        AppMessage.error(context, 'فشل حذف العنوان، حاول مرة أخرى');
+      }
+    });
   }
 }
 
@@ -268,17 +227,12 @@ class _AddressTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
-                  Icons.location_on,
-                  color: AppColors.primary,
-                ),
+                const Icon(Icons.location_on, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     address.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 if (address.isDefault)
@@ -289,13 +243,9 @@ class _AddressTile extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: .1),
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      "افتراضي",
-                    ),
+                    child: const Text("افتراضي"),
                   ),
               ],
             ),
@@ -307,23 +257,13 @@ class _AddressTile extends StatelessWidget {
                 if (!address.isDefault)
                   TextButton(
                     onPressed: onSetDefault,
-                    child: const Text(
-                      "تعيين افتراضي",
-                    ),
+                    child: const Text("تعيين افتراضي"),
                   ),
                 const Spacer(),
-                IconButton(
-                  onPressed: onEdit,
-                  icon: const Icon(
-                    Icons.edit,
-                  ),
-                ),
+                IconButton(onPressed: onEdit, icon: const Icon(Icons.edit)),
                 IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ),
+                  icon: const Icon(Icons.delete, color: Colors.red),
                 ),
               ],
             ),
@@ -391,11 +331,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
 
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _streetCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("الرجاء تعبئة جميع الحقول"),
-        ),
-      );
+      AppMessage.warning(context, 'الرجاء تعبئة جميع الحقول المطلوبة');
       return;
     }
 
@@ -428,26 +364,9 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pop(context, true);
-
-      if (widget.fromCheckout && mounted) {
-        Navigator.of(context).pop(true);
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.existing == null ? 'تمت إضافة العنوان' : 'تم تحديث العنوان',
-          ),
-        ),
-      );
+      Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("فشلت العملية"),
-        ),
-      );
+      AppMessage.error(context, 'فشلت العملية، حاول مرة أخرى');
     }
   }
 
@@ -463,40 +382,29 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
         child: Column(
           children: [
             Text(
               widget.existing == null ? "إضافة عنوان" : "تعديل عنوان",
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            _field(
-              "اسم العنوان",
-              _titleCtrl,
-            ),
-            _field(
-              "الشارع",
-              _streetCtrl,
-            ),
+            _field("اسم العنوان", _titleCtrl),
+            _field("الشارع", _streetCtrl),
             const SizedBox(height: 10),
             InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: () async {
                 final pickedLocation =
                     await showModalBottomSheet<PickedLocation>(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (_) => const PickLocationSheet(),
-                );
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      builder: (_) => const PickLocationSheet(),
+                    );
 
                 if (pickedLocation == null) return;
 
@@ -517,22 +425,14 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                   children: const [
                     Icon(Icons.map, color: Colors.green),
                     SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        "اختيار الموقع من الخريطة",
-                      ),
-                    ),
+                    Expanded(child: Text("اختيار الموقع من الخريطة")),
                     Icon(Icons.arrow_forward_ios, size: 16),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            _field(
-              "الهاتف",
-              _phoneCtrl,
-              type: TextInputType.phone,
-            ),
+            _field("الهاتف", _phoneCtrl, type: TextInputType.phone),
             SwitchListTile(
               value: _isDefault,
               onChanged: (v) {
@@ -545,10 +445,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _save,
-                child: const Text("حفظ"),
-              ),
+              child: ElevatedButton(onPressed: _save, child: const Text("حفظ")),
             ),
           ],
         ),
@@ -562,19 +459,13 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
     TextInputType type = TextInputType.text,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 14,
-      ),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
         controller: controller,
         keyboardType: type,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              12,
-            ),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

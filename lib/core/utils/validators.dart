@@ -24,7 +24,9 @@ class Validators {
   }
 
   static String? minLength(String? v, int min, [String field = 'الحقل']) {
-    if (v == null || v.trim().length < min) return '$field يجب أن يكون $min أحرف على الأقل';
+    if (v == null || v.trim().length < min) {
+      return '$field يجب أن يكون $min أحرف على الأقل';
+    }
     return null;
   }
 
@@ -37,7 +39,9 @@ class Validators {
 
   static String? otp(String? v) {
     if (v == null || v.trim().isEmpty) return 'رمز التحقق مطلوب';
-    if (!RegExp(r'^[0-9]{4}$').hasMatch(v.trim())) return 'رمز التحقق يجب أن يكون 4 أرقام';
+    if (!RegExp(r'^[0-9]{4}$').hasMatch(v.trim())) {
+      return 'رمز التحقق يجب أن يكون 4 أرقام';
+    }
     return null;
   }
 }

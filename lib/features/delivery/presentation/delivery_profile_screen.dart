@@ -1,11 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../app/localization/language_provider.dart';
-import '../../../app/widgets/app_back_button.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class DeliveryProfileScreen extends StatelessWidget {
@@ -18,10 +18,7 @@ class DeliveryProfileScreen extends StatelessWidget {
     final lang = context.watch<LanguageProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('الملف الشخصي'),
-      ),
+      appBar: const AppPageHeader(title: 'الملف الشخصي', showBack: false),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -33,23 +30,35 @@ class DeliveryProfileScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 36,
-                    backgroundColor:
-                        Colors.blue.shade700.withValues(alpha: 0.1),
-                    child: Icon(Icons.delivery_dining,
-                        size: 40, color: Colors.blue.shade700),
+                    backgroundColor: Colors.blue.shade700.withValues(
+                      alpha: 0.1,
+                    ),
+                    child: Icon(
+                      Icons.delivery_dining,
+                      size: 40,
+                      color: Colors.blue.shade700,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user?.name ?? 'سائق التوصيل',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(
+                        user?.name ?? 'سائق التوصيل',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(user?.email ?? '',
-                          style: const TextStyle(color: Colors.grey)),
-                      Text(user?.phone ?? '',
-                          style: const TextStyle(color: Colors.grey)),
+                      Text(
+                        user?.email ?? '',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      Text(
+                        user?.phone ?? '',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 ],
@@ -80,11 +89,13 @@ class DeliveryProfileScreen extends StatelessWidget {
                         i == 0 ? lang.setArabic() : lang.setEnglish(),
                     children: const [
                       Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('ع')),
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('ع'),
+                      ),
                       Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('EN')),
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('EN'),
+                      ),
                     ],
                   ),
                 ),
@@ -96,14 +107,44 @@ class DeliveryProfileScreen extends StatelessWidget {
           // تسجيل الخروج
           ListTile(
             tileColor: Colors.red.withValues(alpha: 0.06),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             leading: const Icon(Icons.logout, color: Colors.red),
-            title:
-                const Text('تسجيل الخروج', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              context.read<AuthProvider>().logout();
-              context.go(AppRoutes.deliveryLogin);
+            title: const Text(
+              'تسجيل الخروج',
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) {
+                  return AlertDialog(
+                    title: const Text('تسجيل الخروج'),
+                    content: const Text('هل أنت متأكد أنك تريد تسجيل الخروج؟'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('إلغاء'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('تسجيل الخروج'),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirmed != true || !context.mounted) return;
+
+              await context.read<AuthProvider>().logout();
+
+              if (!context.mounted) return;
+              context.go(AppRoutes.login);
             },
           ),
         ],

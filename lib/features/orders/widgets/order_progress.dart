@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class OrderProgress extends StatelessWidget {
   final String status;
 
-  const OrderProgress({
-    super.key,
-    required this.status,
-  });
+  const OrderProgress({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +27,7 @@ class OrderProgress extends StatelessWidget {
               CircleAvatar(
                 radius: 14,
                 backgroundColor: active ? Colors.green : Colors.grey.shade300,
-                child: Icon(
-                  Icons.check,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.check, size: 16, color: Colors.white),
               ),
               const SizedBox(height: 6),
               if (index != statuses.length - 1)

@@ -1,9 +1,10 @@
+import 'package:bhm_supermarket/app/router/app_routes.dart';
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:bhm_supermarket/features/auth/models/user_model.dart';
 import 'package:bhm_supermarket/features/auth/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-import '../../../app/widgets/app_back_button.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 
@@ -22,6 +23,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -33,6 +36,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isLoading) return; // prevent double submit
+
     if (_nameController.text.trim().isEmpty ||
         _phoneController.text.trim().length < 9) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -43,12 +48,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("كلمتا المرور غير متطابقتين"),
-        ),
+        const SnackBar(content: Text("كلمتا المرور غير متطابقتين")),
       );
       return;
     }
+
+    setState(() => _isLoading = true);
 
     final auth = context.read<AuthProvider>();
 
@@ -62,25 +67,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
 
+    setState(() => _isLoading = false);
+
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
       return;
     }
 
-    final redirect = auth.consumePendingRedirect();
+    switch (auth.user?.role) {
+      case UserRole.admin:
+        context.go(AppRoutes.adminDashboard);
+        break;
 
-    context.go(redirect);
+      case UserRole.delivery:
+        context.go(AppRoutes.deliveryHome);
+        break;
+
+      case UserRole.customer:
+      default:
+        context.go(auth.consumePendingRedirect());
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('إنشاء حساب جديد'),
-      ),
+      appBar: const AppPageHeader(title: 'إنشاء حساب جديد'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -121,7 +136,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: const Icon(Icons.lock_reset_outlined),
               ),
               const SizedBox(height: 28),
-              CustomButton(text: 'إنشاء حساب', onPressed: _submit),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : CustomButton(text: 'إنشاء حساب', onPressed: _submit),
             ],
           ),
         ),

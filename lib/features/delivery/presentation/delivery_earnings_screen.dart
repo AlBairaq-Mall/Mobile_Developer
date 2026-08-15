@@ -1,6 +1,6 @@
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../app/widgets/app_back_button.dart';
 
 /// شاشة الأرباح للسائق
 class DeliveryEarningsScreen extends StatelessWidget {
@@ -10,10 +10,7 @@ class DeliveryEarningsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: GET /api/delivery/earnings
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('أرباحي'),
-      ),
+      appBar: const AppPageHeader(title: 'أرباحي', showBack: false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -21,23 +18,54 @@ class DeliveryEarningsScreen extends StatelessWidget {
             // Summary Cards
             Row(
               children: const [
-                Expanded(child: _EarningsCard('اليوم', '1,200 ر.ي', Icons.today_outlined, AppColors.primary)),
+                Expanded(
+                  child: _EarningsCard(
+                    'اليوم',
+                    '1,200 ر.ي',
+                    Icons.today_outlined,
+                    AppColors.primary,
+                  ),
+                ),
                 SizedBox(width: 12),
-                Expanded(child: _EarningsCard('الأسبوع', '8,400 ر.ي', Icons.date_range_outlined, Colors.blue)),
+                Expanded(
+                  child: _EarningsCard(
+                    'الأسبوع',
+                    '8,400 ر.ي',
+                    Icons.date_range_outlined,
+                    Colors.blue,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: const [
-                Expanded(child: _EarningsCard('الشهر', '32,000 ر.ي', Icons.calendar_month_outlined, AppColors.accent)),
+                Expanded(
+                  child: _EarningsCard(
+                    'الشهر',
+                    '32,000 ر.ي',
+                    Icons.calendar_month_outlined,
+                    AppColors.accent,
+                  ),
+                ),
                 SizedBox(width: 12),
-                Expanded(child: _EarningsCard('التوصيلات', '145 طلب', Icons.delivery_dining_outlined, AppColors.success)),
+                Expanded(
+                  child: _EarningsCard(
+                    'التوصيلات',
+                    '145 طلب',
+                    Icons.delivery_dining_outlined,
+                    AppColors.success,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),
 
             // Daily breakdown
-            const Text('آخر 7 أيام', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'آخر 7 أيام',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             ...const [
               _DayRow('الأحد', '1,800 ر.ي', 6),
@@ -70,8 +98,21 @@ class _EarningsCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 26),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-          Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     ),
@@ -88,7 +129,10 @@ class _DayRow extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       children: [
-        SizedBox(width: 70, child: Text(day, style: const TextStyle(fontWeight: FontWeight.w600))),
+        SizedBox(
+          width: 70,
+          child: Text(day, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -103,7 +147,10 @@ class _DayRow extends StatelessWidget {
         const SizedBox(width: 12),
         Text(amount, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(width: 8),
-        Text('($deliveries)', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+        Text(
+          '($deliveries)',
+          style: const TextStyle(color: AppColors.textHint, fontSize: 12),
+        ),
       ],
     ),
   );

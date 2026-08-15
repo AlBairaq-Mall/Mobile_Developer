@@ -23,11 +23,7 @@ class CartRemoteDataSource extends BaseRemoteDataSource {
   }) {
     return postEnvelope<void>(
       '/cart',
-      data: {
-        'product_id': productId,
-        'unit_id': unitId,
-        'quantity': quantity,
-      },
+      data: {'product_id': productId, 'unit_id': unitId, 'quantity': quantity},
       parser: (_) {},
     );
   }
@@ -39,9 +35,7 @@ class CartRemoteDataSource extends BaseRemoteDataSource {
   }) {
     return putEnvelope<void>(
       '/cart/$cartId',
-      data: {
-        'quantity': quantity,
-      },
+      data: {'quantity': quantity},
       parser: (_) {},
     );
   }

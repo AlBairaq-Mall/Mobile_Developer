@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/widgets/app_page_header.dart';
+import '../../home/widgets/home_search_bar.dart';
+import '../../products/widgets/product_card.dart';
 import '../providers/search_provider.dart';
-import '../widgets/search_app_bar.dart';
-import '../widgets/search_result_card.dart';
-import '../widgets/recent_searches.dart';
 import '../widgets/empty_search.dart';
-import '../../products/widgets/product_quick_view.dart';
+import '../widgets/recent_searches.dart';
 
-/// خطأ كان موجود: استدعاء provider.search() داخل build() يسبب حلقة لانهائية
-/// لأن search() تستدعي notifyListeners() مما يعيد تشغيل build() مجدداً.
-/// الحل: إزالة الاستدعاء من build() والاعتماد على SearchAppBar → onChanged.
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
@@ -19,38 +16,27 @@ class SearchScreen extends StatelessWidget {
     return Consumer<SearchProvider>(
       builder: (context, provider, _) {
         return Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                const SearchAppBar(),
-
-                Expanded(
-                  child: provider.query.isEmpty
-                      ? const RecentSearches()
-                      : provider.results.isEmpty
-                      ? const EmptySearch()
-                      : ListView.builder(
-                          itemCount: provider.results.length,
-                          itemBuilder: (context, index) {
-                            return SearchResultCard(
-                              product: provider.results[index],
-
-                              onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (_) => ProductQuickView(
-                                    product: provider.results[index],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
+          appBar: const AppPageHeader(title: "البحث"),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                child: HomeSearchBar(
+                  enableHero: false,
+                  readOnly: false,
+                  autofocus: true,
+                  controller: provider.controller,
+                  onChanged: provider.updateQuery,
                 ),
-              ],
-            ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: provider.isLoading
+                    ? const LinearProgressIndicator(minHeight: 2)
+                    : const SizedBox(height: 2),
+              ),
+              Expanded(child: _SearchBody(provider: provider)),
+            ],
           ),
         );
       },
@@ -58,3 +44,56 @@ class SearchScreen extends StatelessWidget {
   }
 }
 
+class _SearchBody extends StatelessWidget {
+  final SearchProvider provider;
+
+  const _SearchBody({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    if (provider.query.isEmpty) {
+      return const RecentSearches();
+    }
+
+    if (!provider.isLoading && provider.results.isEmpty) {
+      return EmptySearch(query: provider.query);
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          child: Row(
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "${provider.results.length} منتج",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+            physics: const BouncingScrollPhysics(),
+            itemCount: provider.results.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: .63,
+            ),
+            itemBuilder: (_, index) {
+              return ProductCard(product: provider.results[index]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}

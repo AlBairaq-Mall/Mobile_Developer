@@ -19,14 +19,13 @@ class AddressRepositoryImpl implements AddressRepository {
     double? latitude,
     double? longitude,
     bool isDefault = false,
-  }) =>
-      _remote.createLocation(
-        title: title,
-        address: address,
-        latitude: latitude,
-        longitude: longitude,
-        isDefault: isDefault,
-      );
+  }) => _remote.createLocation(
+    title: title,
+    address: address,
+    latitude: latitude,
+    longitude: longitude,
+    isDefault: isDefault,
+  );
 
   @override
   Future<ApiResponse<AddressModel>> updateLocation({
@@ -36,15 +35,14 @@ class AddressRepositoryImpl implements AddressRepository {
     double? latitude,
     double? longitude,
     bool isDefault = false,
-  }) =>
-      _remote.updateLocation(
-        id: id,
-        title: title,
-        address: address,
-        latitude: latitude,
-        longitude: longitude,
-        isDefault: isDefault,
-      );
+  }) => _remote.updateLocation(
+    id: id,
+    title: title,
+    address: address,
+    latitude: latitude,
+    longitude: longitude,
+    isDefault: isDefault,
+  );
 
   @override
   Future<ApiResponse<void>> deleteLocation(int id) =>

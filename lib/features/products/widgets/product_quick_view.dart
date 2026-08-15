@@ -41,7 +41,9 @@ class ProductQuickView extends StatelessWidget {
                 height: 220,
                 width: double.infinity,
                 child: AppCachedImage(
-                    imageUrl: product.image, fit: BoxFit.contain),
+                  imageUrl: product.image,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -68,10 +70,10 @@ class ProductQuickView extends StatelessWidget {
                   if (product.units.isEmpty) return;
 
                   context.read<CartProvider>().addItem(
-                        product: product,
-                        selectedUnit: product.units.first,
-                        unitPrice: product.units.first.price,
-                      );
+                    product: product,
+                    selectedUnit: product.units.first,
+                    unitPrice: product.units.first.price,
+                  );
 
                   // Capture before pop to avoid stale context
                   final scaffoldMsg = ScaffoldMessenger.of(context);

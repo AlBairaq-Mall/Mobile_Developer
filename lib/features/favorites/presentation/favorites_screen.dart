@@ -2,14 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/widgets/app_message.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../../products/widgets/product_card.dart';
 
 /// Favorites screen backed by [FavoritesProvider].
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  bool _synced = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // نجلب بيانات المفضلة من السيرفر عند أول ظهور لشاشة المفضلة.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_synced && mounted) {
+        _synced = true;
+        context.read<FavoritesProvider>().loadFromServer();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +48,17 @@ class FavoritesScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                    color: AppColors.error,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text('${favProducts.length}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${favProducts.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ],
@@ -44,21 +68,18 @@ class FavoritesScreen extends StatelessWidget {
             TextButton.icon(
               onPressed: () {
                 for (final p in favProducts) {
-                  for (final p in favProducts) {
-                    cartProv.add(p);
-                  }
-
                   cartProv.add(p);
                 }
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('تمت إضافة ${favProducts.length} منتج للسلة'),
-                  backgroundColor: AppColors.primary,
-                  behavior: SnackBarBehavior.floating,
-                ));
+                AppMessage.success(
+                  context,
+                  'تمت إضافة ${favProducts.length} منتج للسلة',
+                );
               },
               icon: const Icon(Icons.shopping_cart_outlined, size: 16),
-              label:
-                  const Text('نقل الكل للسلة', style: TextStyle(fontSize: 12)),
+              label: const Text(
+                'نقل الكل للسلة',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
         ],
       ),

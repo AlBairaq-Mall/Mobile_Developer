@@ -22,9 +22,7 @@ class SearchAppBar extends StatelessWidget {
         // },
         decoration: InputDecoration(
           hintText: 'ابحث عن منتج',
-
           prefixIcon: const Icon(Icons.search),
-
           suffixIcon: provider.controller.text.isEmpty
               ? null
               : IconButton(

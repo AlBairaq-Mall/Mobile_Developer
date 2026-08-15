@@ -4,10 +4,7 @@ import '../models/address_model.dart';
 class AddressCard extends StatelessWidget {
   final AddressModel address;
 
-  const AddressCard({
-    super.key,
-    required this.address,
-  });
+  const AddressCard({super.key, required this.address});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +15,7 @@ class AddressCard extends StatelessWidget {
         title: Text(address.title),
         subtitle: Text(address.address),
         trailing: address.isDefault
-            ? const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-              )
+            ? const Icon(Icons.check_circle, color: Colors.green)
             : null,
       ),
     );

@@ -12,31 +12,21 @@ class FavoritesRemoteDataSource extends BaseRemoteDataSource {
         return (json as List).map((e) {
           final product = ProductModel.fromJson(e['product']);
 
-          return product.copyWith(
-            favoriteId: e['id'].toString(),
-          );
+          return product.copyWith(favoriteId: e['id'].toString());
         }).toList();
       },
     );
   }
 
-  Future<ApiResponse<void>> addFavorite({
-    required String productId,
-  }) {
+  Future<ApiResponse<void>> addFavorite({required String productId}) {
     return postEnvelope(
       '/favorites',
-      data: {
-        'product_id': productId,
-      },
+      data: {'product_id': productId},
       parser: (_) {},
     );
   }
 
-  Future<ApiResponse<void>> removeFavorite({
-    required String favoriteId,
-  }) {
-    return deleteEnvelope(
-      '/favorites/$favoriteId',
-    );
+  Future<ApiResponse<void>> removeFavorite({required String favoriteId}) {
+    return deleteEnvelope('/favorites/$favoriteId');
   }
 }

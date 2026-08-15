@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
@@ -20,12 +20,18 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   void initState() {
     super.initState();
     _scaleCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700));
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
     _slideCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _scale = CurvedAnimation(parent: _scaleCtrl, curve: Curves.elasticOut);
-    _slide = Tween(begin: const Offset(0, 0.3), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
+    _slide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
     _scaleCtrl.forward().then((_) => _slideCtrl.forward());
   }
 
@@ -81,8 +87,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                             ),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 60),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 60,
+                          ),
                         ),
                       ],
                     ),
@@ -98,13 +107,17 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                         const Text(
                           'تم استلام طلبك! 🎉',
                           style: TextStyle(
-                              fontSize: 26, fontWeight: FontWeight.bold),
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
@@ -113,13 +126,18 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.receipt_long_outlined,
-                                  size: 18, color: AppColors.primary),
+                              const Icon(
+                                Icons.receipt_long_outlined,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'رقم الطلب: #${widget.orderNumber}',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
                             ],
                           ),
@@ -129,7 +147,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                           'سيتم التواصل معك لتأكيد طلبك وتحديد موعد التوصيل',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              color: AppColors.textSecondary, height: 1.6),
+                            color: AppColors.textSecondary,
+                            height: 1.6,
+                          ),
                         ),
                       ],
                     ),
@@ -147,15 +167,26 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                     ),
                     child: Column(
                       children: [
-                        const Text('ماذا يحدث الآن؟',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'ماذا يحدث الآن؟',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 12),
-                        _Step('1', 'المتجر يستلم طلبك',
-                            Icons.storefront_outlined),
-                        _Step('2', 'يتم تجهيز المنتجات',
-                            Icons.inventory_2_outlined),
-                        _Step('3', 'التوصيل لباب بيتك',
-                            Icons.delivery_dining_outlined),
+                        _Step(
+                          '1',
+                          'المتجر يستلم طلبك',
+                          Icons.storefront_outlined,
+                        ),
+                        _Step(
+                          '2',
+                          'يتم تجهيز المنتجات',
+                          Icons.inventory_2_outlined,
+                        ),
+                        _Step(
+                          '3',
+                          'التوصيل لباب بيتك',
+                          Icons.delivery_dining_outlined,
+                        ),
                       ],
                     ),
                   ),
@@ -189,26 +220,32 @@ class _Step extends StatelessWidget {
   const _Step(this.number, this.label, this.icon);
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: const BoxDecoration(
-                  color: AppColors.primary, shape: BoxShape.circle),
-              child: Center(
-                  child: Text(number,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13))),
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
-            const SizedBox(width: 12),
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(width: 10),
-            Text(label, style: const TextStyle(fontSize: 13)),
-          ],
+          ),
         ),
-      );
+        const SizedBox(width: 12),
+        Icon(icon, color: AppColors.primary, size: 20),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(fontSize: 13)),
+      ],
+    ),
+  );
 }

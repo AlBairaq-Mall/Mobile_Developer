@@ -20,6 +20,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required double deliveryFee,
     required double discount,
     String? notes,
+    String? couponCode,
     required List<Map<String, dynamic>> items,
   }) {
     return _remote.createOrder(
@@ -29,6 +30,7 @@ class OrderRepositoryImpl implements OrderRepository {
       discount: discount,
       notes: notes,
       items: items,
+      couponCode: couponCode,
     );
   }
 }

@@ -14,20 +14,12 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
   }
 
   @override
-  Future<ApiResponse<void>> addFavorite({
-    required String productId,
-  }) {
-    return _remote.addFavorite(
-      productId: productId,
-    );
+  Future<ApiResponse<void>> addFavorite({required String productId}) {
+    return _remote.addFavorite(productId: productId);
   }
 
   @override
-  Future<ApiResponse<void>> removeFavorite({
-    required String favoriteId,
-  }) {
-    return _remote.removeFavorite(
-      favoriteId: favoriteId,
-    );
+  Future<ApiResponse<void>> removeFavorite({required String favoriteId}) {
+    return _remote.removeFavorite(favoriteId: favoriteId);
   }
 }

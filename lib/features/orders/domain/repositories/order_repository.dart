@@ -10,6 +10,7 @@ abstract class OrderRepository {
     required double deliveryFee,
     required double discount,
     String? notes,
+    String? couponCode,
     required List<Map<String, dynamic>> items,
   });
 }

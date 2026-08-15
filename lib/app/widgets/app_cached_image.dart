@@ -21,6 +21,12 @@ class AppCachedImage extends StatelessWidget {
 
   final Color? backgroundColor;
 
+  /// Optional decode-size cap passed to [CachedNetworkImage].
+  /// Setting this limits how large the image is decoded in memory,
+  /// which is useful when the display slot is much smaller than the source.
+  final int? memCacheWidth;
+  final int? memCacheHeight;
+
   const AppCachedImage({
     super.key,
     required this.imageUrl,
@@ -31,6 +37,8 @@ class AppCachedImage extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.backgroundColor,
+    this.memCacheWidth,
+    this.memCacheHeight,
   });
 
   String get _url {
@@ -51,44 +59,61 @@ class AppCachedImage extends StatelessWidget {
       return _error();
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: CachedNetworkImage(
-        imageUrl: _url,
-        width: width,
-        height: height,
-        fit: fit,
-        fadeInDuration: const Duration(milliseconds: 250),
-        fadeOutDuration: const Duration(milliseconds: 150),
-        placeholder: (_, __) =>
-            placeholder ??
-            Container(
-              color: backgroundColor ?? AppColors.background,
-              child: const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                ),
+    final image = CachedNetworkImage(
+      imageUrl: _url,
+      width: width,
+      height: height,
+      fit: fit,
+      memCacheWidth: memCacheWidth,
+      memCacheHeight: memCacheHeight,
+      fadeInDuration: const Duration(milliseconds: 250),
+      fadeOutDuration: const Duration(milliseconds: 150),
+      placeholder: (_, __) =>
+          placeholder ??
+          Container(
+            color: backgroundColor ?? AppColors.background,
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
-        errorWidget: (_, __, ___) => errorWidget ?? _error(),
-      ),
+          ),
+      errorWidget: (_, __, ___) => errorWidget ?? _error(),
     );
+
+    // Only add ClipRRect when a non-zero radius is requested.
+    if (radius > 0) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: image,
+      );
+    }
+    return image;
   }
 
   Widget _error() {
     return Container(
       width: width,
       height: height,
-      color: backgroundColor ?? AppColors.background,
-      child: const Center(
-        child: Icon(
-          Icons.image_outlined,
-          size: 42,
-          color: AppColors.textHint,
+      decoration: BoxDecoration(
+        color: const Color(0xffF8F9FB),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      child: Center(
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.shopping_bag_rounded,
+            size: 38,
+            color: AppColors.primary,
+          ),
         ),
       ),
     );

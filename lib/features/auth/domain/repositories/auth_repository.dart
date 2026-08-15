@@ -8,6 +8,10 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String passwordConfirmation,
+
+    /// Role sent to the API. Defaults to 'customer'.
+    /// Pass 'delivery' from admin screens when creating driver accounts.
+    String role = 'customer',
   });
 
   Future<ApiResponse<UserModel>> login({

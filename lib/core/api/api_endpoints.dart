@@ -8,6 +8,11 @@ class ApiEndpoints {
   static const me = '/me';
   static const refresh = '/refresh';
 
+  // Ads
+  static const ads = '/ads';
+
+  static String ad(String id) => '/ads/$id';
+
   // Catalog
   // categories
   static const categories = '/categories';
@@ -20,7 +25,7 @@ class ApiEndpoints {
   static String order(String id) => '/orders/$id';
   static String orderTrack(String orderNumber) => '/orders/$orderNumber/track';
 
-// Users
+  // Users
   static const users = '/users';
   // Locations
   static const locations = '/locations';
@@ -47,18 +52,35 @@ class ApiEndpoints {
   static String adminOrderStatus(String id) => '/admin/orders/$id/status';
   static String adminAssignDriver(String orderId) =>
       '/admin/orders/$orderId/assign-driver';
+
+  // static String assignDeliveryDriver(String orderId) =>
+  //     '/orders/$orderId/delivery-driver';
+
   static const adminProducts = '/admin/products';
   static String adminProduct(String id) => '/admin/products/$id';
   static const adminUsers = '/admin/users';
   static const adminReports = '/admin/reports';
 
   // Delivery
-  static const deliveryCurrentOrders = '/delivery/current-orders';
-  static String deliveryStartOrder(String id) => '/delivery/orders/$id/start';
-  static String deliveryCompleteOrder(String id) =>
-      '/delivery/orders/$id/complete';
-  static const deliveryHistory = '/delivery/history';
+  static const deliveryOrders = '/delivery/orders';
+
+  static String deliveryOrder(String id) => '/delivery/orders/$id';
+
+  static String deliveryOrderStatus(String id) => '/delivery/orders/$id/status';
+
+  static String assignDeliveryDriver(String id) =>
+      '/orders/$id/delivery-driver';
+
+  // Offers
+  static const offers = '/offers';
+
+  static String offer(String id) => '/offers/$id';
 
   // Upload
   static const upload = '/upload';
+
+  // Coupons
+  static const coupons = '/coupons';
+  static String coupon(String id) => '/coupons/$id';
+  static const checkCoupon = '/coupons/check';
 }

@@ -9,6 +9,9 @@ enum LoginMethod { email }
 class AuthProvider extends ChangeNotifier {
   AuthProvider(this._repository);
 
+  bool _initialized = false;
+
+  bool get initialized => _initialized;
   final AuthRepository _repository;
 
   UserModel? _user;
@@ -30,6 +33,9 @@ class AuthProvider extends ChangeNotifier {
   /// Restore session from secure storage (non-blocking for guests).
   Future<void> initSession() async {
     _user = await _repository.loadStoredUser();
+    debugPrint('RESTORED USER => ${_user?.email}');
+    debugPrint('ROLE => ${_user?.role}');
+    _initialized = true;
     notifyListeners();
   }
 
@@ -47,10 +53,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _setLoading(true);
 
-    final response = await _repository.login(
-      email: email,
-      password: password,
-    );
+    final response = await _repository.login(email: email, password: password);
 
     _setLoading(false);
 

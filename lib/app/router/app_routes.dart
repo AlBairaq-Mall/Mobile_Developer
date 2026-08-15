@@ -20,7 +20,6 @@ class AppRoutes {
   static const favorites = '/favorites';
   static const notifications = '/notifications';
   static const addresses = '/addresses';
-  static const product = '/product';
   static const settings = '/settings';
   static const orderSuccess = '/order-success';
   static const orderTracking = '/order-tracking/:orderNumber';
@@ -48,4 +47,7 @@ class AppRoutes {
   static const deliveryLogin = '/delivery/login';
   static const deliveryHome = '/delivery/home';
   static const deliveryEarnings = '/delivery/earnings';
+
+  // Copouns
+  static const adminCoupons = '/admin/coupons';
 }

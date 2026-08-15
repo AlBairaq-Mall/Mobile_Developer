@@ -20,10 +20,14 @@ class SearchResultCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            AppCachedImage(imageUrl: product.image, width: 80, height: 80, fit: BoxFit.cover, radius: 12),
-
+            AppCachedImage(
+              imageUrl: product.image,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+              radius: 12,
+            ),
             const SizedBox(width: 15),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,16 +37,12 @@ class SearchResultCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-
                   const SizedBox(height: 6),
-
                   Text(
                     product.brand,
                     style: const TextStyle(color: Colors.grey),
                   ),
-
                   const SizedBox(height: 10),
-
                   AppPrice(price: product.price),
                 ],
               ),

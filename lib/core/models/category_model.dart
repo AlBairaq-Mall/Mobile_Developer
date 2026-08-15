@@ -24,7 +24,7 @@ class CategoryModel {
   String get name => JsonParser.currentLanguage == 'ar' ? nameAr : nameEn;
 
   String get imageUrl {
-    if (image == null || image!.isEmpty) {
+    if (image.isEmpty) {
       return "";
     }
 

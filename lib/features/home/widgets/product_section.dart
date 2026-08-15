@@ -18,9 +18,7 @@ class ProductSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppSection(
       title: title,
-      child: ProductsGrid(
-        products: products,
-      ),
+      child: ProductsGrid(products: products),
     );
   }
 }

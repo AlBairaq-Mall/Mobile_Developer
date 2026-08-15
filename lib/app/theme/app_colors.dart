@@ -171,50 +171,32 @@ class AppColors {
   static const mainGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xffF4C430),
-      Color(0xffC69214),
-    ],
+    colors: [Color(0xffF4C430), Color(0xffC69214)],
   );
 
   static const primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      primaryLight,
-      primaryDark,
-    ],
+    colors: [primaryLight, primaryDark],
   );
 
   static const cardGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xffFFFFFF),
-      Color(0xffFBFBFB),
-    ],
+    colors: [Color(0xffFFFFFF), Color(0xffFBFBFB)],
   );
 
   static const offerGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xffF59E0B),
-      Color(0xffD97706),
-    ],
+    colors: [Color(0xffF59E0B), Color(0xffD97706)],
   );
 
   static const successGradient = LinearGradient(
-    colors: [
-      Color(0xff22C55E),
-      Color(0xff16A34A),
-    ],
+    colors: [Color(0xff22C55E), Color(0xff16A34A)],
   );
 
   static const errorGradient = LinearGradient(
-    colors: [
-      Color(0xffF87171),
-      Color(0xffDC2626),
-    ],
+    colors: [Color(0xffF87171), Color(0xffDC2626)],
   );
 }

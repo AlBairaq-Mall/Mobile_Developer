@@ -29,10 +29,22 @@ class _DeliveryMainScreenState extends State<DeliveryMainScreen> {
         onTap: (i) => setState(() => _index = i),
         selectedItemColor: Colors.blue.shade700,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.history_outlined), label: 'السجل'),
-          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'الأرباح'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'الرئيسية',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_outlined),
+            label: 'السجل',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.attach_money),
+            label: 'الأرباح',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'حسابي',
+          ),
         ],
       ),
     );

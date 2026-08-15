@@ -74,19 +74,26 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: const Icon(Icons.admin_panel_settings,
-                      size: 50, color: Colors.white),
+                  child: const Icon(
+                    Icons.admin_panel_settings,
+                    size: 50,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Text('لوحة تحكم المدير',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'لوحة تحكم المدير',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('ادخل بيانات المدير للمتابعة',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline)),
+                Text(
+                  'ادخل بيانات المدير للمتابعة',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _emailCtrl,
@@ -105,7 +112,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       icon: Icon(
-                          _obscure ? Icons.visibility_off : Icons.visibility),
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -118,7 +126,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 _loading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                        onPressed: _login, child: const Text('دخول')),
+                        onPressed: _login,
+                        child: const Text('دخول'),
+                      ),
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () => context.go(AppRoutes.login),

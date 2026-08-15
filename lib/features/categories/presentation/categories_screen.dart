@@ -1,3 +1,4 @@
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -27,16 +28,12 @@ class CategoriesScreen extends StatelessWidget {
     final provider = context.watch<CategoryProvider>();
 
     if (provider.isLoading) {
-      return const Scaffold(
-        body: LoadingWidget(),
-      );
+      return const Scaffold(body: LoadingWidget());
     }
 
     if (provider.error != null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text("الأقسام"),
-        ),
+        appBar: const AppPageHeader(title: "الأقسام", showBack: false),
         body: EmptyState(
           emoji: "⚠️",
           title: "تعذر تحميل الأقسام",
@@ -60,9 +57,7 @@ class CategoriesScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("الأقسام"),
-      ),
+      appBar: const AppPageHeader(title: "الأقسام", showBack: false),
       body: GridView.builder(
         padding: const EdgeInsets.all(AppSpacing.lg),
         physics: const BouncingScrollPhysics(),
@@ -106,9 +101,7 @@ class CategoriesScreen extends StatelessWidget {
                                 ),
                         ),
                       ),
-                      const SizedBox(
-                        height: AppSpacing.md,
-                      ),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         category.name,
                         textAlign: TextAlign.center,

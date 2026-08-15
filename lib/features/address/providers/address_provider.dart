@@ -113,9 +113,7 @@ class AddressProvider extends ChangeNotifier {
   }
 
   Future<bool> setDefault(String id) async {
-    final address = _addresses.firstWhere(
-      (e) => e.id == id,
-    );
+    final address = _addresses.firstWhere((e) => e.id == id);
 
     final response = await _repository.updateLocation(
       id: int.parse(id),

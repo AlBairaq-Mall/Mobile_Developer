@@ -32,10 +32,7 @@ class CartRepositoryImpl implements CartRepository {
     required String cartId,
     required int quantity,
   }) {
-    return _remote.updateQuantity(
-      cartId: cartId,
-      quantity: quantity,
-    );
+    return _remote.updateQuantity(cartId: cartId, quantity: quantity);
   }
 
   @override

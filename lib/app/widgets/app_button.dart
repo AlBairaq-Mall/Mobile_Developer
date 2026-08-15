@@ -5,12 +5,7 @@ import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-enum AppButtonStyle {
-  primary,
-  secondary,
-  outlined,
-  ghost,
-}
+enum AppButtonStyle { primary, secondary, outlined, ghost }
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -71,7 +66,7 @@ class AppButton extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: .22),
                         blurRadius: 18,
                         offset: const Offset(0, 8),
-                      )
+                      ),
                     ]
                   : null,
             ),
@@ -89,11 +84,7 @@ class AppButton extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (icon != null) ...[
-                          Icon(
-                            icon,
-                            size: 18,
-                            color: foreground,
-                          ),
+                          Icon(icon, size: 18, color: foreground),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         Text(
@@ -150,10 +141,7 @@ class AppButton extends StatelessWidget {
   Border? _border() {
     switch (style) {
       case AppButtonStyle.outlined:
-        return Border.all(
-          color: AppColors.primary,
-          width: 1.4,
-        );
+        return Border.all(color: AppColors.primary, width: 1.4);
 
       default:
         return null;

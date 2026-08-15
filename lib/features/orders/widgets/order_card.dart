@@ -1,4 +1,4 @@
-﻿import 'package:bhm_supermarket/features/orders/utils/payment_method_text.dart';
+import 'package:bhm_supermarket/features/orders/utils/payment_method_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,18 +9,12 @@ import '../utils/order_status_color.dart';
 class OrderCard extends StatelessWidget {
   final OrderModel order;
 
-  const OrderCard(
-    this.order, {
-    super.key,
-  });
+  const OrderCard(this.order, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -28,26 +22,21 @@ class OrderCard extends StatelessWidget {
           children: [
             Text(
               order.orderNumber,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    order.createdAt,
-                  ),
-                ),
+                Expanded(child: Text(order.createdAt)),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: orderStatusColor(order.status).withValues(alpha: .15),
+                    color: orderStatusColor(
+                      order.status,
+                    ).withValues(alpha: .15),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
@@ -61,26 +50,17 @@ class OrderCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Text(
-              "الإجمالي : ${order.total} ر.ي",
-            ),
+            Text("الإجمالي : ${order.total} ر.ي"),
             const SizedBox(height: 6),
-            Text(
-              "الدفع : ${paymentMethodText(order.paymentMethod)}",
-            ),
+            Text("الدفع : ${paymentMethodText(order.paymentMethod)}"),
             const SizedBox(height: 15),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  context.push(
-                    AppRoutes.orderDetails,
-                    extra: order,
-                  );
+                  context.push(AppRoutes.orderDetails, extra: order);
                 },
-                child: const Text(
-                  "تفاصيل الطلب",
-                ),
+                child: const Text("تفاصيل الطلب"),
               ),
             ),
           ],

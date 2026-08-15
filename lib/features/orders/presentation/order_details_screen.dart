@@ -1,6 +1,5 @@
-﻿import 'package:flutter/material.dart';
-
-import '../../../app/widgets/app_back_button.dart';
+import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:flutter/material.dart';
 import '../models/order_model.dart';
 import '../utils/order_status_color.dart';
 import '../utils/payment_method_text.dart';
@@ -9,18 +8,12 @@ import '../widgets/order_progress.dart';
 class OrderDetailsScreen extends StatelessWidget {
   final OrderModel order;
 
-  const OrderDetailsScreen({
-    super.key,
-    required this.order,
-  });
+  const OrderDetailsScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text("تفاصيل الطلب"),
-      ),
+      appBar: const AppPageHeader(title: "تفاصيل الطلب"),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -32,9 +25,7 @@ class OrderDetailsScreen extends StatelessWidget {
             child: ListTile(
               title: Text(
                 order.orderNumber,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(order.createdAt),
               trailing: Container(
@@ -59,15 +50,10 @@ class OrderDetailsScreen extends StatelessWidget {
           const SizedBox(height: 20),
           const Text(
             "حالة الطلب",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          OrderProgress(
-            status: order.status,
-          ),
+          OrderProgress(status: order.status),
           const SizedBox(height: 20),
           Card(
             elevation: 0,
@@ -78,27 +64,15 @@ class OrderDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _infoRow(
-                    "رقم الطلب",
-                    order.orderNumber,
-                  ),
+                  _infoRow("رقم الطلب", order.orderNumber),
                   _infoRow(
                     "طريقة الدفع",
                     paymentMethodText(order.paymentMethod),
                   ),
-                  _infoRow(
-                    "حالة الدفع",
-                    order.paymentStatus,
-                  ),
-                  _infoRow(
-                    "العنوان",
-                    order.location.address,
-                  ),
+                  _infoRow("حالة الدفع", order.paymentStatus),
+                  _infoRow("العنوان", order.location.address),
                   if (order.notes != null && order.notes!.isNotEmpty)
-                    _infoRow(
-                      "ملاحظات",
-                      order.notes!,
-                    ),
+                    _infoRow("ملاحظات", order.notes!),
                 ],
               ),
             ),
@@ -106,10 +80,7 @@ class OrderDetailsScreen extends StatelessWidget {
           const SizedBox(height: 20),
           const Text(
             "المنتجات",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           ...order.items.map(
@@ -122,24 +93,16 @@ class OrderDetailsScreen extends StatelessWidget {
                 leading: const CircleAvatar(
                   child: Icon(Icons.shopping_bag_outlined),
                 ),
-                title: Text(
-                  item.product.nameAr,
-                ),
-                subtitle: Text(
-                  "${item.unit.unitName} • ${item.price} ر.ي",
-                ),
+                title: Text(item.product.nameAr),
+                subtitle: Text("${item.unit.unitName} • ${item.price} ر.ي"),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "× ${item.quantity}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(
-                      "${item.total} ر.ي",
-                    ),
+                    Text("${item.total} ر.ي"),
                   ],
                 ),
               ),
@@ -155,24 +118,11 @@ class OrderDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _priceRow(
-                    "المجموع",
-                    order.subtotal,
-                  ),
-                  _priceRow(
-                    "التوصيل",
-                    order.deliveryFee,
-                  ),
-                  _priceRow(
-                    "الخصم",
-                    order.discount,
-                  ),
+                  _priceRow("المجموع", order.subtotal),
+                  _priceRow("التوصيل", order.deliveryFee),
+                  if (order.discount > 0) _priceRow("الخصم", -order.discount),
                   const Divider(),
-                  _priceRow(
-                    "الإجمالي",
-                    order.total,
-                    bold: true,
-                  ),
+                  _priceRow("الإجمالي", order.total, bold: true),
                 ],
               ),
             ),
@@ -183,10 +133,7 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(
-    String title,
-    String value,
-  ) {
+  Widget _infoRow(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -196,24 +143,16 @@ class OrderDetailsScreen extends StatelessWidget {
             width: 110,
             child: Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(
-            child: Text(value),
-          ),
+          Expanded(child: Text(value)),
         ],
       ),
     );
   }
 
-  Widget _priceRow(
-    String title,
-    double value, {
-    bool bold = false,
-  }) {
+  Widget _priceRow(String title, double value, {bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(

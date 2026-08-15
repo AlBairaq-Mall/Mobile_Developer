@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/widgets/app_message.dart';
 import '../../../app/widgets/app_back_button.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../app/widgets/app_cached_image.dart';
@@ -51,33 +52,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     if (product == null || selected == null) return;
 
     final response = await context.read<CartProvider>().addItem(
-          product: product,
-          selectedUnit: selected,
-          unitPrice: selected.price,
-          quantity: provider.quantity,
-        );
+      product: product,
+      selectedUnit: selected,
+      unitPrice: selected.price,
+      quantity: provider.quantity,
+    );
 
     if (!mounted) return;
 
     if (response.isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تمت إضافة ${product.name} × ${provider.quantity}',
-          ),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
+      AppMessage.success(
+        context,
+        'تمت إضافة ${product.name} × ${provider.quantity} إلى السلة',
       );
-
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.message),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppMessage.error(context, response.message);
     }
   }
 
@@ -96,31 +86,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
     final selectedIndex = provider.selectedUnitIndex;
 
-    final isLoading = provider.isLoading;
-
     final error = provider.error;
-    if (isLoading) {
-      return const Scaffold(body: LoadingWidget());
-    }
-
-    if (error != null || currentProduct == null) {
-      return Scaffold(
-        appBar: AppBar(
-          leading: const AppBackButton(),
-        ),
-        body: EmptyState(
-          emoji: '⚠️',
-          title: 'تعذر تحميل المنتج',
-          subtitle: error,
-          actionLabel: 'إعادة المحاولة',
-          onAction: () =>
-              context.read<ProductProvider>().loadProduct(widget.productId),
-        ),
-      );
-    }
 
     final favProv = context.watch<FavoritesProvider>();
-    final isFav = favProv.isFavorite(currentProduct.id);
+    final isFav =
+        currentProduct != null && favProv.isFavorite(currentProduct.id);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
@@ -157,9 +127,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         shape: const CircleBorder(),
                         elevation: 2,
                         child: IconButton(
-                          onPressed: () {
-                            favProv.toggle(currentProduct.id);
-                          },
+                          onPressed: currentProduct == null
+                              ? null
+                              : () {
+                                  favProv.toggle(currentProduct.id);
+                                },
                           icon: Icon(
                             isFav ? Icons.favorite : Icons.favorite_border,
                             color: isFav ? Colors.red : AppColors.textSecondary,
@@ -173,21 +145,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     background: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Container(
-                          color: Colors.white,
-                        ),
+                        Container(color: Colors.white),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            30,
-                            90,
-                            30,
-                            50,
-                          ),
+                          padding: const EdgeInsets.fromLTRB(30, 90, 30, 50),
                           child: Hero(
-                            tag: currentProduct.id,
-                            child: currentProduct.image.isEmpty
+                            tag: 'product_${widget.productId}',
+                            child:
+                                (currentProduct == null ||
+                                    currentProduct.image.isEmpty)
                                 ? const Icon(
-                                    Icons.image_outlined,
+                                    Icons.inventory_2_outlined,
                                     size: 130,
                                     color: Colors.grey,
                                   )
@@ -197,7 +164,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   ),
                           ),
                         ),
-                        if (currentProduct.isFlashDeal)
+                        if (currentProduct != null &&
+                            currentProduct.isFlashDeal)
                           Positioned(
                             top: 100,
                             right: 18,
@@ -218,7 +186,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                             ),
                           ),
-                        if (currentProduct.isBestSeller)
+                        if (currentProduct != null &&
+                            currentProduct.isBestSeller)
                           Positioned(
                             top: 145,
                             right: 18,
@@ -243,392 +212,360 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                      AppSpacing.lg,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        //-----------------------------------------------------
-// Category
-//-----------------------------------------------------
-
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: .08),
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.xxl,
+                if (currentProduct != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //-----------------------------------------------------
+                          // Category
+                          //-----------------------------------------------------
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: .08),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.xxl,
+                              ),
+                            ),
+                            child: Text(
+                              currentProduct.categoryName,
+                              style: AppTypography.bodySmall,
                             ),
                           ),
-                          child: Text(currentProduct.categoryName,
-                              style: AppTypography.bodySmall),
-                        ),
 
-                        const SizedBox(
-                          height: AppSpacing.md,
-                        ),
+                          const SizedBox(height: AppSpacing.md),
 
-//-----------------------------------------------------
-// Product Name
-//-----------------------------------------------------
-
-                        Text(
-                          currentProduct.name,
-                          style: AppTypography.headlineLarge,
-                        ),
-
-                        const SizedBox(
-                          height: AppSpacing.sm,
-                        ),
-
-//-----------------------------------------------------
-// Brand
-//-----------------------------------------------------
-
-                        if (currentProduct.brand.isNotEmpty)
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.storefront_outlined,
-                                size: 18,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(
-                                width: AppSpacing.xs,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  currentProduct.brand,
-                                  style: AppTypography.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                        const SizedBox(
-                          height: AppSpacing.xl,
-                        ),
-                        //-----------------------------------------------------
-                        // Price Card
-                        //-----------------------------------------------------
-
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: .05),
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.lg,
-                            ),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: .15),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (selected?.oldPrice != null)
-                                      Text(
-                                        "${selected!.oldPrice!.toStringAsFixed(0)} ر.ي",
-                                        style: AppTypography.oldPrice,
-                                      ),
-                                    Text(
-                                      "${selected?.price.toStringAsFixed(0) ?? currentProduct.price.toStringAsFixed(0)} ر.ي",
-                                      style: AppTypography.priceLarge,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadius.md,
-                                  ),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.local_offer_outlined,
-                                      size: 18,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(
-                                      height: AppSpacing.md,
-                                    ),
-                                    Text(
-                                      "أفضل سعر",
-                                      style: AppTypography.titleLarge,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(
-                          height: AppSpacing.xxl,
-                        ),
-//-----------------------------------------------------
-// Product Information
-//-----------------------------------------------------
-
-                        Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.md,
-                            ),
-                            border: Border.all(
-                              color: AppColors.border,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              _DetailRow(
-                                "رقم الصنف",
-                                currentProduct.itemCode,
-                              ),
-                              _DetailRow(
-                                "الباركود",
-                                currentProduct.barcode,
-                              ),
-                              _DetailRow(
-                                "القسم",
-                                currentProduct.categoryName,
-                              ),
-                              _DetailRow(
-                                "الحالة",
-                                currentProduct.isAvailable
-                                    ? "متوفر"
-                                    : "غير متوفر",
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(
-                          height: AppSpacing.xxl,
-                        ),
-                        if (units.isNotEmpty) ...[
+                          //-----------------------------------------------------
+                          // Product Name
+                          //-----------------------------------------------------
                           Text(
-                            "اختر الوحدة",
-                            style: AppTypography.titleLarge,
+                            currentProduct.name,
+                            style: AppTypography.headlineLarge,
                           ),
-                          const SizedBox(
-                            height: AppSpacing.md,
-                          ),
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: units.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 2.4,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
-                            itemBuilder: (_, i) {
-                              final unit = units[i];
 
-                              final selectedUnit = selectedIndex == i;
+                          const SizedBox(height: AppSpacing.sm),
 
-                              return InkWell(
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.md,
+                          //-----------------------------------------------------
+                          // Brand
+                          //-----------------------------------------------------
+                          if (currentProduct.brand.isNotEmpty)
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.storefront_outlined,
+                                  size: 18,
+                                  color: AppColors.textSecondary,
                                 ),
-                                onTap: () {
-                                  context.read<ProductProvider>().selectUnit(i);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.ease,
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: selectedUnit
-                                        ? AppColors.primary
-                                            .withValues(alpha: .08)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.md,
+                                const SizedBox(width: AppSpacing.xs),
+                                Expanded(
+                                  child: Text(
+                                    currentProduct.brand,
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
                                     ),
-                                    border: Border.all(
-                                      width: selectedUnit ? 2 : 1,
-                                      color: selectedUnit
-                                          ? AppColors.primary
-                                          : AppColors.border,
-                                    ),
-                                    boxShadow: selectedUnit
-                                        ? [
-                                            BoxShadow(
-                                              color: AppColors.primary
-                                                  .withValues(alpha: .12),
-                                              blurRadius: 14,
-                                              offset: const Offset(0, 5),
-                                            ),
-                                          ]
-                                        : [],
                                   ),
+                                ),
+                              ],
+                            ),
+
+                          const SizedBox(height: AppSpacing.xl),
+
+                          //-----------------------------------------------------
+                          // Price Card
+                          //-----------------------------------------------------
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: .05),
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: .15),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
                                   child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        unit.unitName,
-                                        style:
-                                            AppTypography.titleMedium.copyWith(
-                                          color: selectedUnit
-                                              ? AppColors.primary
-                                              : AppColors.textPrimary,
+                                      if (selected?.oldPrice != null)
+                                        Text(
+                                          "${selected!.oldPrice!.toStringAsFixed(0)} ر.ي",
+                                          style: AppTypography.oldPrice,
                                         ),
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.xs,
-                                      ),
                                       Text(
-                                        unit.package,
-                                        style: AppTypography.bodySmall,
-                                      ),
-                                      const SizedBox(
-                                        height: AppSpacing.sm,
-                                      ),
-                                      Text(
-                                        "${unit.price.toStringAsFixed(0)} ر.ي",
-                                        style: AppTypography.priceMedium,
+                                        "${selected?.price.toStringAsFixed(0) ?? currentProduct.price.toStringAsFixed(0)} ر.ي",
+                                        style: AppTypography.priceLarge,
                                       ),
                                     ],
                                   ),
                                 ),
-                              );
-                            },
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.md,
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.local_offer_outlined,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(height: AppSpacing.md),
+                                      Text(
+                                        "أفضل سعر",
+                                        style: AppTypography.titleLarge,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(
-                            height: AppSpacing.xxl,
-                          ),
-                        ],
 
-                        if (currentProduct.description.isNotEmpty) ...[
-                          Text(
-                            "وصف المنتج",
-                            style: AppTypography.titleLarge,
-                          ),
-                          const SizedBox(
-                            height: AppSpacing.md,
-                          ),
+                          const SizedBox(height: AppSpacing.xxl),
+
+                          //-----------------------------------------------------
+                          // Product Information
+                          //-----------------------------------------------------
                           Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(
-                              AppSpacing.md,
-                            ),
+                            padding: const EdgeInsets.all(18),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.lg,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              children: [
+                                _DetailRow(
+                                  "رقم الصنف",
+                                  currentProduct.itemCode,
+                                ),
+                                _DetailRow("الباركود", currentProduct.barcode),
+                                _DetailRow(
+                                  "القسم",
+                                  currentProduct.categoryName,
+                                ),
+                                _DetailRow(
+                                  "الحالة",
+                                  currentProduct.isAvailable
+                                      ? "متوفر"
+                                      : "غير متوفر",
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: AppSpacing.xxl),
+                          if (units.isNotEmpty) ...[
+                            Text(
+                              "اختر الوحدة",
+                              style: AppTypography.titleLarge,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: units.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 2.4,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                  ),
+                              itemBuilder: (_, i) {
+                                final unit = units[i];
+
+                                final selectedUnit = selectedIndex == i;
+
+                                return InkWell(
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.md,
+                                  ),
+                                  onTap: () {
+                                    context.read<ProductProvider>().selectUnit(
+                                      i,
+                                    );
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.ease,
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: selectedUnit
+                                          ? AppColors.primary.withValues(
+                                              alpha: .08,
+                                            )
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.md,
+                                      ),
+                                      border: Border.all(
+                                        width: selectedUnit ? 2 : 1,
+                                        color: selectedUnit
+                                            ? AppColors.primary
+                                            : AppColors.border,
+                                      ),
+                                      boxShadow: selectedUnit
+                                          ? [
+                                              BoxShadow(
+                                                color: AppColors.primary
+                                                    .withValues(alpha: .12),
+                                                blurRadius: 14,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          unit.unitName,
+                                          style: AppTypography.titleMedium
+                                              .copyWith(
+                                                color: selectedUnit
+                                                    ? AppColors.primary
+                                                    : AppColors.textPrimary,
+                                              ),
+                                        ),
+                                        const SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          unit.package,
+                                          style: AppTypography.bodySmall,
+                                        ),
+                                        const SizedBox(height: AppSpacing.sm),
+                                        Text(
+                                          "${unit.price.toStringAsFixed(0)} ر.ي",
+                                          style: AppTypography.priceMedium,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.xxl),
+                          ],
+
+                          if (currentProduct.description.isNotEmpty) ...[
+                            Text("وصف المنتج", style: AppTypography.titleLarge),
+                            const SizedBox(height: AppSpacing.md),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.lg,
+                                ),
+                                boxShadow: AppShadows.card,
                               ),
-                              boxShadow: AppShadows.card,
-                            ),
-                            child: Text(
-                              currentProduct.description,
-                              style: AppTypography.bodyMedium.copyWith(
-                                height: 1.8,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: AppSpacing.xl,
-                          ),
-                        ],
-                        Container(
-                          padding: const EdgeInsets.all(
-                            AppSpacing.md,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.lg,
-                            ),
-                            boxShadow: AppShadows.card,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "الكمية",
-                                      style: AppTypography.titleMedium,
-                                    ),
-                                    const SizedBox(
-                                      height: AppSpacing.xs,
-                                    ),
-                                    Text(
-                                      "يمكنك زيادة أو تقليل الكمية",
-                                      style: AppTypography.bodySmall,
-                                    ),
-                                  ],
+                              child: Text(
+                                currentProduct.description,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  height: 1.8,
                                 ),
                               ),
-                              AppQuantitySelector(
-                                quantity: provider.quantity,
-                                onDecrease: provider.decreaseQuantity,
-                                onIncrease: provider.increaseQuantity,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(
-                          height: AppSpacing.xl,
-                        ),
-                        if (related.isNotEmpty) ...[
-                          const SizedBox(
-                            height: AppSpacing.xxl,
-                          ),
-                          Text('منتجات ذات صلة',
-                              style: AppTypography.titleLarge),
-                          const SizedBox(
-                            height: AppSpacing.md,
-                          ),
-                          SizedBox(
-                            height: 240,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: related.length,
-                              separatorBuilder: (_, __) => const SizedBox(
-                                height: AppSpacing.sm,
-                              ),
-                              itemBuilder: (_, i) => SizedBox(
-                                width: 150,
-                                child: ProductCard(product: related[i]),
-                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                          ],
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                              boxShadow: AppShadows.card,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "الكمية",
+                                        style: AppTypography.titleMedium,
+                                      ),
+                                      const SizedBox(height: AppSpacing.xs),
+                                      Text(
+                                        "يمكنك زيادة أو تقليل الكمية",
+                                        style: AppTypography.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                AppQuantitySelector(
+                                  quantity: provider.quantity,
+                                  onDecrease: provider.decreaseQuantity,
+                                  onIncrease: provider.increaseQuantity,
+                                ),
+                              ],
                             ),
                           ),
+
+                          const SizedBox(height: AppSpacing.xl),
+                          if (related.isNotEmpty) ...[
+                            const SizedBox(height: AppSpacing.xxl),
+                            Text(
+                              'منتجات ذات صلة',
+                              style: AppTypography.titleLarge,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            SizedBox(
+                              height: 240,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: related.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: AppSpacing.sm),
+                                itemBuilder: (_, i) => SizedBox(
+                                  width: 150,
+                                  child: ProductCard(product: related[i]),
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.massive),
                         ],
-                        const SizedBox(
-                          height: AppSpacing.massive,
-                        ),
-                      ],
+                      ),
+                    ),
+                  )
+                else
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: error != null
+                          ? EmptyState(
+                              emoji: '⚠️',
+                              title: 'تعذر تحميل المنتج',
+                              subtitle: error,
+                              actionLabel: 'إعادة المحاولة',
+                              onAction: () => context
+                                  .read<ProductProvider>()
+                                  .loadProduct(widget.productId),
+                            )
+                          : const LoadingWidget(),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -650,16 +587,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     //------------------------------------------
                     // PRICE
                     //------------------------------------------
-
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "الإجمالي",
-                            style: AppTypography.bodySmall,
-                          ),
+                          Text("الإجمالي", style: AppTypography.bodySmall),
                           Text(
                             "${(selected.price * provider.quantity).toStringAsFixed(0)} ر.ي",
                             style: AppTypography.priceLarge,
@@ -671,7 +604,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     //------------------------------------------
                     // BUTTON
                     //------------------------------------------
-
                     Expanded(
                       flex: 2,
                       child: SizedBox(
@@ -697,26 +629,17 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailRow(
-    this.label,
-    this.value, {
-    super.key,
-  });
+  const _DetailRow(this.label, this.value);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
           SizedBox(
             width: AppSpacing.huge,
-            child: Text(
-              label,
-              style: AppTypography.bodySmall,
-            ),
+            child: Text(label, style: AppTypography.bodySmall),
           ),
           Expanded(
             child: Text(
@@ -730,26 +653,4 @@ class _DetailRow extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Btn extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool isAdd;
-  const _Btn(this.icon, this.onTap, {this.isAdd = false});
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-              color: isAdd ? AppColors.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(
-                AppRadius.sm,
-              )),
-          child: Icon(icon,
-              size: 20, color: isAdd ? Colors.white : AppColors.textPrimary),
-        ),
-      );
 }
