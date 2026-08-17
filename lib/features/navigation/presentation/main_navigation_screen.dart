@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../auth/utils/auth_gate.dart';
 import '../../cart/presentation/cart_screen.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../categories/presentation/categories_screen.dart';
@@ -10,39 +13,117 @@ import '../../profile/presentation/profile_screen.dart';
 import '../providers/navigation_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  final int? initialTab;
+
+  const MainNavigationScreen({
+    super.key,
+    this.initialTab,
+  });
+
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  // 5 screens: 0=Home 1=Categories 2=Cart 3=Favorites 4=Profile
-  static const _screens = [
-    HomeScreen(),
-    CategoriesScreen(),
-    CartScreen(),
-    FavoritesScreen(),
-    ProfileScreen(),
-  ];
+  // 0 = Home
+  // 1 = Categories
+  // 2 = Cart
+  // 3 = Favorites
+  // 4 = Profile
+  static const int _tabCount = 5;
+
+  late final List<Widget?> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Create only the initial tab.
+    // Other tabs are created lazily when opened.
+    _tabs = List<Widget?>.filled(
+      _tabCount,
+      null,
+      growable: false,
+    );
+
+    _ensureTabCreated(0);
+
+    final initialTab = widget.initialTab;
+
+    if (initialTab != null && initialTab >= 0 && initialTab < _tabCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        _ensureTabCreated(initialTab);
+
+        context.read<NavigationProvider>().changeTab(
+              initialTab,
+            );
+      });
+    }
+  }
+
+  Widget _createTab(int index) {
+    switch (index) {
+      case 0:
+        return const HomeScreen();
+
+      case 1:
+        return const CategoriesScreen();
+
+      case 2:
+        return const CartScreen();
+
+      case 3:
+        return const FavoritesScreen();
+
+      case 4:
+        return const ProfileScreen();
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  void _ensureTabCreated(int index) {
+    if (index < 0 || index >= _tabCount) return;
+
+    if (_tabs[index] == null) {
+      _tabs[index] = _createTab(index);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // select: rebuilds only when the cart badge count changes, not on every cart mutation.
-    final cartCount = context.select<CartProvider, int>((c) => c.itemsCount);
     final navigation = context.watch<NavigationProvider>();
+
+    // Create only the currently requested tab.
+    _ensureTabCreated(navigation.index);
+
+    final cartCount = context.select<CartProvider, int>(
+      (cart) => cart.itemsCount,
+    );
 
     return Scaffold(
       body: IndexedStack(
         index: navigation.index,
         children: [
-          for (var i = 0; i < _screens.length; i++)
-            HeroMode(enabled: i == navigation.index, child: _screens[i]),
+          for (var i = 0; i < _tabCount; i++)
+            HeroMode(
+              enabled: i == navigation.index,
+              child: _tabs[i] ?? const SizedBox.shrink(),
+            ),
         ],
       ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            14,
+          ),
           child: Container(
             height: 74,
             clipBehavior: Clip.antiAlias,
@@ -59,7 +140,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -105,16 +188,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  void _go(BuildContext context, int i) {
-    context.read<NavigationProvider>().changeTab(i);
+  void _go(BuildContext context, int index) {
+    // Favorites and Profile require authentication.
+    if (index == 3 || index == 4) {
+      AuthGate.check(
+        context,
+        destination: '${AppRoutes.home}?tab=$index',
+        onAuthenticated: () {
+          _ensureTabCreated(index);
+
+          context.read<NavigationProvider>().changeTab(
+                index,
+              );
+        },
+      );
+
+      return;
+    }
+
+    // Public tabs.
+    _ensureTabCreated(index);
+
+    context.read<NavigationProvider>().changeTab(
+          index,
+        );
   }
 }
 
-// ── Regular Nav Item ──────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
+// Regular navigation item
+// ────────────────────────────────────────────────────────────────
+
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
-  final int index, current;
+  final int index;
+  final int current;
   final void Function(int) onTap;
 
   const _NavItem({
@@ -127,20 +236,24 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sel = index == current;
+    final selected = index == current;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => onTap(index),
         borderRadius: BorderRadius.circular(14),
         child: AnimatedScale(
-          scale: sel ? 1.05 : 1,
+          scale: selected ? 1.05 : 1,
           duration: const Duration(milliseconds: 180),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 8,
+            ),
             decoration: BoxDecoration(
-              color: sel
+              color: selected
                   ? AppColors.primary.withValues(alpha: .08)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
@@ -152,9 +265,9 @@ class _NavItem extends StatelessWidget {
                   duration: const Duration(milliseconds: 180),
                   child: Icon(
                     icon,
-                    key: ValueKey(sel),
+                    key: ValueKey(selected),
                     size: 26,
-                    color: sel ? AppColors.primary : AppColors.textHint,
+                    color: selected ? AppColors.primary : AppColors.textHint,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -163,7 +276,7 @@ class _NavItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: sel ? AppColors.primary : AppColors.textHint,
+                    color: selected ? AppColors.primary : AppColors.textHint,
                   ),
                 ),
               ],
@@ -175,9 +288,13 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ── Cart Center Button ────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
+// Cart center button
+// ────────────────────────────────────────────────────────────────
+
 class _CartBtn extends StatelessWidget {
-  final int count, current;
+  final int count;
+  final int current;
   final void Function(int) onTap;
 
   const _CartBtn({
@@ -188,7 +305,8 @@ class _CartBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sel = current == 2;
+    final selected = current == 2;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -201,26 +319,31 @@ class _CartBtn extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 AnimatedScale(
-                  scale: sel ? 1.05 : 1,
+                  scale: selected ? 1.05 : 1,
                   duration: const Duration(milliseconds: 180),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      gradient: sel
+                      gradient: selected
                           ? const LinearGradient(
-                              colors: [AppColors.primary, AppColors.brand],
+                              colors: [
+                                AppColors.primary,
+                                AppColors.brand,
+                              ],
                             )
                           : null,
-                      color: sel
+                      color: selected
                           ? null
-                          : AppColors.primary.withValues(alpha: .08),
+                          : AppColors.primary.withValues(
+                              alpha: .08,
+                            ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Icon(
                       Icons.shopping_cart_rounded,
-                      color: sel ? Colors.white : AppColors.primary,
+                      color: selected ? Colors.white : AppColors.primary,
                       size: 26,
                     ),
                   ),
@@ -256,7 +379,7 @@ class _CartBtn extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: sel ? AppColors.primary : AppColors.textHint,
+                color: selected ? AppColors.primary : AppColors.textHint,
               ),
             ),
           ],

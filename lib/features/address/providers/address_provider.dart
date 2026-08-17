@@ -1,3 +1,4 @@
+import 'package:bhm_supermarket/core/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/repositories/address_repository.dart';
@@ -29,19 +30,27 @@ class AddressProvider extends ChangeNotifier {
   }
 
   Future<void> loadAddresses() async {
+    final token = await SecureStorageService.instance.readToken();
+
+    if (token == null || token.isEmpty) {
+      return;
+    }
+
     if (_loading) return;
 
     _loading = true;
     notifyListeners();
 
-    final response = await _repository.getLocations();
+    try {
+      final response = await _repository.getLocations();
 
-    if (response.isSuccess && response.data != null) {
-      _addresses = response.data!;
+      if (response.isSuccess && response.data != null) {
+        _addresses = response.data!;
+      }
+    } finally {
+      _loading = false;
+      notifyListeners();
     }
-
-    _loading = false;
-    notifyListeners();
   }
 
   Future<bool> addAddress({

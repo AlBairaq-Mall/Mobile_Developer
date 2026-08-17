@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../core/widgets/section_header.dart';
 import '../theme/app_spacing.dart';
 
 class AppSection extends StatelessWidget {

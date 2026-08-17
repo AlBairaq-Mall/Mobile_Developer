@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../../core/models/product_model.dart';
 import '../widgets/product_details_sheet.dart';
-
 import 'product_badge.dart';
 import 'product_card_container.dart';
 import 'product_favorite_button.dart';
 import 'product_image.dart';
 import 'product_info.dart';
 import 'product_cart_control.dart';
+import '../../auth/utils/auth_gate.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -71,8 +70,14 @@ class ProductCard extends StatelessWidget {
                   end: 8,
                   child: ProductFavoriteButton(
                     isFavorite: isFavorite,
-                    onTap: () =>
-                        context.read<FavoritesProvider>().toggle(product.id),
+                    onTap: () {
+                      AuthGate.check(
+                        context,
+                        onAuthenticated: () {
+                          context.read<FavoritesProvider>().toggle(product.id);
+                        },
+                      );
+                    },
                   ),
                 ),
 

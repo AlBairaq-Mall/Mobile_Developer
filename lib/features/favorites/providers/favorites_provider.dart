@@ -5,6 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/product_model.dart';
 import '../../products/domain/repositories/product_repository.dart';
+import 'package:bhm_supermarket/core/services/secure_storage_service.dart';
+
+Future<bool> _hasAuthenticatedSession() async {
+  final token = await SecureStorageService.instance.readToken();
+  return token != null && token.isNotEmpty;
+}
 
 class FavoritesProvider extends ChangeNotifier {
   final FavoritesRepository _repository;
@@ -82,6 +88,9 @@ class FavoritesProvider extends ChangeNotifier {
   }
 
   Future<void> loadFromServer() async {
+    if (!await _hasAuthenticatedSession()) {
+      return;
+    }
     _isLoading = true;
 
     notifyListeners();
@@ -117,6 +126,9 @@ class FavoritesProvider extends ChangeNotifier {
   }
 
   Future<void> toggle(String productId) async {
+    if (!await _hasAuthenticatedSession()) {
+      return;
+    }
     // ===== حذف من المفضلة =====
     if (_busy) return;
 

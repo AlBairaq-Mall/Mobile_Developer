@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
 import '../../../core/models/product_model.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../ads/models/offer_model.dart';
 import '../../ads/providers/offers_provider.dart';
 import '../../../core/widgets/app_message.dart';
-import '../../../core/widgets/app_dialog.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../models/product_unit_model.dart';
 import '../providers/product_provider.dart';
@@ -37,8 +33,6 @@ class ProductDetailsSheet extends StatefulWidget {
 }
 
 class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
-  int _quantity = 1;
-  bool _isAddingToCart = false;
   int _imageIndex = 0;
   late final PageController _pageController;
 
@@ -69,64 +63,65 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
   // ── Cart Actions ─────────────────────────────────────────────────────────
 
   Future<void> _addToCart() async {
-    // التحقق من تسجيل الدخول أولاً
-    final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn) {
-      _showLoginRequired();
+    final productProvider = context.read<ProductProvider>();
+    final selectedUnit = productProvider.selectedUnit;
+
+    if (selectedUnit == null) {
       return;
     }
 
-    final provider = context.read<ProductProvider>();
-    final selectedUnit = provider.selectedUnit;
-    if (selectedUnit == null) return;
-
-    setState(() => _isAddingToCart = true);
-
     final cart = context.read<CartProvider>();
-    final offerUnit = context.read<OffersProvider>().productUnitOffer(
-      productId: widget.product.id,
-      unitId: selectedUnit.id,
-    );
-    final response = await cart.addItem(
-      product: widget.product,
-      selectedUnit: selectedUnit,
-      unitPrice: offerUnit?.price ?? selectedUnit.price,
-      quantity: _quantity,
+
+    final currentQuantity = cart.getProductQuantity(
+      widget.product.id,
+      selectedUnit.id,
     );
 
-    if (!mounted) return;
-    setState(() => _isAddingToCart = false);
+    // المنتج غير موجود في السلة:
+    // أضف أول كمية فقط.
+    if (currentQuantity == 0) {
+      final offerUnit = context.read<OffersProvider>().productUnitOffer(
+            productId: widget.product.id,
+            unitId: selectedUnit.id,
+          );
 
-    if (response.isSuccess) {
-      // احفظ ScaffoldMessenger قبل pop
-      final messenger = ScaffoldMessenger.of(context);
-      context.pop();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppMessage.success(
-          messenger.context,
-          'تمت إضافة ${widget.product.name} (${selectedUnit.unitName}) للسلة',
-        );
-      });
-    } else {
-      AppMessage.error(
-        context,
-        response.message.isNotEmpty
-            ? response.message
-            : 'حدث خطأ، حاول مرة أخرى',
+      final response = await cart.addItem(
+        product: widget.product,
+        selectedUnit: selectedUnit,
+        unitPrice: offerUnit?.price ?? selectedUnit.price,
+        quantity: 1,
       );
-    }
-  }
 
-  void _showLoginRequired() {
-    AppDialog.loginRequired(
-      context,
-      message: 'يجب تسجيل الدخول لإضافة منتجات إلى سلة التسوق.',
-    ).then((confirmed) {
-      if (confirmed == true && mounted) {
-        context.pop(); // إغلاق الـ sheet
-        context.push(AppRoutes.login);
+      if (!mounted) return;
+
+      if (response.isSuccess) {
+        final messenger = ScaffoldMessenger.of(context);
+
+        context.pop();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          AppMessage.success(
+            messenger.context,
+            'تمت إضافة ${widget.product.name} (${selectedUnit.unitName}) للسلة',
+          );
+        });
+      } else {
+        AppMessage.error(
+          context,
+          response.message.isNotEmpty
+              ? response.message
+              : 'حدث خطأ، حاول مرة أخرى',
+        );
       }
-    });
+
+      return;
+    }
+
+    // المنتج موجود بالفعل في السلة.
+    // لا نضيف كمية ثانية عند الضغط على الزر.
+    if (mounted) {
+      context.pop();
+    }
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -140,6 +135,16 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
 
     final units = provider.units;
     final selectedUnit = provider.selectedUnit;
+
+    final cartQuantity = selectedUnit == null
+        ? 0
+        : context.select<CartProvider, int>(
+            (cart) => cart.getProductQuantity(
+              widget.product.id,
+              selectedUnit.id,
+            ),
+          );
+
     final selectedOffer = selectedUnit == null
         ? null
         : context.select<OffersProvider, OfferProductUnitModel?>(
@@ -149,6 +154,15 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             ),
           );
     final images = widget.product.images;
+
+    final isQuantityProcessing = selectedUnit == null
+        ? false
+        : context.select<CartProvider, bool>(
+            (cart) => cart.isItemProcessing(
+              widget.product.id,
+              selectedUnit.id,
+            ),
+          );
 
     return SafeArea(
       top: false,
@@ -251,11 +265,29 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
               oldPrice: selectedOffer?.hasDiscount == true
                   ? selectedOffer!.oldPrice
                   : selectedUnit.oldPrice,
-              quantity: _quantity,
-              isLoading: _isAddingToCart,
-              onIncrease: () => setState(() => _quantity++),
-              onDecrease: () {
-                if (_quantity > 1) setState(() => _quantity--);
+              quantity: cartQuantity,
+              isLoading: isQuantityProcessing,
+              onIncrease: () async {
+                final cart = context.read<CartProvider>();
+
+                await cart.setQuantity(
+                  productId: widget.product.id,
+                  unitId: selectedUnit.id,
+                  quantity: cartQuantity + 1,
+                );
+              },
+              onDecrease: () async {
+                final cart = context.read<CartProvider>();
+
+                if (cartQuantity <= 0) {
+                  return;
+                }
+
+                await cart.setQuantity(
+                  productId: widget.product.id,
+                  unitId: selectedUnit.id,
+                  quantity: cartQuantity - 1,
+                );
               },
               onAddToCart: _addToCart,
             )
@@ -660,8 +692,15 @@ class _BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
+    final isInCart = quantity > 0;
+
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 14, 20, bottomPadding + 14),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        14,
+        20,
+        bottomPadding + 14,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
@@ -674,16 +713,12 @@ class _BottomBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // ── اختيار الكمية ± ───────────────────────────────────────
           _QuantitySelector(
             quantity: quantity,
             onIncrease: onIncrease,
             onDecrease: onDecrease,
           ),
-
           const SizedBox(width: 14),
-
-          // ── السعر الإجمالي ────────────────────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,14 +736,14 @@ class _BottomBar extends StatelessWidget {
                   '${(price * quantity).toStringAsFixed(2)} ر.ي',
                   style: AppTypography.priceLarge,
                 ),
-                Text(selectedUnit.unitName, style: AppTypography.caption),
+                Text(
+                  selectedUnit.unitName,
+                  style: AppTypography.caption,
+                ),
               ],
             ),
           ),
-
           const SizedBox(width: 12),
-
-          // ── زر الإضافة للسلة ─────────────────────────────────────
           SizedBox(
             height: 48,
             child: FilledButton.icon(
@@ -716,13 +751,16 @@ class _BottomBar extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.primary.withValues(
-                  alpha: 0.5,
-                ),
+                disabledBackgroundColor:
+                    AppColors.primary.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(
+                    AppRadius.md,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                ),
               ),
               icon: isLoading
                   ? const SizedBox(
@@ -733,9 +771,18 @@ class _BottomBar extends StatelessWidget {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.shopping_cart_outlined, size: 20),
+                  : Icon(
+                      isInCart
+                          ? Icons.check_rounded
+                          : Icons.shopping_cart_outlined,
+                      size: 20,
+                    ),
               label: Text(
-                isLoading ? 'جاري الإضافة...' : 'أضف للسلة',
+                isLoading
+                    ? 'جاري التحديث...'
+                    : isInCart
+                        ? 'تم تحديث السلة'
+                        : 'أضف للسلة',
                 style: AppTypography.button,
               ),
             ),
@@ -765,22 +812,32 @@ class _QuantitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: AppColors.border,
+        ),
+        borderRadius: BorderRadius.circular(
+          AppRadius.md,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
+          _QtyButton(
+            icon: Icons.add_rounded,
+            onTap: onIncrease,
+          ),
           SizedBox(
             width: 36,
             child: Center(
-              child: Text('$quantity', style: AppTypography.titleSmall),
+              child: Text(
+                '$quantity',
+                style: AppTypography.titleSmall,
+              ),
             ),
           ),
           _QtyButton(
             icon: Icons.remove_rounded,
-            onTap: quantity > 1 ? onDecrease : null,
+            onTap: quantity > 0 ? onDecrease : null,
           ),
         ],
       ),

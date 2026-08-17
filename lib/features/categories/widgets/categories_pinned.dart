@@ -1,8 +1,5 @@
-import 'package:bhm_supermarket/features/navigation/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../core/widgets/section_header.dart';
 import '../../home/providers/home_provider.dart';
 import '../providers/category_provider.dart';
 import 'category_chip.dart';

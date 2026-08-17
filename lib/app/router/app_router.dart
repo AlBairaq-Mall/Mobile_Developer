@@ -62,7 +62,12 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (_, __) => const MainNavigationScreen(),
+        builder: (_, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          return MainNavigationScreen(
+            initialTab: tabStr != null ? int.tryParse(tabStr) : null,
+          );
+        },
       ),
       GoRoute(path: AppRoutes.search, builder: (_, __) => const SearchScreen()),
       GoRoute(

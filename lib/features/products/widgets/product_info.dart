@@ -208,32 +208,31 @@ class ProductInfo extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (product.package.isNotEmpty)
-              Flexible(
-                child: Text(
-                  '${product.package} ${product.unit}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textHint,
-                  ),
-                ),
-              ),
             if (product.package.isNotEmpty && hasDiscount)
-              const SizedBox(width: 8),
-            if (hasDiscount)
-              Flexible(
-                child: Text(
-                  '${oldPrice.toStringAsFixed(0)} ر.ي',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.discount,
-                    decoration: TextDecoration.lineThrough,
-                    decorationColor: AppColors.discount,
+              if (hasDiscount)
+                Flexible(
+                  child: Text(
+                    '${oldPrice.toStringAsFixed(0)} ر.ي',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.discount,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: AppColors.discount,
+                    ),
                   ),
                 ),
+            if (product.package.isNotEmpty) const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                '${product.package} ${product.unit}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textHint,
+                ),
               ),
+            ),
           ],
         ),
 
@@ -252,9 +251,8 @@ class ProductInfo extends StatelessWidget {
                   alignment: AlignmentDirectional.centerStart,
                   child: AppPrice(
                     price: price,
-                    crossAxisAlignment: rtl
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        rtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   ),
                 ),
               ),

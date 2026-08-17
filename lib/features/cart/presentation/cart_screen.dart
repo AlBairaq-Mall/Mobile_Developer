@@ -1,4 +1,5 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:bhm_supermarket/features/navigation/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../ads/models/offer_model.dart';
 import '../../ads/providers/offers_provider.dart';
 import '../providers/cart_provider.dart';
+import '../../auth/utils/auth_gate.dart';
 import '../widgets/cart_item_card.dart';
 
 class CartScreen extends StatefulWidget {
@@ -22,11 +24,12 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    // نجلب بيانات السلة من السيرفر عند أول ظهور لشاشة السلة.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_synced && mounted) {
         _synced = true;
-        context.read<CartProvider>().loadFromServer();
+
+        await context.read<CartProvider>().loadFromServer();
       }
     });
   }
@@ -120,7 +123,7 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: 28),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.go(AppRoutes.home);
+                      context.read<NavigationProvider>().changeTab(0);
                     },
                     icon: const Icon(Icons.shopping_bag_outlined),
                     label: const Text('تسوق الآن'),
@@ -232,7 +235,15 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: () => context.push(AppRoutes.checkout),
+                        onPressed: () {
+                          AuthGate.check(
+                            context,
+                            destination: AppRoutes.checkout,
+                            onAuthenticated: () {
+                              context.push(AppRoutes.checkout);
+                            },
+                          );
+                        },
                         icon: const Icon(
                           Icons.arrow_back_ios_rounded,
                           size: 16,
@@ -265,15 +276,15 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-      Text(
-        value,
-        style: TextStyle(fontWeight: FontWeight.w600, color: valueColor),
-      ),
-    ],
-  );
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(
+            value,
+            style: TextStyle(fontWeight: FontWeight.w600, color: valueColor),
+          ),
+        ],
+      );
 }
 
 class _GiftRewardCard extends StatelessWidget {
