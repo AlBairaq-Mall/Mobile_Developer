@@ -132,9 +132,9 @@ class _AdminCouponsScreenState extends State<AdminCouponsScreen> {
 
   Future<void> _toggleCoupon(CouponModel coupon, bool value) async {
     final error = await context.read<CouponProvider>().toggleCoupon(
-      id: coupon.id,
-      isActive: value,
-    );
+          id: coupon.id,
+          isActive: value,
+        );
 
     if (!mounted) return;
 
@@ -390,9 +390,8 @@ class _CouponFormSheetState extends State<_CouponFormSheet> {
       _codeController.text = coupon.code;
       _valueController.text = coupon.value.toString();
       _minimumController.text = coupon.minimumOrderAmount.toString();
-      _usageLimitController.text = coupon.usageLimit == 0
-          ? ''
-          : coupon.usageLimit.toString();
+      _usageLimitController.text =
+          coupon.usageLimit == 0 ? '' : coupon.usageLimit.toString();
 
       _type = coupon.type;
       _isActive = coupon.isActive;
@@ -611,9 +610,8 @@ class _CouponFormSheetState extends State<_CouponFormSheet> {
                   decimal: true,
                 ),
                 decoration: InputDecoration(
-                  labelText: _type == 'percentage'
-                      ? 'نسبة الخصم'
-                      : 'قيمة الخصم',
+                  labelText:
+                      _type == 'percentage' ? 'نسبة الخصم' : 'قيمة الخصم',
                   suffixText: _type == 'percentage' ? '%' : 'ر.ي',
                   border: const OutlineInputBorder(),
                 ),

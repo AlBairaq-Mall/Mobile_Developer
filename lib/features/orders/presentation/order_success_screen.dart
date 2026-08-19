@@ -220,32 +220,32 @@ class _Step extends StatelessWidget {
   const _Step(this.number, this.label, this.icon);
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              number,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Icon(icon, color: AppColors.primary, size: 20),
+            const SizedBox(width: 10),
+            Text(label, style: const TextStyle(fontSize: 13)),
+          ],
         ),
-        const SizedBox(width: 12),
-        Icon(icon, color: AppColors.primary, size: 20),
-        const SizedBox(width: 10),
-        Text(label, style: const TextStyle(fontSize: 13)),
-      ],
-    ),
-  );
+      );
 }

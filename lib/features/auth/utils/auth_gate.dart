@@ -12,7 +12,7 @@ class AuthGate {
   /// Checks if the user is logged in.
   /// If logged in, it executes [onAuthenticated].
   /// If not logged in, it asks the user to login.
-  /// If [destination] is provided, it stores it as pending redirect, 
+  /// If [destination] is provided, it stores it as pending redirect,
   /// so after successful login the user is redirected there.
   static void check(
     BuildContext context, {

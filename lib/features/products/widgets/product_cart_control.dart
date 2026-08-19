@@ -27,17 +27,21 @@ class ProductCartControl extends StatelessWidget {
     final unitId = selectedUnit?.id ?? "0";
 
     // 2. Select only this product/unit from cart provider to avoid unnecessary rebuilds
-    final cartQuantity = context.select<CartProvider, int>((cart) => cart.getProductQuantity(product.id, unitId));
-    final isProcessing = context.select<CartProvider, bool>((cart) => cart.isItemProcessing(product.id, unitId));
+    final cartQuantity = context.select<CartProvider, int>(
+        (cart) => cart.getProductQuantity(product.id, unitId));
+    final isProcessing = context.select<CartProvider, bool>(
+        (cart) => cart.isItemProcessing(product.id, unitId));
 
     if (cartQuantity == 0) {
       return _buildAddButton(context, selectedUnit, isProcessing);
     }
 
-    return _buildQuantitySelector(context, selectedUnit, cartQuantity, isProcessing);
+    return _buildQuantitySelector(
+        context, selectedUnit, cartQuantity, isProcessing);
   }
 
-  Widget _buildAddButton(BuildContext context, dynamic selectedUnit, bool isProcessing) {
+  Widget _buildAddButton(
+      BuildContext context, dynamic selectedUnit, bool isProcessing) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -48,17 +52,19 @@ class ProductCartControl extends StatelessWidget {
                 final offerUnit = selectedUnit == null
                     ? null
                     : context.read<OffersProvider>().productUnitOffer(
-                        productId: product.id,
-                        unitId: selectedUnit.id,
-                      );
+                          productId: product.id,
+                          unitId: selectedUnit.id,
+                        );
 
                 final response = selectedUnit == null
                     ? await context.read<CartProvider>().add(product)
                     : await context.read<CartProvider>().addItem(
-                        product: product,
-                        selectedUnit: selectedUnit,
-                        unitPrice: offerUnit?.price ?? selectedUnit.price,
-                      );
+                          product: product,
+                          selectedUnit: selectedUnit,
+                          unitPrice: offerUnit?.price ?? selectedUnit.price,
+                          originalPrice:
+                              offerUnit?.oldPrice ?? selectedUnit.price,
+                        );
 
                 if (!context.mounted) return;
 
@@ -102,9 +108,10 @@ class ProductCartControl extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantitySelector(BuildContext context, dynamic selectedUnit, int quantity, bool isProcessing) {
+  Widget _buildQuantitySelector(BuildContext context, dynamic selectedUnit,
+      int quantity, bool isProcessing) {
     final unitId = selectedUnit?.id ?? "0";
-    
+
     return Container(
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -120,7 +127,9 @@ class ProductCartControl extends StatelessWidget {
             onTap: isProcessing
                 ? null
                 : () {
-                    final index = context.read<CartProvider>().getCartItemIndex(product.id, unitId);
+                    final index = context
+                        .read<CartProvider>()
+                        .getCartItemIndex(product.id, unitId);
                     if (index != -1) {
                       context.read<CartProvider>().increase(index);
                     }
@@ -137,7 +146,8 @@ class ProductCartControl extends StatelessWidget {
                   ? const SizedBox(
                       width: 10,
                       height: 10,
-                      child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 1.5, color: AppColors.primary),
                     )
                   : Text(
                       quantity.toString(),
@@ -151,7 +161,9 @@ class ProductCartControl extends StatelessWidget {
             onTap: isProcessing
                 ? null
                 : () {
-                    final index = context.read<CartProvider>().getCartItemIndex(product.id, unitId);
+                    final index = context
+                        .read<CartProvider>()
+                        .getCartItemIndex(product.id, unitId);
                     if (index != -1) {
                       context.read<CartProvider>().decrease(index);
                     }

@@ -178,13 +178,13 @@ class DeliveryOrderModel {
           : null,
       items: itemsJson is List
           ? itemsJson
-                .whereType<Map>()
-                .map(
-                  (item) => DeliveryOrderItemModel.fromJson(
-                    Map<String, dynamic>.from(item),
-                  ),
-                )
-                .toList()
+              .whereType<Map>()
+              .map(
+                (item) => DeliveryOrderItemModel.fromJson(
+                  Map<String, dynamic>.from(item),
+                ),
+              )
+              .toList()
           : const [],
       subtotal: JsonParser.doubleValue(json['subtotal']),
       deliveryFee: JsonParser.doubleValue(json['delivery_fee']),

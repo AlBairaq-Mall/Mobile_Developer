@@ -153,19 +153,19 @@ class _QtyBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        color: isAdd ? AppColors.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(
-        icon,
-        size: 18,
-        color: isAdd ? Colors.white : AppColors.textPrimary,
-      ),
-    ),
-  );
+        onTap: onTap,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: isAdd ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isAdd ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
+      );
 }

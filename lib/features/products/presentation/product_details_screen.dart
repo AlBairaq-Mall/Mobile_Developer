@@ -52,11 +52,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     if (product == null || selected == null) return;
 
     final response = await context.read<CartProvider>().addItem(
-      product: product,
-      selectedUnit: selected,
-      unitPrice: selected.price,
-      quantity: provider.quantity,
-    );
+          product: product,
+          selectedUnit: selected,
+          unitPrice: selected.price,
+          quantity: provider.quantity,
+        );
 
     if (!mounted) return;
 
@@ -150,8 +150,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           padding: const EdgeInsets.fromLTRB(30, 90, 30, 50),
                           child: Hero(
                             tag: 'product_${widget.productId}',
-                            child:
-                                (currentProduct == null ||
+                            child: (currentProduct == null ||
                                     currentProduct.image.isEmpty)
                                 ? const Icon(
                                     Icons.inventory_2_outlined,
@@ -384,11 +383,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               itemCount: units.length,
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 2.4,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                  ),
+                                crossAxisCount: 2,
+                                childAspectRatio: 2.4,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
                               itemBuilder: (_, i) {
                                 final unit = units[i];
 
@@ -400,8 +399,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   ),
                                   onTap: () {
                                     context.read<ProductProvider>().selectUnit(
-                                      i,
-                                    );
+                                          i,
+                                        );
                                   },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 250),
@@ -441,10 +440,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           unit.unitName,
                                           style: AppTypography.titleMedium
                                               .copyWith(
-                                                color: selectedUnit
-                                                    ? AppColors.primary
-                                                    : AppColors.textPrimary,
-                                              ),
+                                            color: selectedUnit
+                                                ? AppColors.primary
+                                                : AppColors.textPrimary,
+                                          ),
                                         ),
                                         const SizedBox(height: AppSpacing.xs),
                                         Text(

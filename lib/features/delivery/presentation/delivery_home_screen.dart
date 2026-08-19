@@ -586,16 +586,16 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
               child: !_isOnline
                   ? const _OfflineState()
                   : provider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : provider.error != null
-                  ? _ErrorState(
-                      error: provider.error!,
-                      onRetry: () =>
-                          context.read<DeliveryProvider>().loadOrders(),
-                    )
-                  : activeOrders.isEmpty
-                  ? const _EmptyState()
-                  : _OrdersList(orders: activeOrders),
+                      ? const Center(child: CircularProgressIndicator())
+                      : provider.error != null
+                          ? _ErrorState(
+                              error: provider.error!,
+                              onRetry: () =>
+                                  context.read<DeliveryProvider>().loadOrders(),
+                            )
+                          : activeOrders.isEmpty
+                              ? const _EmptyState()
+                              : _OrdersList(orders: activeOrders),
             ),
           ],
         ),
@@ -1030,221 +1030,226 @@ class _DeliveryOrderDetailsModalState
                 child: Center(child: CircularProgressIndicator()),
               )
             : order == null
-            ? SizedBox(
-                height: 350,
-                child: Center(
-                  child: Text(provider.error ?? 'تعذر تحميل تفاصيل الطلب'),
-                ),
-              )
-            : Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(4),
+                ? SizedBox(
+                    height: 350,
+                    child: Center(
+                      child: Text(provider.error ?? 'تعذر تحميل تفاصيل الطلب'),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'طلب #${order.orderNumber}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                  )
+                : Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      children: [
-                        _InfoCard(
-                          title: 'العميل',
-                          icon: Icons.person_outline,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                order.customerName.isNotEmpty
-                                    ? order.customerName
-                                    : 'غير محدد',
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'طلب #${order.orderNumber}',
                                 style: const TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (order.customerPhone.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(order.customerPhone),
-                              ],
-                            ],
-                          ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
                         ),
-                        if (order.address.isNotEmpty)
-                          _InfoCard(
-                            title: 'عنوان التوصيل',
-                            icon: Icons.location_on_outlined,
-                            child: Text(order.address),
-                          ),
-                        _InfoCard(
-                          title: 'المنتجات',
-                          icon: Icons.shopping_bag_outlined,
-                          child: Column(
-                            children: [
-                              ...order.items.map(
-                                (item) => _OrderItemRow(item: item),
-                              ),
-                            ],
-                          ),
-                        ),
-                        _InfoCard(
-                          title: 'ملخص الطلب',
-                          icon: Icons.receipt_long_outlined,
-                          child: Column(
-                            children: [
-                              _SummaryRow('المجموع الفرعي', order.subtotal),
-                              _SummaryRow('رسوم التوصيل', order.deliveryFee),
-                              if (order.discount > 0)
-                                _SummaryRow('الخصم', -order.discount),
-                              if (order.couponDiscount > 0)
-                                _SummaryRow(
-                                  'خصم الكوبون',
-                                  -order.couponDiscount,
-                                ),
-                              const Divider(height: 20),
-                              _SummaryRow('الإجمالي', order.total, bold: true),
-                            ],
-                          ),
-                        ),
-                        _InfoCard(
-                          title: 'الدفع',
-                          icon: Icons.payments_outlined,
-                          child: Column(
-                            children: [
-                              Row(
+                      ),
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          children: [
+                            _InfoCard(
+                              title: 'العميل',
+                              icon: Icons.person_outline,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('طريقة الدفع'),
-                                  const Spacer(),
                                   Text(
-                                    _paymentMethodText(order.paymentMethod),
+                                    order.customerName.isNotEmpty
+                                        ? order.customerName
+                                        : 'غير محدد',
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Text('حالة الدفع'),
-                                  const Spacer(),
-                                  Text(
-                                    _paymentStatusText(order.paymentStatus),
-                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: order.paymentStatus == 'paid'
-                                          ? AppColors.success
-                                          : Colors.orange,
                                     ),
+                                  ),
+                                  if (order.customerPhone.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(order.customerPhone),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (order.address.isNotEmpty)
+                              _InfoCard(
+                                title: 'عنوان التوصيل',
+                                icon: Icons.location_on_outlined,
+                                child: Text(order.address),
+                              ),
+                            _InfoCard(
+                              title: 'المنتجات',
+                              icon: Icons.shopping_bag_outlined,
+                              child: Column(
+                                children: [
+                                  ...order.items.map(
+                                    (item) => _OrderItemRow(item: item),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                        if (order.coupon != null)
-                          _InfoCard(
-                            title: 'الكوبون',
-                            icon: Icons.local_offer_outlined,
-                            child: Row(
-                              children: [
-                                Text(
-                                  order.coupon!.code,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  order.coupon!.type == 'percentage'
-                                      ? '${order.coupon!.value}%'
-                                      : '${order.coupon!.value} ر.ي',
-                                ),
-                              ],
                             ),
-                          ),
-                        if (order.notes != null &&
-                            order.notes!.trim().isNotEmpty)
-                          _InfoCard(
-                            title: 'ملاحظات',
-                            icon: Icons.notes_outlined,
-                            child: Text(order.notes!),
-                          ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          height: 50,
-                          child: ElevatedButton.icon(
-                            onPressed: order.status == 'delivered'
-                                ? null
-                                : () async {
-                                    final error = await provider.updateStatus(
-                                      orderId: order.id,
-                                      status: 'delivered',
-                                      paymentStatus: 'paid',
-                                    );
-
-                                    if (!context.mounted) return;
-
-                                    if (error != null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(error),
-                                          backgroundColor: Colors.red,
+                            _InfoCard(
+                              title: 'ملخص الطلب',
+                              icon: Icons.receipt_long_outlined,
+                              child: Column(
+                                children: [
+                                  _SummaryRow('المجموع الفرعي', order.subtotal),
+                                  _SummaryRow(
+                                      'رسوم التوصيل', order.deliveryFee),
+                                  if (order.discount > 0)
+                                    _SummaryRow('الخصم', -order.discount),
+                                  if (order.couponDiscount > 0)
+                                    _SummaryRow(
+                                      'خصم الكوبون',
+                                      -order.couponDiscount,
+                                    ),
+                                  const Divider(height: 20),
+                                  _SummaryRow('الإجمالي', order.total,
+                                      bold: true),
+                                ],
+                              ),
+                            ),
+                            _InfoCard(
+                              title: 'الدفع',
+                              icon: Icons.payments_outlined,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text('طريقة الدفع'),
+                                      const Spacer(),
+                                      Text(
+                                        _paymentMethodText(order.paymentMethod),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
                                         ),
-                                      );
-                                      return;
-                                    }
-
-                                    Navigator.of(context).pop();
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('تم تسليم الطلب بنجاح ✓'),
-                                        backgroundColor: AppColors.success,
                                       ),
-                                    );
-                                  },
-                            icon: const Icon(Icons.check_circle_outline),
-                            label: Text(
-                              order.status == 'delivered'
-                                  ? 'تم تسليم الطلب'
-                                  : 'تسليم الطلب',
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Text('حالة الدفع'),
+                                      const Spacer(),
+                                      Text(
+                                        _paymentStatusText(order.paymentStatus),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: order.paymentStatus == 'paid'
+                                              ? AppColors.success
+                                              : Colors.orange,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.success,
-                              foregroundColor: Colors.white,
+                            if (order.coupon != null)
+                              _InfoCard(
+                                title: 'الكوبون',
+                                icon: Icons.local_offer_outlined,
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      order.coupon!.code,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      order.coupon!.type == 'percentage'
+                                          ? '${order.coupon!.value}%'
+                                          : '${order.coupon!.value} ر.ي',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (order.notes != null &&
+                                order.notes!.trim().isNotEmpty)
+                              _InfoCard(
+                                title: 'ملاحظات',
+                                icon: Icons.notes_outlined,
+                                child: Text(order.notes!),
+                              ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 50,
+                              child: ElevatedButton.icon(
+                                onPressed: order.status == 'delivered'
+                                    ? null
+                                    : () async {
+                                        final error =
+                                            await provider.updateStatus(
+                                          orderId: order.id,
+                                          status: 'delivered',
+                                          paymentStatus: 'paid',
+                                        );
+
+                                        if (!context.mounted) return;
+
+                                        if (error != null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(error),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                          return;
+                                        }
+
+                                        Navigator.of(context).pop();
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('تم تسليم الطلب بنجاح ✓'),
+                                            backgroundColor: AppColors.success,
+                                          ),
+                                        );
+                                      },
+                                icon: const Icon(Icons.check_circle_outline),
+                                label: Text(
+                                  order.status == 'delivered'
+                                      ? 'تم تسليم الطلب'
+                                      : 'تسليم الطلب',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.success,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
       ),
     );
   }

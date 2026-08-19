@@ -329,25 +329,25 @@ class _TypeChip extends StatelessWidget {
   const _TypeChip(this.label, this.value, this.selected, this.onTap);
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: selected == value ? AppColors.primary : Colors.transparent,
-        border: Border.all(
-          color: selected == value ? AppColors.primary : AppColors.border,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected == value ? AppColors.primary : Colors.transparent,
+            border: Border.all(
+              color: selected == value ? AppColors.primary : AppColors.border,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected == value ? Colors.white : null,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: selected == value ? Colors.white : null,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  );
+      );
 }
 
 class _Offer {

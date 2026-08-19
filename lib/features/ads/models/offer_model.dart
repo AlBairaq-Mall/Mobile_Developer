@@ -210,9 +210,8 @@ class OfferModel {
       descriptionEn: JsonParser.string(json['description_en']),
       image: JsonParser.string(json['image']),
       type: JsonParser.string(json['type']),
-      value: json['value'] == null
-          ? null
-          : JsonParser.doubleValue(json['value']),
+      value:
+          json['value'] == null ? null : JsonParser.doubleValue(json['value']),
       productUnits: JsonParser.list(
         json['product_units'],
         OfferProductUnitModel.fromJson,

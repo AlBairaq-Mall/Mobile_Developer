@@ -42,65 +42,66 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : provider.error != null
-          ? _ErrorView(
-              error: provider.error!,
-              onRetry: () => context.read<DeliveryProvider>().loadOrders(),
-            )
-          : Column(
-              children: [
-                // ملخص
-                Container(
-                  margin: const EdgeInsets.all(14),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _SummaryItem('إجمالي الطلبات', '${history.length}'),
-                      _SummaryItem(
-                        'مُسلَّمة',
-                        '${history.where((o) => o.status == 'delivered').length}',
-                      ),
-                      _SummaryItem(
-                        'ملغاة',
-                        '${history.where((o) => o.status == 'cancelled').length}',
-                      ),
-                    ],
-                  ),
-                ),
-
-                // List
-                Expanded(
-                  child: history.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'لا يوجد سجل توصيل',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () =>
-                              context.read<DeliveryProvider>().refresh(),
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            itemCount: history.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (_, i) {
-                              final h = history[i];
-                              return _HistoryTile(order: h);
-                            },
-                          ),
+              ? _ErrorView(
+                  error: provider.error!,
+                  onRetry: () => context.read<DeliveryProvider>().loadOrders(),
+                )
+              : Column(
+                  children: [
+                    // ملخص
+                    Container(
+                      margin: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
                         ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _SummaryItem('إجمالي الطلبات', '${history.length}'),
+                          _SummaryItem(
+                            'مُسلَّمة',
+                            '${history.where((o) => o.status == 'delivered').length}',
+                          ),
+                          _SummaryItem(
+                            'ملغاة',
+                            '${history.where((o) => o.status == 'cancelled').length}',
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // List
+                    Expanded(
+                      child: history.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'لا يوجد سجل توصيل',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: () =>
+                                  context.read<DeliveryProvider>().refresh(),
+                              child: ListView.separated(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 14),
+                                itemCount: history.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 8),
+                                itemBuilder: (_, i) {
+                                  final h = history[i];
+                                  return _HistoryTile(order: h);
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 }
@@ -113,19 +114,19 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      Text(
-        value,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: AppColors.primary,
-        ),
-      ),
-      const SizedBox(height: 4),
-      Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-    ],
-  );
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      );
 }
 
 class _HistoryTile extends StatelessWidget {
@@ -312,21 +313,21 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.error_outline, size: 64, color: Colors.red),
-        const SizedBox(height: 12),
-        Text(error, style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('إعادة المحاولة'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 12),
+            Text(error, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }
 
 class _HistoryOrderDetails extends StatelessWidget {

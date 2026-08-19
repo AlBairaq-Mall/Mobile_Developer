@@ -110,7 +110,8 @@ class OffersProvider extends ChangeNotifier {
   Future<void> load({bool showLoading = true}) async {
     if (_inFlight) {
       assert(() {
-        debugPrint('[OffersProvider] SKIPPED duplicate request (already in flight)');
+        debugPrint(
+            '[OffersProvider] SKIPPED duplicate request (already in flight)');
         return true;
       }());
       return;

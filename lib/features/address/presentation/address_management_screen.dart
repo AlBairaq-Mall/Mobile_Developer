@@ -8,6 +8,7 @@ import '../../../core/widgets/app_dialog.dart';
 import '../models/address_model.dart';
 import '../providers/address_provider.dart';
 import '../widgets/pick_location_sheet.dart';
+import '../../../core/utils/validators.dart';
 
 class AddressManagementScreen extends StatefulWidget {
   final bool fromCheckout;
@@ -292,9 +293,9 @@ class _AddressFormSheet extends StatefulWidget {
 class _AddressFormSheetState extends State<_AddressFormSheet> {
   final _titleCtrl = TextEditingController();
   final _streetCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
 
   bool _isDefault = false;
+  bool _isSaving = false;
 
   // Reserved for future Google Maps location picker integration
   double? _latitude;
@@ -325,35 +326,108 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
   void dispose() {
     _titleCtrl.dispose();
     _streetCtrl.dispose();
-    _phoneCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    if (_titleCtrl.text.trim().isEmpty || _streetCtrl.text.trim().isEmpty) {
-      AppMessage.warning(context, 'الرجاء تعبئة جميع الحقول المطلوبة');
+    // منع الضغط المتكرر أثناء الحفظ
+    if (_isSaving) {
       return;
     }
 
+    final title = _titleCtrl.text.trim();
+    final address = _streetCtrl.text.trim();
+
+    // ─────────────────────────────────────────────────────────────
+    // التحقق من اسم العنوان
+    // ─────────────────────────────────────────────────────────────
+
+    final titleError = Validators.required(
+      title,
+      'اسم العنوان',
+    );
+
+    if (titleError != null) {
+      AppMessage.warning(context, titleError);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // التحقق من طول اسم العنوان
+    // ─────────────────────────────────────────────────────────────
+
+    final titleLengthError = Validators.minLength(
+      title,
+      2,
+      'اسم العنوان',
+    );
+
+    if (titleLengthError != null) {
+      AppMessage.warning(context, titleLengthError);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // التحقق من العنوان / الشارع
+    // ─────────────────────────────────────────────────────────────
+
+    final addressError = Validators.required(
+      address,
+      'العنوان',
+    );
+
+    if (addressError != null) {
+      AppMessage.warning(context, addressError);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // التحقق من طول العنوان
+    // ─────────────────────────────────────────────────────────────
+
+    final addressLengthError = Validators.minLength(
+      address,
+      3,
+      'العنوان',
+    );
+
+    if (addressLengthError != null) {
+      AppMessage.warning(context, addressLengthError);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // بدء الحفظ
+    // ─────────────────────────────────────────────────────────────
+
+    setState(() {
+      _isSaving = true;
+    });
+
     final provider = context.read<AddressProvider>();
 
-    final address = _streetCtrl.text.trim();
-    bool success;
+    String? error;
 
     if (widget.existing == null) {
-      // --- Adding a new address ---
-      success = await provider.addAddress(
-        title: _titleCtrl.text.trim(),
+      // ───────────────────────────────────────────────────────────
+      // إضافة عنوان جديد
+      // ───────────────────────────────────────────────────────────
+
+      error = await provider.addAddress(
+        title: title,
         address: address,
         isDefault: _isDefault,
         latitude: _latitude,
         longitude: _longitude,
       );
     } else {
-      // --- Editing an existing address ---
-      success = await provider.editAddress(
+      // ───────────────────────────────────────────────────────────
+      // تعديل عنوان موجود
+      // ───────────────────────────────────────────────────────────
+
+      error = await provider.editAddress(
         id: int.parse(widget.existing!.id),
-        title: _titleCtrl.text.trim(),
+        title: title,
         address: address,
         latitude: _latitude,
         longitude: _longitude,
@@ -361,13 +435,31 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
       );
     }
 
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.of(context).pop(true);
-    } else {
-      AppMessage.error(context, 'فشلت العملية، حاول مرة أخرى');
+    if (!mounted) {
+      return;
     }
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // فشل الحفظ
+    // ─────────────────────────────────────────────────────────────
+
+    if (error != null) {
+      AppMessage.error(
+        context,
+        error,
+      );
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // نجاح الحفظ
+    // ─────────────────────────────────────────────────────────────
+
+    Navigator.of(context).pop(true);
   }
 
   @override
@@ -400,11 +492,11 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
               onTap: () async {
                 final pickedLocation =
                     await showModalBottomSheet<PickedLocation>(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (_) => const PickLocationSheet(),
-                    );
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => const PickLocationSheet(),
+                );
 
                 if (pickedLocation == null) return;
 
@@ -431,8 +523,6 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            _field("الهاتف", _phoneCtrl, type: TextInputType.phone),
             SwitchListTile(
               value: _isDefault,
               onChanged: (v) {
@@ -445,7 +535,19 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(onPressed: _save, child: const Text("حفظ")),
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("حفظ"),
+              ),
             ),
           ],
         ),

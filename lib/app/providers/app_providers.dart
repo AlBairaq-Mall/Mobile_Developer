@@ -24,49 +24,51 @@ class AppProviders {
   AppProviders._();
 
   static List<SingleChildWidget> build(AuthProvider authProvider) => [
-    ChangeNotifierProvider.value(value: authProvider),
-    ChangeNotifierProvider(create: (_) => ThemeProvider()),
-    ChangeNotifierProvider(create: (_) => LanguageProvider()),
-    ChangeNotifierProvider(
-      create: (_) => CartProvider(DependencyInjection.cartRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => FavoritesProvider(
-        DependencyInjection.favoritesRepository,
-        DependencyInjection.productRepository,
-      ),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => SearchProvider(DependencyInjection.productRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => AddressProvider(DependencyInjection.addressRepository),
-    ),
-    ChangeNotifierProvider(create: (_) => CheckoutProvider()),
-    ChangeNotifierProvider(
-      create: (_) => HomeProvider(DependencyInjection.productRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => AdsProvider(DependencyInjection.adsRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => OffersProvider(DependencyInjection.offersRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => ProductProvider(DependencyInjection.productRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => CategoryProvider(DependencyInjection.categoryRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => OrdersProvider(DependencyInjection.orderRepository),
-    ),
-    ChangeNotifierProvider(create: (_) => NavigationProvider()),
-    ChangeNotifierProvider(
-      create: (_) => DeliveryProvider(DependencyInjection.deliveryRepository),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => CouponProvider(DependencyInjection.couponRepository),
-    ),
-  ];
+        ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(
+          create: (_) => CartProvider(DependencyInjection.cartRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FavoritesProvider(
+            DependencyInjection.favoritesRepository,
+            DependencyInjection.productRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SearchProvider(DependencyInjection.productRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AddressProvider(DependencyInjection.addressRepository),
+        ),
+        ChangeNotifierProvider(create: (_) => CheckoutProvider()),
+        ChangeNotifierProvider(
+          create: (_) => HomeProvider(DependencyInjection.productRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdsProvider(DependencyInjection.adsRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OffersProvider(DependencyInjection.offersRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductProvider(DependencyInjection.productRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              CategoryProvider(DependencyInjection.categoryRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OrdersProvider(DependencyInjection.orderRepository),
+        ),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              DeliveryProvider(DependencyInjection.deliveryRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CouponProvider(DependencyInjection.couponRepository),
+        ),
+      ];
 }

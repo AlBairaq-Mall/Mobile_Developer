@@ -175,9 +175,8 @@ class NetworkBannerCard extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 230),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: rtl
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        rtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (ad.title.isNotEmpty)

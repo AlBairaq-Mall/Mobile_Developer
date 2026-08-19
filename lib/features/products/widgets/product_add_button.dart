@@ -25,16 +25,16 @@ class ProductAddButton extends StatelessWidget {
           final offerUnit = selectedUnit == null
               ? null
               : context.read<OffersProvider>().productUnitOffer(
-                  productId: product.id,
-                  unitId: selectedUnit.id,
-                );
+                    productId: product.id,
+                    unitId: selectedUnit.id,
+                  );
           final response = selectedUnit == null
               ? await context.read<CartProvider>().add(product)
               : await context.read<CartProvider>().addItem(
-                  product: product,
-                  selectedUnit: selectedUnit,
-                  unitPrice: offerUnit?.price ?? selectedUnit.price,
-                );
+                    product: product,
+                    selectedUnit: selectedUnit,
+                    unitPrice: offerUnit?.price ?? selectedUnit.price,
+                  );
 
           if (!context.mounted) return;
 

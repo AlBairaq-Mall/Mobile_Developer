@@ -158,9 +158,8 @@ class OrderTrackingScreen extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isDone ? AppColors.primary : Colors.grey.shade200,
-        border: isActive
-            ? Border.all(color: AppColors.primary, width: 3)
-            : null,
+        border:
+            isActive ? Border.all(color: AppColors.primary, width: 3) : null,
       ),
       child: Icon(
         status.icon,

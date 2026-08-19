@@ -114,8 +114,7 @@ class AppLoadingButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          padding:
-              padding ?? const EdgeInsets.symmetric(horizontal: 20),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: 20),
         ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),

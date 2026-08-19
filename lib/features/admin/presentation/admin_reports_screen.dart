@@ -78,26 +78,26 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 10),
-    child: Material(
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-        ),
-        trailing: Chip(
-          label: Text(change),
-          backgroundColor: (positive ? AppColors.success : Colors.red)
-              .withValues(alpha: 0.1),
-          labelStyle: TextStyle(
-            color: positive ? AppColors.success : Colors.red,
-            fontWeight: FontWeight.bold,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Material(
+          child: ListTile(
+            title: Text(title),
+            subtitle: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            ),
+            trailing: Chip(
+              label: Text(change),
+              backgroundColor: (positive ? AppColors.success : Colors.red)
+                  .withValues(alpha: 0.1),
+              labelStyle: TextStyle(
+                color: positive ? AppColors.success : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _TopProductRow extends StatelessWidget {
@@ -110,23 +110,24 @@ class _TopProductRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 8),
-    child: Material(
-      child: ListTile(
-        leading: const CircleAvatar(
-          backgroundColor: AppColors.primary,
-          child: Icon(Icons.trending_up, color: Colors.white, size: 16),
-        ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(qty),
-        trailing: Text(
-          amount,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Material(
+          child: ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: AppColors.primary,
+              child: Icon(Icons.trending_up, color: Colors.white, size: 16),
+            ),
+            title:
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(qty),
+            trailing: Text(
+              amount,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }

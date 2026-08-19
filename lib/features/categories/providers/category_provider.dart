@@ -37,7 +37,8 @@ class CategoryProvider extends ChangeNotifier {
     // ──────────────────────────────────────────────────────────────────────
     if (_inFlight) {
       assert(() {
-        debugPrint('[CategoryProvider] SKIPPED duplicate request (already in flight)');
+        debugPrint(
+            '[CategoryProvider] SKIPPED duplicate request (already in flight)');
         return true;
       }());
       return;
@@ -88,9 +89,10 @@ class CategoryProvider extends ChangeNotifier {
         '(duration=${stopwatch.elapsedMilliseconds}ms, error=$e)',
       );
     } finally {
-      _cachedMainCategories =
-          _categories.where((c) => c.parentId == null).toList()
-            ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      _cachedMainCategories = _categories
+          .where((c) => c.parentId == null)
+          .toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
       _isLoading = false;
       _inFlight = false;

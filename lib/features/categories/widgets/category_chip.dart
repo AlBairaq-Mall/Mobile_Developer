@@ -44,9 +44,8 @@ class CategoryChip extends StatelessWidget {
                 child: category == null
                     ? Icon(
                         Icons.apps_rounded,
-                        color: selected
-                            ? AppColors.primary
-                            : AppColors.textHint,
+                        color:
+                            selected ? AppColors.primary : AppColors.textHint,
                         size: 24,
                       )
                     : Hero(

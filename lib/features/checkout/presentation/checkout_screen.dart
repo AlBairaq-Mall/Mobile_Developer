@@ -82,9 +82,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    final safeDiscount = result.discountAmount
-        .clamp(0, cart.subtotal)
-        .toDouble();
+    final safeDiscount =
+        result.discountAmount.clamp(0, cart.subtotal).toDouble();
 
     setState(() {
       _discountAmount = safeDiscount;
@@ -140,6 +139,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _isPlacing = true;
     });
 
+    final items = <Map<String, dynamic>>[];
+
+    for (final item in cart.items) {
+      final productId = int.tryParse(item.product.id);
+      final unitId = int.tryParse(item.selectedUnit.id);
+
+      if (productId == null || unitId == null) {
+        if (mounted) {
+          AppMessage.error(
+            context,
+            'بيانات المنتج أو الوحدة غير صالحة، يرجى تحديث السلة والمحاولة مرة أخرى.',
+            title: 'تعذر إتمام الطلب',
+          );
+        }
+
+        setState(() {
+          _isPlacing = false;
+        });
+
+        return;
+      }
+
+      items.add({
+        'product_id': productId,
+        'unit_id': unitId,
+        'quantity': item.quantity,
+      });
+    }
+
     try {
       final response = await DependencyInjection.orderRepository.createOrder(
         addressId: addressProvider.selectedAddress!.id,
@@ -148,13 +176,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         discount: couponDiscount,
         notes: null,
         couponCode: _appliedCouponCode,
-        items: cart.items.map((e) {
-          return {
-            "product_id": int.parse(e.product.id),
-            "unit_id": int.parse(e.selectedUnit.id),
-            "quantity": e.quantity,
-          };
-        }).toList(),
+        items: items,
       );
 
       if (!mounted) return;
@@ -162,7 +184,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!response.success) {
         AppMessage.error(
           context,
-          response.message.isEmpty ? 'فشل إنشاء الطلب، حاول مرة أخرى' : response.message,
+          response.message.isEmpty
+              ? 'فشل إنشاء الطلب، حاول مرة أخرى'
+              : response.message,
           title: 'فشل إرسال الطلب',
         );
         return;
@@ -215,8 +239,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       currentSubtotal: cart.subtotal,
       appliedSubtotal: _couponSubtotal,
     );
-    final couponNeedsRecheck =
-        _appliedCouponCode != null &&
+    final couponNeedsRecheck = _appliedCouponCode != null &&
         !CouponTotals.isCouponCurrent(
           appliedSubtotal: _couponSubtotal,
           currentSubtotal: cart.subtotal,
@@ -300,8 +323,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () async {
-                                final addressProvider = context
-                                    .read<AddressProvider>();
+                                final addressProvider =
+                                    context.read<AddressProvider>();
 
                                 final result = await context.push<bool>(
                                   AppRoutes.addresses,
@@ -505,9 +528,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _sectionTitle(String title) => Text(
-    title,
-    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-  );
+        title,
+        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+      );
 
   Widget _summaryRow(
     String label,

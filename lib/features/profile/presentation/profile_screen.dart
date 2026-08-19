@@ -284,31 +284,31 @@ class _StatBadge extends StatelessWidget {
   const _StatBadge(this.value, this.label);
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.2),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.85),
-            fontSize: 11,
-          ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 11,
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }
 
 class _MenuItem {
@@ -325,70 +325,70 @@ class _MenuSection extends StatelessWidget {
   const _MenuSection(this.title, this.items);
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(right: 4, bottom: 10),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4, bottom: 10),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
-        ),
-      ),
-      Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          decoration: BoxDecoration(
+          Material(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            children: items.asMap().entries.map((e) {
-              final i = e.key;
-              final item = e.value;
-              return Column(
-                children: [
-                  ListTile(
-                    onTap: item.onTap,
-                    leading: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: item.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: items.asMap().entries.map((e) {
+                  final i = e.key;
+                  final item = e.value;
+                  return Column(
+                    children: [
+                      ListTile(
+                        onTap: item.onTap,
+                        leading: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: item.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.icon, color: item.color, size: 20),
+                        ),
+                        title: Text(
+                          item.label,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.chevron_left,
+                          color: AppColors.textHint,
+                          size: 20,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 2,
+                        ),
                       ),
-                      child: Icon(item.icon, color: item.color, size: 20),
-                    ),
-                    title: Text(
-                      item.label,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_left,
-                      color: AppColors.textHint,
-                      size: 20,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 2,
-                    ),
-                  ),
-                  if (i < items.length - 1)
-                    const Divider(height: 1, indent: 72, endIndent: 16),
-                ],
-              );
-            }).toList(),
+                      if (i < items.length - 1)
+                        const Divider(height: 1, indent: 72, endIndent: 16),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
           ),
-        ),
-      ),
-    ],
-  );
+        ],
+      );
 }

@@ -38,9 +38,8 @@ class AddressModel {
           : JsonParser.doubleValue(json['longitude']),
       street: json['street'] == null ? null : JsonParser.string(json['street']),
       city: json['city'] == null ? null : JsonParser.string(json['city']),
-      country: json['country'] == null
-          ? null
-          : JsonParser.string(json['country']),
+      country:
+          json['country'] == null ? null : JsonParser.string(json['country']),
     );
   }
 

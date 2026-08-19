@@ -41,8 +41,7 @@ class AppBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final resolvedIcon =
-        icon ??
+    final resolvedIcon = icon ??
         (isRtl ? Icons.arrow_back_ios_rounded : Icons.arrow_back_ios_rounded);
     final resolvedIconColor =
         iconColor ?? IconTheme.of(context).color ?? AppColors.textPrimary;

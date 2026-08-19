@@ -70,10 +70,10 @@ class ProductQuickView extends StatelessWidget {
                   if (product.units.isEmpty) return;
 
                   context.read<CartProvider>().addItem(
-                    product: product,
-                    selectedUnit: product.units.first,
-                    unitPrice: product.units.first.price,
-                  );
+                        product: product,
+                        selectedUnit: product.units.first,
+                        unitPrice: product.units.first.price,
+                      );
 
                   // Capture before pop to avoid stale context
                   final scaffoldMsg = ScaffoldMessenger.of(context);

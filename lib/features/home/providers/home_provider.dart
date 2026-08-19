@@ -125,7 +125,8 @@ class HomeProvider extends ChangeNotifier {
         _products = List<ProductModel>.from(response.data!);
         _error = null;
         _invalidateCache();
-        _state = _products.isEmpty ? HomeLoadState.empty : HomeLoadState.success;
+        _state =
+            _products.isEmpty ? HomeLoadState.empty : HomeLoadState.success;
       } else {
         // فشل من الـ server (4xx/5xx) مع رسالة.
         _error = response.message;
@@ -174,8 +175,7 @@ class HomeProvider extends ChangeNotifier {
       final categoryMatch =
           _selectedCategory.isEmpty || product.categoryId == _selectedCategory;
 
-      final searchMatch =
-          _searchText.isEmpty ||
+      final searchMatch = _searchText.isEmpty ||
           product.name.toLowerCase().contains(_searchText.toLowerCase());
 
       return categoryMatch && searchMatch;

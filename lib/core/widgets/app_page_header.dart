@@ -77,8 +77,7 @@ class AppPageHeader extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: actions,
-      bottom:
-          bottom ??
+      bottom: bottom ??
           (showBottomBorder
               ? PreferredSize(
                   preferredSize: const Size.fromHeight(1),

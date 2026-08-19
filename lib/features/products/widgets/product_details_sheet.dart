@@ -88,6 +88,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
       final response = await cart.addItem(
         product: widget.product,
         selectedUnit: selectedUnit,
+        originalPrice: offerUnit?.oldPrice ?? selectedUnit.price,
         unitPrice: offerUnit?.price ?? selectedUnit.price,
         quantity: 1,
       );

@@ -46,8 +46,8 @@ void main() {
     await provider.load();
 
     List<GiftRewardModel> rewardsFor(int quantity) => provider.giftRewardsFor([
-      OfferCartLine(productId: '1', unitId: '1', quantity: quantity),
-    ]);
+          OfferCartLine(productId: '1', unitId: '1', quantity: quantity),
+        ]);
 
     expect(rewardsFor(1), isEmpty);
     expect(rewardsFor(2).single.quantity, 1);

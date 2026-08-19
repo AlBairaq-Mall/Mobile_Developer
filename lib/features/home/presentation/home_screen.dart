@@ -383,7 +383,8 @@ class _HomeBody extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.grey),
+                  const Icon(Icons.wifi_off_rounded,
+                      size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
                   const Text(
                     'تعذر تحميل المنتجات',
@@ -401,7 +402,8 @@ class _HomeBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
-                    onPressed: () => context.read<HomeProvider>().loadProducts(),
+                    onPressed: () =>
+                        context.read<HomeProvider>().loadProducts(),
                     icon: const Icon(Icons.refresh_rounded),
                     label: const Text('إعادة المحاولة'),
                   ),
@@ -427,7 +429,8 @@ class _HomeBody extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                  const Icon(Icons.inventory_2_outlined,
+                      size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
                   const Text(
                     'لا توجد منتجات حالياً',
@@ -465,7 +468,8 @@ class _HomeBody extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18),
+                  const Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange, size: 18),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(

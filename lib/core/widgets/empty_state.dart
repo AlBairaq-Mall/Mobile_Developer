@@ -191,8 +191,7 @@ class NetworkErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return ErrorState(
       title: 'لا يوجد اتصال بالإنترنت',
-      message:
-          message ?? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.',
+      message: message ?? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.',
       onRetry: onRetry,
     );
   }

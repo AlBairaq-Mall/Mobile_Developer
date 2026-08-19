@@ -106,7 +106,7 @@ class DeliveryRemoteDataSource extends BaseRemoteDataSource {
       return ApiResponse<void>.failure(
         e.response?.data is Map
             ? e.response?.data['message']?.toString() ??
-                  'حدث خطأ أثناء تعيين عامل التوصيل'
+                'حدث خطأ أثناء تعيين عامل التوصيل'
             : 'حدث خطأ أثناء تعيين عامل التوصيل',
         statusCode: e.response?.statusCode,
       );

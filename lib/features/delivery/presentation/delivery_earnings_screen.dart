@@ -91,32 +91,32 @@ class _EarningsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 26),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 26),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
 class _DayRow extends StatelessWidget {
@@ -126,32 +126,33 @@ class _DayRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 70,
-          child: Text(day, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: deliveries / 10,
-              backgroundColor: AppColors.border,
-              color: AppColors.primary,
-              minHeight: 8,
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 70,
+              child: Text(day,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
             ),
-          ),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: deliveries / 10,
+                  backgroundColor: AppColors.border,
+                  color: AppColors.primary,
+                  minHeight: 8,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(amount, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
+            Text(
+              '($deliveries)',
+              style: const TextStyle(color: AppColors.textHint, fontSize: 12),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Text(amount, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(width: 8),
-        Text(
-          '($deliveries)',
-          style: const TextStyle(color: AppColors.textHint, fontSize: 12),
-        ),
-      ],
-    ),
-  );
+      );
 }

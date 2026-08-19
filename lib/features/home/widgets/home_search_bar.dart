@@ -156,9 +156,9 @@ class HomeSearchBar extends StatelessWidget {
         textInputAction: TextInputAction.search,
         onTap: readOnly
             ? (onTap ??
-                  () {
-                    context.push(AppRoutes.search);
-                  })
+                () {
+                  context.push(AppRoutes.search);
+                })
             : null,
         style: AppTypography.bodyMedium,
         decoration: InputDecoration(

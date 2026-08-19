@@ -160,6 +160,7 @@ class CartProvider extends ChangeNotifier {
     required ProductModel product,
     required ProductUnitModel selectedUnit,
     required double unitPrice,
+    double? originalPrice,
     int quantity = 1,
   }) async {
     if (quantity <= 0) {
@@ -191,13 +192,17 @@ class CartProvider extends ChangeNotifier {
           quantity: _items[index].quantity + quantity,
         );
       } else {
+        final effectiveOriginalPrice = originalPrice ?? unitPrice;
+
         _items.add(
           CartItemModel(
             cartId: null,
             product: product,
             selectedUnit: selectedUnit,
-            originalPrice: unitPrice,
-            discount: 0,
+            originalPrice: effectiveOriginalPrice,
+            discount: (effectiveOriginalPrice - unitPrice)
+                .clamp(0, double.infinity)
+                .toDouble(),
             unitPrice: unitPrice,
             quantity: quantity,
             total: unitPrice * quantity,
@@ -522,29 +527,32 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // نحتفظ بنسخة مستقلة من سلة الضيف قبل أي مزامنة.
       final localItems = List<CartItemModel>.from(_items);
 
-      // نقرأ سلة السيرفر أولاً.
+      // قراءة سلة السيرفر.
       final serverResponse = await _repository.getCart();
 
       if (!serverResponse.isSuccess || serverResponse.data == null) {
+        // إذا فشل جلب سلة السيرفر، لا نلمس السلة المحلية.
         return;
       }
 
-      final serverItems = serverResponse.data!;
+      final serverItems = List<CartItemModel>.from(serverResponse.data!);
 
-      // نبدأ من سلة السيرفر ونضيف/نزيد كميات السلة المحلية.
-      _items
-        ..clear()
-        ..addAll(serverItems);
+      // العناصر التي فشلت مزامنتها ستبقى محلياً.
+      final failedLocalItems = <CartItemModel>[];
 
       for (final localItem in localItems) {
-        final serverIndex = _items.indexWhere(
+        final serverIndex = serverItems.indexWhere(
           (serverItem) =>
               serverItem.product.id == localItem.product.id &&
               serverItem.selectedUnit.id == localItem.selectedUnit.id,
         );
 
+        // ─────────────────────────────────────────────────────────────
+        // المنتج غير موجود في سلة السيرفر → إضافة
+        // ─────────────────────────────────────────────────────────────
         if (serverIndex == -1) {
           final response = await _repository.addToCart(
             productId: localItem.product.id,
@@ -552,34 +560,100 @@ class CartProvider extends ChangeNotifier {
             quantity: localItem.quantity,
           );
 
-          if (response.isSuccess) {
-            // سيُحمّل لاحقاً من السيرفر.
+          if (!response.isSuccess) {
+            failedLocalItems.add(localItem);
           }
 
           continue;
         }
 
-        final serverItem = _items[serverIndex];
+        // ─────────────────────────────────────────────────────────────
+        // المنتج موجود → دمج الكمية
+        // ─────────────────────────────────────────────────────────────
+        final serverItem = serverItems[serverIndex];
+
+        if (serverItem.cartId == null) {
+          // لا نستطيع تحديث عنصر بدون cartId.
+          failedLocalItems.add(localItem);
+          continue;
+        }
+
         final mergedQuantity = serverItem.quantity + localItem.quantity;
 
-        if (serverItem.cartId != null) {
-          final response = await _repository.updateQuantity(
-            cartId: serverItem.cartId!,
-            quantity: mergedQuantity,
-          );
+        final response = await _repository.updateQuantity(
+          cartId: serverItem.cartId!,
+          quantity: mergedQuantity,
+        );
 
-          if (response.isSuccess) {
-            _items[serverIndex] = serverItem.copyWith(
-              quantity: mergedQuantity,
-            );
-          }
+        if (!response.isSuccess) {
+          // فشل التحديث → نحافظ على نسخة الضيف محلياً.
+          failedLocalItems.add(localItem);
         }
       }
 
-      await loadFromServer();
+      // ─────────────────────────────────────────────────────────────
+      // نحاول تحميل أحدث نسخة من السيرفر.
+      // ─────────────────────────────────────────────────────────────
+      final latestResponse = await _repository.getCart();
+
+      if (latestResponse.isSuccess && latestResponse.data != null) {
+        final mergedItems = List<CartItemModel>.from(
+          latestResponse.data!,
+        );
+
+        // نعيد العناصر التي فشلت مزامنتها محلياً.
+        for (final failedItem in failedLocalItems) {
+          final existingIndex = mergedItems.indexWhere(
+            (serverItem) =>
+                serverItem.product.id == failedItem.product.id &&
+                serverItem.selectedUnit.id == failedItem.selectedUnit.id,
+          );
+
+          if (existingIndex != -1) {
+            // نستخدم نسخة الضيف لأنها تمثل الكمية التي يريدها المستخدم.
+            mergedItems[existingIndex] = failedItem.copyWith(
+              cartId: mergedItems[existingIndex].cartId,
+            );
+          } else {
+            mergedItems.add(failedItem);
+          }
+        }
+
+        _items
+          ..clear()
+          ..addAll(mergedItems);
+
+        await _saveCart();
+      } else {
+        // حتى لو فشل التحميل النهائي، لا نفقد العناصر المحلية الفاشلة.
+        _items
+          ..clear()
+          ..addAll(serverItems);
+
+        for (final failedItem in failedLocalItems) {
+          final existingIndex = _items.indexWhere(
+            (serverItem) =>
+                serverItem.product.id == failedItem.product.id &&
+                serverItem.selectedUnit.id == failedItem.selectedUnit.id,
+          );
+
+          if (existingIndex != -1) {
+            _items[existingIndex] = failedItem.copyWith(
+              cartId: _items[existingIndex].cartId,
+            );
+          } else {
+            _items.add(failedItem);
+          }
+        }
+
+        await _saveCart();
+      }
     } catch (error, stackTrace) {
       debugPrint('Guest cart merge error: $error');
       debugPrintStack(stackTrace: stackTrace);
+
+      // الأهم: لا نمسح السلة المحلية عند حدوث خطأ غير متوقع.
+      await _saveCart();
     } finally {
       _isMerging = false;
       notifyListeners();

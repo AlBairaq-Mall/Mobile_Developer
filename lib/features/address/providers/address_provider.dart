@@ -53,7 +53,7 @@ class AddressProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> addAddress({
+  Future<String?> addAddress({
     required String title,
     required String address,
     double? latitude,
@@ -69,17 +69,19 @@ class AddressProvider extends ChangeNotifier {
     );
 
     if (!response.isSuccess) {
-      return false;
+      return response.message.isNotEmpty
+          ? response.message
+          : 'فشلت عملية إضافة العنوان';
     }
 
     await loadAddresses();
 
     notifyListeners();
 
-    return true;
+    return null;
   }
 
-  Future<bool> editAddress({
+  Future<String?> editAddress({
     required int id,
     required String title,
     required String address,
@@ -97,14 +99,16 @@ class AddressProvider extends ChangeNotifier {
     );
 
     if (!response.isSuccess) {
-      return false;
+      return response.message.isNotEmpty
+          ? response.message
+          : 'فشلت عملية تعديل العنوان';
     }
 
     await loadAddresses();
 
     notifyListeners();
 
-    return true;
+    return null;
   }
 
   Future<bool> deleteAddress(int id) async {

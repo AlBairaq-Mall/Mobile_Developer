@@ -102,14 +102,14 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.title);
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-    child: Text(
-      title,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.outline,
-        fontSize: 12,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.outline,
+            fontSize: 12,
+          ),
+        ),
+      );
 }

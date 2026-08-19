@@ -25,7 +25,8 @@ class AdsProvider extends ChangeNotifier {
   Future<void> load({bool showLoading = true}) async {
     if (_inFlight) {
       assert(() {
-        debugPrint('[AdsProvider] SKIPPED duplicate request (already in flight)');
+        debugPrint(
+            '[AdsProvider] SKIPPED duplicate request (already in flight)');
         return true;
       }());
       return;
