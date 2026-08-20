@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../features/orders/presentation/order_details_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/address/presentation/address_management_screen.dart';
-import '../../features/admin/presentation/admin_login_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/admin_orders_screen.dart';
 import '../../features/admin/presentation/admin_products_screen.dart';
@@ -144,10 +143,6 @@ class AppRouter {
               title: 'شروط الاستخدام',
               content: 'سيتم إضافة شروط الاستخدام قريباً.',
             ),
-          ),
-          GoRoute(
-            path: AppRoutes.adminLogin,
-            builder: (_, __) => const AdminLoginScreen(),
           ),
           GoRoute(
             path: AppRoutes.adminDashboard,

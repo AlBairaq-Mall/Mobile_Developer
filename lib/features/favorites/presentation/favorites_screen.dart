@@ -85,7 +85,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       body: favProducts.isEmpty
           ? const EmptyState(
-              emoji: '♥',
+              icon: Icons.favorite_rounded,
               title: 'المفضلة فارغة',
               subtitle: 'اضغط على قلب أي منتج لإضافته هنا',
             )

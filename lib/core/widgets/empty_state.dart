@@ -10,7 +10,7 @@ import '../../app/widgets/app_button.dart';
 /// مثال: "لا توجد طلبات" / "المفضلة فارغة"
 /// لا تستخدمه لحالات الخطأ — استخدم [ErrorState] أو [NetworkErrorState].
 class EmptyState extends StatelessWidget {
-  final String emoji;
+  final IconData? icon;
   final String title;
   final String? subtitle;
   final String? actionLabel;
@@ -18,7 +18,7 @@ class EmptyState extends StatelessWidget {
 
   const EmptyState({
     super.key,
-    required this.emoji,
+    this.icon,
     required this.title,
     this.subtitle,
     this.actionLabel,
@@ -42,7 +42,10 @@ class EmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 42)),
+                child: icon != null
+                    ? Icon(icon, size: 42, color: AppColors.primary)
+                    : const Icon(Icons.inbox_rounded,
+                        size: 42, color: AppColors.primary),
               ),
             ),
             const SizedBox(height: 20),

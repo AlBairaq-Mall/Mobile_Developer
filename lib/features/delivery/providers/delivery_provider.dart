@@ -15,12 +15,38 @@
 //   bool _isUpdating = false;
 //   String? _error;
 
-//   List<DeliveryOrderModel> get orders => _orders;
+//   List<DeliveryOrderModel> get orders => List.unmodifiable(_orders);
+
 //   DeliveryOrderModel? get selectedOrder => _selectedOrder;
+
 //   bool get isLoading => _isLoading;
+
 //   bool get isUpdating => _isUpdating;
+
 //   String? get error => _error;
+
 //   bool get isEmpty => !_isLoading && _orders.isEmpty && _error == null;
+
+//   /// الطلبات التي ما زالت تحتاج إجراء من السائق.
+//   ///
+//   /// حسب العقد الحالي للـBackend، الطلبات النشطة تكون قبل:
+//   /// delivered / cancelled
+//   List<DeliveryOrderModel> get activeOrders {
+//     return _orders
+//         .where(
+//           (order) => order.status != 'delivered' && order.status != 'cancelled',
+//         )
+//         .toList();
+//   }
+
+//   /// الطلبات المكتملة أو الملغاة.
+//   List<DeliveryOrderModel> get historyOrders {
+//     return _orders
+//         .where(
+//           (order) => order.status == 'delivered' || order.status == 'cancelled',
+//         )
+//         .toList();
+//   }
 
 //   // ── Orders List ──────────────────────────────────────────────────────────
 
@@ -64,14 +90,33 @@
 //     notifyListeners();
 //   }
 
-//   // ── Update Status ────────────────────────────────────────────────────────
+//   // ── Update Status ─────────────────────────────────────────────────────────
 
-//   /// Returns null on success, or an error message on failure.
+//   /// تحديث حالة الطلب وحالة الدفع من خلال:
+//   ///
+//   /// PATCH /api/delivery/orders/{id}/status
+//   ///
+//   /// الحالات المدعومة حسب عقد الـAPI الحالي:
+//   /// - delivered
+//   /// - cancelled
+//   ///
+//   /// وحالات الدفع:
+//   /// - pending
+//   /// - paid
+//   /// - failed
 //   Future<String?> updateStatus({
 //     required String orderId,
 //     required String status,
 //     String? paymentStatus,
 //   }) async {
+//     if (!_isValidOrderStatus(status)) {
+//       return 'حالة الطلب غير مدعومة';
+//     }
+
+//     if (paymentStatus != null && !_isValidPaymentStatus(paymentStatus)) {
+//       return 'حالة الدفع غير مدعومة';
+//     }
+
 //     _isUpdating = true;
 //     notifyListeners();
 
@@ -83,85 +128,50 @@
 
 //     _isUpdating = false;
 
-//     if (response.isSuccess) {
-//       // Optimistic update in-list
-//       final idx = _orders.indexWhere((o) => o.id == orderId);
-//       if (idx != -1) {
-//         _orders[idx] = _orders[idx].copyWith(
-//           status: status,
-//           paymentStatus: paymentStatus ?? _orders[idx].paymentStatus,
-//         );
-//       }
-//       if (_selectedOrder?.id == orderId) {
-//         _selectedOrder = _selectedOrder!.copyWith(
-//           status: status,
-//           paymentStatus: paymentStatus ?? _selectedOrder!.paymentStatus,
-//         );
-//       }
-//       notifyListeners();
-//       return null;
-//     }
-
-//     notifyListeners();
-//     return response.message;
-//   }
-
-//   /// Start delivery for an assigned order.
-//   ///
-//   /// confirmed / processing -> shipped
-//   ///
-//   /// We reuse the existing status endpoint instead of creating
-//   /// another repository/data-source method.
-//   ///
-//   /// Payment status is preserved because starting delivery does
-//   /// not mean the customer has paid yet.
-//   Future<String?> startDelivery(String orderId) async {
-//     final orderIndex = _orders.indexWhere((order) => order.id == orderId);
-
-//     if (orderIndex == -1) {
-//       return 'لم يتم العثور على الطلب';
-//     }
-
-//     final order = _orders[orderIndex];
-
-//     if (order.status == 'shipped') {
-//       return null;
-//     }
-
-//     if (order.status != 'confirmed' && order.status != 'processing') {
-//       return 'لا يمكن بدء التوصيل لهذه الحالة';
-//     }
-
-//     _isUpdating = true;
-//     notifyListeners();
-
-//     final response = await _repository.updateOrderStatus(
-//       orderId: orderId,
-//       status: 'shipped',
-//       paymentStatus: order.paymentStatus,
-//     );
-
-//     _isUpdating = false;
-
 //     if (!response.isSuccess) {
 //       notifyListeners();
 //       return response.message;
 //     }
 
-//     _orders[orderIndex] = order.copyWith(status: 'shipped');
-
-//     if (_selectedOrder?.id == orderId) {
-//       _selectedOrder = _selectedOrder!.copyWith(status: 'shipped');
-//     }
+//     _updateLocalOrder(
+//       orderId: orderId,
+//       status: status,
+//       paymentStatus: paymentStatus,
+//     );
 
 //     notifyListeners();
 
 //     return null;
 //   }
 
+//   // ── Local Update ─────────────────────────────────────────────────────────
+
+//   void _updateLocalOrder({
+//     required String orderId,
+//     required String status,
+//     String? paymentStatus,
+//   }) {
+//     final index = _orders.indexWhere((order) => order.id == orderId);
+
+//     if (index != -1) {
+//       final current = _orders[index];
+
+//       _orders[index] = current.copyWith(
+//         status: status,
+//         paymentStatus: paymentStatus,
+//       );
+//     }
+
+//     if (_selectedOrder?.id == orderId) {
+//       _selectedOrder = _selectedOrder!.copyWith(
+//         status: status,
+//         paymentStatus: paymentStatus,
+//       );
+//     }
+//   }
+
 //   // ── Assign Driver ────────────────────────────────────────────────────────
 
-//   /// Returns null on success, or an error message on failure.
 //   Future<String?> assignDriver({
 //     required String orderId,
 //     required int deliveryDriverId,
@@ -175,14 +185,25 @@
 //     );
 
 //     _isUpdating = false;
-//     notifyListeners();
 
-//     return response.isSuccess ? null : response.message;
+//     if (!response.isSuccess) {
+//       notifyListeners();
+//       return response.message;
+//     }
+
+//     notifyListeners();
+//     return null;
 //   }
 
-//   /// ─────────────────────────────────────────────────────────────────────
-//   /// PATCH /api/delivery/orders/{id}/status
-//   /// ─────────────────────────────────────────────────────────────────────
+//   // ── Validation ───────────────────────────────────────────────────────────
+
+//   bool _isValidOrderStatus(String status) {
+//     return status == 'delivered' || status == 'cancelled';
+//   }
+
+//   bool _isValidPaymentStatus(String status) {
+//     return status == 'pending' || status == 'paid' || status == 'failed';
+//   }
 // }
 
 import 'package:flutter/foundation.dart';
@@ -195,12 +216,17 @@ class DeliveryProvider extends ChangeNotifier {
 
   final DeliveryRepository _repository;
 
+  List<DeliveryOrderModel> _availableOrders = [];
   List<DeliveryOrderModel> _orders = [];
+
   DeliveryOrderModel? _selectedOrder;
 
   bool _isLoading = false;
   bool _isUpdating = false;
   String? _error;
+
+  List<DeliveryOrderModel> get availableOrders =>
+      List.unmodifiable(_availableOrders);
 
   List<DeliveryOrderModel> get orders => List.unmodifiable(_orders);
 
@@ -212,12 +238,12 @@ class DeliveryProvider extends ChangeNotifier {
 
   String? get error => _error;
 
-  bool get isEmpty => !_isLoading && _orders.isEmpty && _error == null;
+  bool get isEmpty =>
+      !_isLoading &&
+      _availableOrders.isEmpty &&
+      _orders.isEmpty &&
+      _error == null;
 
-  /// الطلبات التي ما زالت تحتاج إجراء من السائق.
-  ///
-  /// حسب العقد الحالي للـBackend، الطلبات النشطة تكون قبل:
-  /// delivered / cancelled
   List<DeliveryOrderModel> get activeOrders {
     return _orders
         .where(
@@ -226,7 +252,6 @@ class DeliveryProvider extends ChangeNotifier {
         .toList();
   }
 
-  /// الطلبات المكتملة أو الملغاة.
   List<DeliveryOrderModel> get historyOrders {
     return _orders
         .where(
@@ -235,7 +260,32 @@ class DeliveryProvider extends ChangeNotifier {
         .toList();
   }
 
-  // ── Orders List ──────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Available Orders
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Future<void> loadAvailableOrders() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final response = await _repository.getAvailableOrders();
+
+    if (response.isSuccess) {
+      _availableOrders = response.data ?? [];
+    } else {
+      // لا تمسح الطلبات القديمة أو تتسبب في اختفائها عند الفشل
+      // فقط اظهر الخطأ
+      _error = response.message;
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // My Orders
+  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> loadOrders() async {
     _isLoading = true;
@@ -247,7 +297,7 @@ class DeliveryProvider extends ChangeNotifier {
     if (response.isSuccess) {
       _orders = response.data ?? [];
     } else {
-      _orders = [];
+      // لا تمسح الطلبات القديمة أو تتسبب في اختفائها عند الفشل
       _error = response.message;
     }
 
@@ -255,9 +305,59 @@ class DeliveryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refresh() => loadOrders();
+  Future<void> refresh() async {
+    await Future.wait([
+      loadAvailableOrders(),
+      loadOrders(),
+    ]);
+  }
 
-  // ── Order Detail ─────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Claim Order
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Future<String?> claimOrder(String orderId) async {
+    if (_isUpdating) return 'يوجد إجراء قيد التنفيذ';
+
+    _isUpdating = true;
+    _error = null;
+    notifyListeners();
+
+    final response = await _repository.claimOrder(orderId);
+
+    _isUpdating = false;
+
+    if (!response.isSuccess || response.data == null) {
+      notifyListeners();
+      return response.message; // عند الفشل، لا نمسح الطلب من القائمة
+    }
+
+    final claimedOrder = response.data!;
+
+    // إزالة الطلب من الطلبات المتاحة.
+    _availableOrders.removeWhere(
+      (order) => order.id == orderId,
+    );
+
+    // إضافة الطلب إلى طلبات السائق.
+    final existingIndex = _orders.indexWhere(
+      (order) => order.id == orderId,
+    );
+
+    if (existingIndex == -1) {
+      _orders.insert(0, claimedOrder);
+    } else {
+      _orders[existingIndex] = claimedOrder;
+    }
+
+    notifyListeners();
+
+    return null;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Order Detail
+  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> loadOrder(String id) async {
     _selectedOrder = null;
@@ -277,20 +377,10 @@ class DeliveryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Update Status ─────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Update Status
+  // ══════════════════════════════════════════════════════════════════════════
 
-  /// تحديث حالة الطلب وحالة الدفع من خلال:
-  ///
-  /// PATCH /api/delivery/orders/{id}/status
-  ///
-  /// الحالات المدعومة حسب عقد الـAPI الحالي:
-  /// - delivered
-  /// - cancelled
-  ///
-  /// وحالات الدفع:
-  /// - pending
-  /// - paid
-  /// - failed
   Future<String?> updateStatus({
     required String orderId,
     required String status,
@@ -302,6 +392,10 @@ class DeliveryProvider extends ChangeNotifier {
 
     if (paymentStatus != null && !_isValidPaymentStatus(paymentStatus)) {
       return 'حالة الدفع غير مدعومة';
+    }
+
+    if (_isUpdating) {
+      return 'يوجد إجراء قيد التنفيذ';
     }
 
     _isUpdating = true;
@@ -331,14 +425,18 @@ class DeliveryProvider extends ChangeNotifier {
     return null;
   }
 
-  // ── Local Update ─────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Local Update
+  // ══════════════════════════════════════════════════════════════════════════
 
   void _updateLocalOrder({
     required String orderId,
     required String status,
     String? paymentStatus,
   }) {
-    final index = _orders.indexWhere((order) => order.id == orderId);
+    final index = _orders.indexWhere(
+      (order) => order.id == orderId,
+    );
 
     if (index != -1) {
       final current = _orders[index];
@@ -357,12 +455,18 @@ class DeliveryProvider extends ChangeNotifier {
     }
   }
 
-  // ── Assign Driver ────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Assign Driver
+  // ══════════════════════════════════════════════════════════════════════════
 
   Future<String?> assignDriver({
     required String orderId,
     required int deliveryDriverId,
   }) async {
+    if (_isUpdating) {
+      return 'يوجد إجراء قيد التنفيذ';
+    }
+
     _isUpdating = true;
     notifyListeners();
 
@@ -379,10 +483,13 @@ class DeliveryProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+
     return null;
   }
 
-  // ── Validation ───────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Validation
+  // ══════════════════════════════════════════════════════════════════════════
 
   bool _isValidOrderStatus(String status) {
     return status == 'delivered' || status == 'cancelled';

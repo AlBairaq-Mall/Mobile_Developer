@@ -20,6 +20,16 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   }
 
   @override
+  Future<ApiResponse<DeliveryOrderModel>> claimOrder(String id) {
+    return _remote.claimOrder(id);
+  }
+
+  @override
+  Future<ApiResponse<List<DeliveryOrderModel>>> getAvailableOrders() {
+    return _remote.fetchAvailableOrders();
+  }
+
+  @override
   Future<ApiResponse<void>> updateOrderStatus({
     required String orderId,
     required String status,

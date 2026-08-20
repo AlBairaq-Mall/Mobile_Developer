@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/loading_widget.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -72,13 +73,10 @@ class AppButton extends StatelessWidget {
             ),
             child: Center(
               child: isLoading
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: foreground,
-                      ),
+                  ? AppLoading(
+                      type: AppLoadingType.bars,
+                      size: 22,
+                      color: foreground,
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,

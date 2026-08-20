@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
@@ -764,13 +765,10 @@ class _BottomBar extends StatelessWidget {
                 ),
               ),
               icon: isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                  ? const AppLoading(
+                      type: AppLoadingType.bars,
+                      size: 18,
+                      color: Colors.white,
                     )
                   : Icon(
                       isInCart

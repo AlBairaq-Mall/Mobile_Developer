@@ -554,7 +554,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     child: Center(
                       child: error != null
                           ? EmptyState(
-                              emoji: '⚠️',
+                              icon: Icons.warning_rounded,
                               title: 'تعذر تحميل المنتج',
                               subtitle: error,
                               actionLabel: 'إعادة المحاولة',

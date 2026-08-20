@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
@@ -572,13 +573,10 @@ class _BottomCard extends StatelessWidget {
               ),
               onPressed: confirming ? null : onConfirm,
               icon: confirming
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                  ? const AppLoading(
+                      type: AppLoadingType.bars,
+                      size: 18,
+                      color: Colors.white,
                     )
                   : const Icon(Icons.check_rounded, size: 20),
               label: Text(

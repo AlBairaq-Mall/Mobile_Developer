@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -38,7 +39,7 @@ class _AdminCouponsScreenState extends State<AdminCouponsScreen> {
       body: Consumer<CouponProvider>(
         builder: (context, provider, _) {
           if (provider.loading && provider.coupons.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingWidget();
           }
 
           if (provider.error != null && provider.coupons.isEmpty) {
@@ -725,13 +726,10 @@ class _CouponFormSheetState extends State<_CouponFormSheet> {
                     foregroundColor: Colors.white,
                   ),
                   child: provider.saving
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
+                      ? const AppLoading(
+                          type: AppLoadingType.bars,
+                          size: 22,
+                          color: Colors.white,
                         )
                       : Text(_isEditing ? 'حفظ التعديلات' : 'إنشاء الكوبون'),
                 ),

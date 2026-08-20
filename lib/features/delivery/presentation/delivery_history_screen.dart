@@ -1,5 +1,6 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -40,7 +41,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> {
     return Scaffold(
       appBar: const AppPageHeader(title: 'سجل التوصيل', showBack: false),
       body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingWidget()
           : provider.error != null
               ? _ErrorView(
                   error: provider.error!,

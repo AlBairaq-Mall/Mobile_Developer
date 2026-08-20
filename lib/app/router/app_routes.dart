@@ -32,7 +32,6 @@ class AppRoutes {
   static const termsOfUse = '/terms-of-use';
 
   // Admin
-  static const adminLogin = '/admin/login';
   static const adminDashboard = '/admin/dashboard';
   static const adminOrders = '/admin/orders';
   static const adminProducts = '/admin/products';

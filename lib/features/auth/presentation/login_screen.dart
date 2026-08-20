@@ -307,6 +307,7 @@
 
 import 'package:bhm_supermarket/core/widgets/app_message.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -651,7 +652,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 48,
                           child: _loading
                               ? const Center(
-                                  child: CircularProgressIndicator(),
+                                  child: AppLoading(
+                                    type: AppLoadingType.bars,
+                                    size: 24,
+                                  ),
                                 )
                               : ElevatedButton(
                                   onPressed: _submit,

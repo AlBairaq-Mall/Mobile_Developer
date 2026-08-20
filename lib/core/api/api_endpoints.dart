@@ -61,10 +61,15 @@ class ApiEndpoints {
   static const adminUsers = '/admin/users';
   static const adminReports = '/admin/reports';
 
-  // Delivery
+// ── Delivery ─────────────────────────────────────────────────────────────
+
+  static const deliveryAvailableOrders = '/delivery/available-orders';
+
   static const deliveryOrders = '/delivery/orders';
 
   static String deliveryOrder(String id) => '/delivery/orders/$id';
+
+  static String deliveryOrderClaim(String id) => '/delivery/orders/$id/claim';
 
   static String deliveryOrderStatus(String id) => '/delivery/orders/$id/status';
 

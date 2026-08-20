@@ -21,7 +21,7 @@ class RouteGuards {
       AppRoutes.notifications,
     };
 
-    // ===== Guest =====
+// ===== Guest =====
 
     if (!loggedIn) {
       if (protectedRoutes.contains(location)) {
@@ -30,7 +30,7 @@ class RouteGuards {
       }
 
       if (location.startsWith('/admin')) {
-        return AppRoutes.adminLogin;
+        return AppRoutes.login;
       }
 
       if (location.startsWith('/delivery')) {
@@ -44,10 +44,7 @@ class RouteGuards {
 
     // ===== Login/Register =====
 
-    if (location == AppRoutes.login ||
-        location == AppRoutes.register ||
-        location == AppRoutes.adminLogin ||
-        location == AppRoutes.deliveryLogin) {
+    if (location == AppRoutes.login || location == AppRoutes.register) {
       switch (role) {
         case UserRole.customer:
           return auth.consumePendingRedirect();

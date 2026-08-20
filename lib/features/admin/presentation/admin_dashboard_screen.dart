@@ -24,7 +24,7 @@ class AdminDashboardScreen extends StatelessWidget {
             onPressed: () async {
               await context.read<AuthProvider>().logout();
               if (!context.mounted) return;
-              context.go(AppRoutes.adminLogin);
+              context.go(AppRoutes.login);
             },
           ),
         ],

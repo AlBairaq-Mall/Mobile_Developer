@@ -124,7 +124,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
     if (provider.error != null) {
       return EmptyState(
-        emoji: '⚠️',
+        icon: Icons.warning_rounded,
         title: 'تعذر تحميل المنتجات',
         subtitle: provider.error,
         actionLabel: 'إعادة المحاولة',
@@ -140,7 +140,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
     if (filtered.isEmpty) {
       return const EmptyState(
-        emoji: '📦',
+        icon: Icons.inventory_2_rounded,
         title: 'لا توجد منتجات',
         subtitle: 'لا توجد منتجات في هذا القسم حالياً',
       );

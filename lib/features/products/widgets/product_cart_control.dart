@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -89,13 +90,10 @@ class ProductCartControl extends StatelessWidget {
           ),
           child: isProcessing
               ? const Center(
-                  child: SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xff39BFE7),
-                    ),
+                  child: AppLoading(
+                    type: AppLoadingType.dots,
+                    size: 12,
+                    color: Color(0xff39BFE7),
                   ),
                 )
               : const Icon(
@@ -143,11 +141,10 @@ class ProductCartControl extends StatelessWidget {
             width: 22,
             child: Center(
               child: isProcessing
-                  ? const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 1.5, color: AppColors.primary),
+                  ? const AppLoading(
+                      type: AppLoadingType.dots,
+                      size: 14,
+                      color: AppColors.primary,
                     )
                   : Text(
                       quantity.toString(),

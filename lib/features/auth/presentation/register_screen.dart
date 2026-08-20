@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
@@ -258,7 +259,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: double.infinity,
                 child: _isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(),
+                        child: AppLoading(
+                          type: AppLoadingType.bars,
+                          size: 24,
+                        ),
                       )
                     : CustomButton(
                         text: 'إنشاء حساب',

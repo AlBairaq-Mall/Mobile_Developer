@@ -35,7 +35,7 @@ class CategoriesScreen extends StatelessWidget {
       return Scaffold(
         appBar: const AppPageHeader(title: "الأقسام", showBack: false),
         body: EmptyState(
-          emoji: "⚠️",
+          icon: Icons.warning_rounded,
           title: "تعذر تحميل الأقسام",
           subtitle: provider.error,
           actionLabel: "إعادة المحاولة",
@@ -49,7 +49,7 @@ class CategoriesScreen extends StatelessWidget {
     if (categories.isEmpty) {
       return const Scaffold(
         body: EmptyState(
-          emoji: "📦",
+          icon: Icons.inventory_2_rounded,
           title: "لا توجد أقسام",
           subtitle: "سيتم إضافة الأقسام قريباً",
         ),

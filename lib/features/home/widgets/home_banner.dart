@@ -286,6 +286,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bhm_supermarket/app/design/app_curves.dart';
@@ -348,7 +349,7 @@ class _HomeBannerState extends State<HomeBanner> {
     if (provider.loading) {
       return const SizedBox(
         height: 178,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: InlineLoadingWidget()),
       );
     }
 

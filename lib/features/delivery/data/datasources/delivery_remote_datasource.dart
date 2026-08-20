@@ -26,6 +26,63 @@ class DeliveryRemoteDataSource extends BaseRemoteDataSource {
     );
   }
 
+  Future<ApiResponse<List<DeliveryOrderModel>>> fetchAvailableOrders() {
+    return getPaginated<List<DeliveryOrderModel>>(
+      ApiEndpoints.deliveryAvailableOrders,
+      parser: (json) => JsonParser.list(
+        json,
+        DeliveryOrderModel.fromJson,
+      ),
+    );
+  }
+
+  Future<ApiResponse<DeliveryOrderModel>> claimOrder(String id) async {
+    try {
+      final response = await dio.patch(
+        ApiEndpoints.deliveryOrderClaim(id),
+      );
+
+      final map = JsonParser.map(response.data);
+
+      final success = JsonParser.boolValue(
+        map['success'],
+        fallback: true,
+      );
+
+      final message = JsonParser.string(map['message']);
+
+      if (!success) {
+        return ApiResponse<DeliveryOrderModel>.failure(
+          message.isNotEmpty ? message : 'تعذر استلام الطلب',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final data = map['data'];
+
+      if (data is! Map) {
+        return ApiResponse<DeliveryOrderModel>.failure(
+          'بيانات الطلب غير صالحة',
+          statusCode: response.statusCode,
+        );
+      }
+
+      return ApiResponse<DeliveryOrderModel>.success(
+        DeliveryOrderModel.fromJson(
+          Map<String, dynamic>.from(data),
+        ),
+        message: message,
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (error) {
+      return apiResponseFromDioError(error);
+    } catch (_) {
+      return ApiResponse<DeliveryOrderModel>.failure(
+        'حدث خطأ أثناء استلام الطلب',
+      );
+    }
+  }
+
   /// PATCH /api/delivery/orders/{id}/status
   @override
   Future<ApiResponse<void>> patchVoid(String path, {dynamic data}) async {
@@ -114,4 +171,6 @@ class DeliveryRemoteDataSource extends BaseRemoteDataSource {
       return ApiResponse<void>.failure('حدث خطأ أثناء تعيين عامل التوصيل');
     }
   }
+
+
 }

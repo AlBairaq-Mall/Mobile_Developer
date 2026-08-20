@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/widgets/app_cached_image.dart';
@@ -355,7 +356,7 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
 
   Widget _buildProducts() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: AppLoading(type: AppLoadingType.pulse));
     }
 
     if (_error != null && _products.isEmpty) {

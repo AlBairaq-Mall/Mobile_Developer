@@ -1,9 +1,15 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:bhm_supermarket/core/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
+import '../providers/admin_orders_provider.dart';
+import '../../delivery/models/delivery_order_model.dart';
+import 'widgets/admin_order_details_sheet.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});
+
   @override
   State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
 }
@@ -16,6 +22,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
   void initState() {
     super.initState();
     _tabs = TabController(length: 4, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminOrdersProvider>().loadOrders();
+    });
   }
 
   @override
@@ -24,174 +33,155 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen>
     super.dispose();
   }
 
-  // TODO: استبدل بـ API: GET /api/admin/orders?status=...
-  final _orders = const [
-    _AdminOrder(
-      id: '1045',
-      customer: 'أحمد علي',
-      total: 4500,
-      status: 'جديد',
-      time: 'منذ 5 دقائق',
-    ),
-    _AdminOrder(
-      id: '1044',
-      customer: 'سارة محمد',
-      total: 12000,
-      status: 'قيد التجهيز',
-      time: 'منذ 20 دقيقة',
-    ),
-    _AdminOrder(
-      id: '1043',
-      customer: 'خالد حسن',
-      total: 8000,
-      status: 'خرج للتوصيل',
-      time: 'منذ ساعة',
-    ),
-    _AdminOrder(
-      id: '1042',
-      customer: 'فاطمة أحمد',
-      total: 3500,
-      status: 'تم التسليم',
-      time: 'أمس',
-    ),
-    _AdminOrder(
-      id: '1041',
-      customer: 'محمد عمر',
-      total: 6000,
-      status: 'ملغي',
-      time: 'أمس',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppPageHeader(
-        title: 'إدارة الطلبات',
+        title: 'الطلبات',
         bottom: TabBar(
           controller: _tabs,
           isScrollable: true,
-          labelColor: AppColors.primary,
           tabs: const [
             Tab(text: 'الكل'),
-            Tab(text: 'جديد'),
+            Tab(text: 'الجديدة'),
             Tab(text: 'قيد التجهيز'),
-            Tab(text: 'خرج للتوصيل'),
+            Tab(text: 'خرجت للتوصيل'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabs,
-        children: [
-          _OrderList(orders: _orders),
-          _OrderList(orders: _orders.where((o) => o.status == 'جديد').toList()),
-          _OrderList(
-            orders: _orders.where((o) => o.status == 'قيد التجهيز').toList(),
-          ),
-          _OrderList(
-            orders: _orders.where((o) => o.status == 'خرج للتوصيل').toList(),
-          ),
-        ],
+      body: Consumer<AdminOrdersProvider>(
+        builder: (context, provider, _) {
+          if (provider.loading && provider.orders.isEmpty) {
+            return const Center(child: AppLoading());
+          }
+
+          if (provider.error != null && provider.orders.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(provider.error!),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: provider.loadOrders,
+                    child: const Text('إعادة المحاولة'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return TabBarView(
+            controller: _tabs,
+            children: [
+              _OrderList(orders: provider.orders, provider: provider),
+              _OrderList(
+                orders: provider.orders.where((o) => o.status == 'new').toList(),
+                provider: provider,
+              ),
+              _OrderList(
+                orders: provider.orders.where((o) => o.status == 'preparing').toList(),
+                provider: provider,
+              ),
+              _OrderList(
+                orders: provider.orders.where((o) => o.status == 'out_for_delivery').toList(),
+                provider: provider,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _AdminOrder {
-  final String id, customer, status, time;
-  final double total;
-  const _AdminOrder({
-    required this.id,
-    required this.customer,
-    required this.total,
-    required this.status,
-    required this.time,
-  });
-}
-
 class _OrderList extends StatelessWidget {
-  final List<_AdminOrder> orders;
-  const _OrderList({required this.orders});
+  final List<DeliveryOrderModel> orders;
+  final AdminOrdersProvider provider;
+  const _OrderList({required this.orders, required this.provider});
 
   Color _statusColor(String s) {
-    if (s == 'جديد') return Colors.blue;
-    if (s == 'قيد التجهيز') return Colors.orange;
-    if (s == 'خرج للتوصيل') return Colors.purple;
-    if (s == 'تم التسليم') return AppColors.success;
+    if (s == 'new') return Colors.blue;
+    if (s == 'preparing') return Colors.orange;
+    if (s == 'out_for_delivery') return Colors.purple;
+    if (s == 'delivered') return AppColors.success;
     return Colors.red;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (orders.isEmpty) return const Center(child: Text('لا توجد طلبات'));
-    return ListView.separated(
-      padding: const EdgeInsets.all(14),
-      itemCount: orders.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (_, i) {
-        final o = orders[i];
-        return Card(
-          child: Material(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: _statusColor(o.status).withValues(alpha: 0.1),
-                child: Text(
-                  '#${o.id}',
-                  style: TextStyle(fontSize: 10, color: _statusColor(o.status)),
-                ),
-              ),
-              title: Text(
-                o.customer,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text('${o.total.toStringAsFixed(0)} ر.ي  •  ${o.time}'),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _statusColor(o.status).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+    if (orders.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: provider.refresh,
+        child: ListView(
+          padding: const EdgeInsets.all(14),
+          children: const [
+            SizedBox(height: 100),
+            Center(child: Text('لا يوجد طلبات')),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: provider.refresh,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(14),
+        itemCount: orders.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (_, i) {
+          final o = orders[i];
+          return Card(
+            child: Material(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  AdminOrderDetailsSheet.show(context, o);
+                },
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: _statusColor(o.status).withValues(alpha: 0.1),
                     child: Text(
-                      o.status,
-                      style: TextStyle(
-                        color: _statusColor(o.status),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      '#${o.id}',
+                      style: TextStyle(fontSize: 10, color: _statusColor(o.status)),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  // TODO: تغيير الحالة عبر PATCH /api/admin/orders/{id}/status
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, size: 16),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                        value: 'preparing',
-                        child: Text('قيد التجهيز'),
-                      ),
-                      PopupMenuItem(value: 'out', child: Text('أرسل للتوصيل')),
-                      PopupMenuItem(
-                        value: 'cancel',
+                  title: Text(
+                    o.customerName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text('${o.total.toStringAsFixed(0)} ر.ي  •  ${o.createdAt?.substring(0, 10) ?? ''}'),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _statusColor(o.status).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         child: Text(
-                          'إلغاء',
-                          style: TextStyle(color: Colors.red),
+                          o.status,
+                          style: TextStyle(
+                            color: _statusColor(o.status),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 4),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

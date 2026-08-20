@@ -2,6 +2,7 @@ import 'package:bhm_supermarket/app/router/app_routes.dart';
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:bhm_supermarket/features/orders/providers/orders_provider.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../coupons/providers/coupon_provider.dart';
@@ -397,13 +398,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       child: ElevatedButton(
                         onPressed: _couponLoading ? null : _applyCoupon,
                         child: _couponLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
+                            ? const AppLoading(
+                                type: AppLoadingType.bars,
+                                size: 20,
+                                color: Colors.white,
                               )
                             : const Text("تطبيق"),
                       ),
@@ -503,13 +501,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                     child: _isPlacing
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
+                        ? const AppLoading(
+                            type: AppLoadingType.bars,
+                            size: 24,
+                            color: Colors.white,
                           )
                         : const Text(
                             'تأكيد الطلب',

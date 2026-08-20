@@ -1,5 +1,6 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -62,7 +63,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       body: Consumer<AddressProvider>(
         builder: (context, provider, _) {
           if (provider.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingWidget();
           }
 
           if (provider.addresses.isEmpty) {
@@ -538,13 +539,10 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _save,
                 child: _isSaving
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                    ? const AppLoading(
+                        type: AppLoadingType.bars,
+                        size: 22,
+                        color: Colors.white,
                       )
                     : const Text("حفظ"),
               ),
