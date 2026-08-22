@@ -3,27 +3,36 @@
 // import 'package:provider/provider.dart';
 
 // import '../../../../core/utils/launcher_utils.dart';
-// import '../../../../core/widgets/loading_widget.dart';
 // import '../../../../core/widgets/app_message.dart';
+// import '../../../../core/widgets/loading_widget.dart';
 // import '../../models/delivery_order_model.dart';
 // import '../../providers/delivery_provider.dart';
 
 // class DeliveryOrderDetailsSheet extends StatefulWidget {
 //   final DeliveryOrderModel order;
 
-//   const DeliveryOrderDetailsSheet({super.key, required this.order});
+//   const DeliveryOrderDetailsSheet({
+//     super.key,
+//     required this.order,
+//   });
 
-//   static void show(BuildContext context, DeliveryOrderModel order) {
+//   static void show(
+//     BuildContext context,
+//     DeliveryOrderModel order,
+//   ) {
 //     showModalBottomSheet(
 //       context: context,
 //       isScrollControlled: true,
 //       backgroundColor: Colors.transparent,
-//       builder: (_) => DeliveryOrderDetailsSheet(order: order),
+//       builder: (_) => DeliveryOrderDetailsSheet(
+//         order: order,
+//       ),
 //     );
 //   }
 
 //   @override
-//   State<DeliveryOrderDetailsSheet> createState() => _DeliveryOrderDetailsSheetState();
+//   State<DeliveryOrderDetailsSheet> createState() =>
+//       _DeliveryOrderDetailsSheetState();
 // }
 
 // class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
@@ -32,18 +41,22 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     final provider = context.watch<DeliveryProvider>();
-//     final isAvailableOrder = provider.availableOrders.any((o) => o.id == widget.order.id);
 
-//     // We use provider's order if it was updated locally
+//     final isAvailableOrder = provider.availableOrders.any(
+//       (order) => order.id == widget.order.id,
+//     );
+
 //     final currentOrder = provider.orders.firstWhere(
-//       (o) => o.id == widget.order.id,
+//       (order) => order.id == widget.order.id,
 //       orElse: () => widget.order,
 //     );
 
 //     return Container(
 //       decoration: const BoxDecoration(
 //         color: Colors.white,
-//         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+//         borderRadius: BorderRadius.vertical(
+//           top: Radius.circular(24),
+//         ),
 //       ),
 //       constraints: BoxConstraints(
 //         maxHeight: MediaQuery.of(context).size.height * 0.9,
@@ -51,6 +64,8 @@
 //       child: Column(
 //         children: [
 //           const SizedBox(height: 12),
+
+//           // Drag handle
 //           Container(
 //             width: 40,
 //             height: 4,
@@ -59,432 +74,709 @@
 //               borderRadius: BorderRadius.circular(2),
 //             ),
 //           ),
+
 //           const SizedBox(height: 16),
+
 //           Expanded(
 //             child: SingleChildScrollView(
-//               padding: const EdgeInsets.symmetric(horizontal: 20),
+//               padding: const EdgeInsets.symmetric(
+//                 horizontal: 20,
+//               ),
 //               child: Column(
 //                 crossAxisAlignment: CrossAxisAlignment.start,
 //                 children: [
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       Text(
-//                         'طلب #${currentOrder.orderNumber}',
-//                         style: const TextStyle(
-//                           fontSize: 20,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-//                       Container(
-//                         padding: const EdgeInsets.symmetric(
-//                           horizontal: 12,
-//                           vertical: 6,
-//                         ),
-//                         decoration: BoxDecoration(
-//                           color: Colors.blue.shade50,
-//                           borderRadius: BorderRadius.circular(20),
-//                         ),
-//                         child: Text(
-//                           currentOrder.status,
-//                           style: TextStyle(
-//                             color: Colors.blue.shade700,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
+//                   _buildOrderHeader(currentOrder),
 //                   const SizedBox(height: 24),
-
-//                   // Customer details
 //                   _SectionTitle('العميل'),
 //                   _InfoRow(
 //                     icon: Icons.person_outline,
 //                     title: currentOrder.customerName,
 //                   ),
 //                   if (currentOrder.customerPhone.isNotEmpty)
-//                     Row(
-//                       children: [
-//                         Expanded(
-//                           child: _InfoRow(
-//                             icon: Icons.phone_outlined,
-//                             title: currentOrder.customerPhone,
-//                             isPhone: true,
-//                           ),
-//                         ),
-//                         IconButton(
-//                           onPressed: () {
-//                             Clipboard.setData(ClipboardData(text: currentOrder.customerPhone));
-//                             AppMessage.success(context, 'تم نسخ الرقم');
-//                           },
-//                           icon: const Icon(Icons.copy, size: 20, color: Colors.grey),
-//                         ),
-//                         IconButton(
-//                           onPressed: () async {
-//                             final success = await LauncherUtils.callPhone(currentOrder.customerPhone);
-//                             if (!success && mounted) {
-//                               AppMessage.error(context, 'لا يمكن إجراء المكالمة');
-//                             }
-//                           },
-//                           icon: Icon(Icons.phone, size: 20, color: Colors.green.shade700),
-//                         ),
-//                       ],
+//                     _buildPhoneRow(
+//                       currentOrder.customerPhone,
 //                     ),
-
 //                   const SizedBox(height: 24),
-
-//                   // Address
-//                   _SectionTitle('عنوان التوصيل'),
-//                   Row(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       const Icon(Icons.location_on_outlined, color: Colors.grey),
-//                       const SizedBox(width: 8),
-//                       Expanded(
-//                         child: Text(
-//                           currentOrder.address,
-//                           style: const TextStyle(fontSize: 14),
-//                         ),
-//                       ),
-//                       Column(
-//                         children: [
-//                           IconButton(
-//                             onPressed: () {
-//                               Clipboard.setData(ClipboardData(text: currentOrder.address));
-//                               AppMessage.success(context, 'تم نسخ العنوان');
-//                             },
-//                             icon: const Icon(Icons.copy, size: 20, color: Colors.grey),
-//                             constraints: const BoxConstraints(),
-//                             padding: const EdgeInsets.only(bottom: 8),
-//                           ),
-//                           if (currentOrder.location?.latitude != null &&
-//                               currentOrder.location?.longitude != null)
-//                             IconButton(
-//                               onPressed: () async {
-//                                 final success = await LauncherUtils.openMap(
-//                                   currentOrder.location!.latitude!,
-//                                   currentOrder.location!.longitude!,
-//                                 );
-//                                 if (!success && mounted) {
-//                                   AppMessage.error(context, 'تعذر فتح الخرائط');
-//                                 }
-//                               },
-//                               icon: Icon(Icons.map, size: 20, color: Colors.blue.shade700),
-//                               constraints: const BoxConstraints(),
-//                               padding: EdgeInsets.zero,
-//                             ),
-//                         ],
-//                       ),
-//                     ],
-//                   ),
-
-//                   if (currentOrder.notes != null && currentOrder.notes!.isNotEmpty) ...[
+//                   _buildAddressSection(currentOrder),
+//                   if (currentOrder.notes != null &&
+//                       currentOrder.notes!.trim().isNotEmpty) ...[
 //                     const SizedBox(height: 24),
 //                     _SectionTitle('ملاحظات'),
-//                     Container(
-//                       padding: const EdgeInsets.all(12),
-//                       decoration: BoxDecoration(
-//                         color: Colors.orange.shade50,
-//                         borderRadius: BorderRadius.circular(8),
-//                       ),
-//                       child: Row(
-//                         children: [
-//                           Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
-//                           const SizedBox(width: 8),
-//                           Expanded(
-//                             child: Text(
-//                               currentOrder.notes!,
-//                               style: TextStyle(color: Colors.orange.shade900),
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
+//                     _buildNotes(currentOrder.notes!),
 //                   ],
-
 //                   const SizedBox(height: 24),
-
-//                   // Payment details
-//                   _SectionTitle('الدفع (${currentOrder.paymentMethod})'),
-//                   _PriceRow('المجموع الفرعي', currentOrder.subtotal),
-//                   _PriceRow('رسوم التوصيل', currentOrder.deliveryFee),
-//                   if (currentOrder.discount > 0)
-//                     _PriceRow('الخصم', -currentOrder.discount, isDiscount: true),
-//                   if (currentOrder.couponDiscount > 0)
-//                     _PriceRow('خصم الكوبون', -currentOrder.couponDiscount, isDiscount: true),
-//                   const Divider(height: 24),
-//                   _PriceRow('الإجمالي', currentOrder.total, isTotal: true),
-
-//                   const SizedBox(height: 12),
-//                   Row(
-//                     children: [
-//                       const Text('حالة الدفع: '),
-//                       Text(
-//                         currentOrder.paymentStatus,
-//                         style: TextStyle(
-//                           fontWeight: FontWeight.bold,
-//                           color: currentOrder.paymentStatus == 'paid' ? Colors.green : Colors.orange,
-//                         ),
-//                       ),
-//                     ],
+//                   _buildPaymentSection(currentOrder),
+//                   const SizedBox(height: 24),
+//                   _SectionTitle(
+//                     'المنتجات (${currentOrder.items.length})',
 //                   ),
-
-//                   const SizedBox(height: 24),
-//                   _SectionTitle('المنتجات (${currentOrder.items.length})'),
-//                   ...currentOrder.items.map((item) {
-//                     return Padding(
-//                       padding: const EdgeInsets.only(bottom: 12),
-//                       child: Row(
-//                         children: [
-//                           Container(
-//                             width: 32,
-//                             height: 32,
-//                             decoration: BoxDecoration(
-//                               color: Colors.grey.shade100,
-//                               borderRadius: BorderRadius.circular(8),
-//                             ),
-//                             alignment: Alignment.center,
-//                             child: Text(
-//                               '${item.quantity}x',
-//                               style: const TextStyle(fontWeight: FontWeight.bold),
-//                             ),
-//                           ),
-//                           const SizedBox(width: 12),
-//                           Expanded(
-//                             child: Column(
-//                               crossAxisAlignment: CrossAxisAlignment.start,
-//                               children: [
-//                                 Text(
-//                                   item.product?.displayName ?? 'منتج',
-//                                   style: const TextStyle(fontWeight: FontWeight.w600),
-//                                 ),
-//                                 if (item.unit != null)
-//                                   Text(
-//                                     item.unit!.displayName,
-//                                     style: const TextStyle(fontSize: 12, color: Colors.grey),
-//                                   ),
-//                               ],
-//                             ),
-//                           ),
-//                           if (item.isGift)
-//                             Container(
-//                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-//                               decoration: BoxDecoration(
-//                                 color: Colors.pink.shade50,
-//                                 borderRadius: BorderRadius.circular(12),
-//                               ),
-//                               child: const Text(
-//                                 'هدية',
-//                                 style: TextStyle(color: Colors.pink, fontSize: 12),
-//                               ),
-//                             )
-//                           else
-//                             Text('${item.total} ر.س'),
-//                         ],
-//                       ),
-//                     );
-//                   }),
-
+//                   ...currentOrder.items.map(
+//                     _buildOrderItem,
+//                   ),
 //                   const SizedBox(height: 40),
 //                 ],
 //               ),
 //             ),
 //           ),
 
-//           // Actions
-//           Container(
-//             padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               boxShadow: [
-//                 BoxShadow(
-//                   color: Colors.black.withValues(alpha: 0.05),
-//                   blurRadius: 10,
-//                   offset: const Offset(0, -5),
-//                 ),
-//               ],
-//             ),
-//             child: isAvailableOrder
-//                 ? SizedBox(
-//                     width: double.infinity,
-//                     child: ElevatedButton(
-//                       onPressed: _isClaiming ? null : () async {
-//                         setState(() => _isClaiming = true);
-//                         final error = await context.read<DeliveryProvider>().claimOrder(currentOrder.id);
-//                         if (!mounted) return;
-//                         setState(() => _isClaiming = false);
-
-//                         if (error != null) {
-//                           AppMessage.error(context, error);
-//                         } else {
-//                           AppMessage.success(context, 'تم استلام الطلب للتوصيل بنجاح');
-//                           Navigator.pop(context);
-//                         }
-//                       },
-//                       style: ElevatedButton.styleFrom(
-//                         padding: const EdgeInsets.symmetric(vertical: 16),
-//                         backgroundColor: Colors.blue.shade700,
-//                         foregroundColor: Colors.white,
-//                       ),
-//                       child: _isClaiming
-//                           ? const AppLoading(type: AppLoadingType.bars, size: 24, color: Colors.white)
-//                           : const Text('استلام الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-//                     ),
-//                   )
-//                 : (currentOrder.status != 'delivered' && currentOrder.status != 'cancelled')
-//                     ? Row(
-//                         children: [
-//                           Expanded(
-//                             flex: 2,
-//                             child: ElevatedButton(
-//                               onPressed: provider.isUpdating ? null : () {
-//                                 _showPaymentStatusDialog(context, currentOrder);
-//                               },
-//                               style: ElevatedButton.styleFrom(
-//                                 padding: const EdgeInsets.symmetric(vertical: 16),
-//                                 backgroundColor: Colors.green.shade600,
-//                                 foregroundColor: Colors.white,
-//                               ),
-//                               child: provider.isUpdating
-//                                   ? const AppLoading(type: AppLoadingType.bars, size: 24, color: Colors.white)
-//                                   : const Text('تسليم الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-//                             ),
-//                           ),
-//                           const SizedBox(width: 12),
-//                           Expanded(
-//                             flex: 1,
-//                             child: OutlinedButton(
-//                               onPressed: provider.isUpdating ? null : () {
-//                                 _showCancelConfirmation(context, currentOrder);
-//                               },
-//                               style: OutlinedButton.styleFrom(
-//                                 padding: const EdgeInsets.symmetric(vertical: 16),
-//                                 foregroundColor: Colors.red,
-//                                 side: const BorderSide(color: Colors.red),
-//                               ),
-//                               child: const Text('إلغاء'),
-//                             ),
-//                           ),
-//                         ],
-//                       )
-//                     : const SizedBox.shrink(),
+//           _buildBottomAction(
+//             provider: provider,
+//             order: currentOrder,
+//             isAvailableOrder: isAvailableOrder,
 //           ),
 //         ],
 //       ),
 //     );
 //   }
 
-//   void _showPaymentStatusDialog(BuildContext context, DeliveryOrderModel order) {
-//     String selectedPaymentStatus = order.paymentStatus;
-//     showDialog(
-//       context: context,
-//       builder: (ctx) => StatefulBuilder(
-//         builder: (context, setStateDialog) => AlertDialog(
-//           title: const Text('تسليم الطلب'),
-//           content: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const Text('اختر حالة الدفع عند التسليم:'),
-//               const SizedBox(height: 16),
-//               RadioListTile<String>(
-//                 title: const Text('غير مدفوع'),
-//                 value: 'pending',
-//                 groupValue: selectedPaymentStatus,
-//                 onChanged: (val) => setStateDialog(() => selectedPaymentStatus = val!),
-//               ),
-//               RadioListTile<String>(
-//                 title: const Text('مدفوع'),
-//                 value: 'paid',
-//                 groupValue: selectedPaymentStatus,
-//                 onChanged: (val) => setStateDialog(() => selectedPaymentStatus = val!),
-//               ),
-//               RadioListTile<String>(
-//                 title: const Text('فشل الدفع'),
-//                 value: 'failed',
-//                 groupValue: selectedPaymentStatus,
-//                 onChanged: (val) => setStateDialog(() => selectedPaymentStatus = val!),
-//               ),
-//             ],
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () => Navigator.pop(ctx),
-//               child: const Text('تراجع', style: TextStyle(color: Colors.grey)),
+//   // ===========================================================================
+//   // Header
+//   // ===========================================================================
+
+//   Widget _buildOrderHeader(
+//     DeliveryOrderModel order,
+//   ) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       children: [
+//         Expanded(
+//           child: Text(
+//             'طلب #${order.orderNumber}',
+//             style: const TextStyle(
+//               fontSize: 20,
+//               fontWeight: FontWeight.bold,
 //             ),
-//             ElevatedButton(
-//               onPressed: () async {
-//                 Navigator.pop(ctx);
-//                 final error = await context.read<DeliveryProvider>().updateStatus(
-//                   orderId: order.id,
-//                   status: 'delivered',
-//                   paymentStatus: selectedPaymentStatus,
-//                 );
+//           ),
+//         ),
+//         const SizedBox(width: 12),
+//         _StatusBadge(
+//           status: order.status,
+//         ),
+//       ],
+//     );
+//   }
 
-//                 if (!mounted) return;
+//   // ===========================================================================
+//   // Phone
+//   // ===========================================================================
 
-//                 if (error != null) {
-//                   AppMessage.error(context, error);
-//                 } else {
-//                   AppMessage.success(context, 'تم تسليم الطلب بنجاح');
-//                   Navigator.pop(context); // Close details sheet
-//                 }
-//               },
-//               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-//               child: const Text('تأكيد التسليم'),
+//   Widget _buildPhoneRow(
+//     String phone,
+//   ) {
+//     return Row(
+//       children: [
+//         Expanded(
+//           child: _InfoRow(
+//             icon: Icons.phone_outlined,
+//             title: phone,
+//             isPhone: true,
+//           ),
+//         ),
+//         IconButton(
+//           tooltip: 'نسخ الرقم',
+//           onPressed: () {
+//             Clipboard.setData(
+//               ClipboardData(text: phone),
+//             );
+
+//             if (!mounted) return;
+
+//             AppMessage.success(
+//               context,
+//               'تم نسخ الرقم',
+//             );
+//           },
+//           icon: const Icon(
+//             Icons.copy,
+//             size: 20,
+//             color: Colors.grey,
+//           ),
+//         ),
+//         IconButton(
+//           tooltip: 'اتصال',
+//           onPressed: () => _callCustomer(phone),
+//           icon: Icon(
+//             Icons.phone,
+//             size: 20,
+//             color: Colors.green.shade700,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Future<void> _callCustomer(
+//     String phone,
+//   ) async {
+//     final success = await LauncherUtils.callPhone(
+//       phone,
+//     );
+
+//     if (!mounted) return;
+
+//     if (!success) {
+//       AppMessage.error(
+//         context,
+//         'لا يمكن إجراء المكالمة',
+//       );
+//     }
+//   }
+
+//   // ===========================================================================
+//   // Address
+//   // ===========================================================================
+
+//   Widget _buildAddressSection(
+//     DeliveryOrderModel order,
+//   ) {
+//     final location = order.location;
+
+//     final hasCoordinates =
+//         location?.latitude != null && location?.longitude != null;
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         _SectionTitle('عنوان التوصيل'),
+//         Row(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Icon(
+//               Icons.location_on_outlined,
+//               color: Colors.grey,
+//             ),
+//             const SizedBox(width: 8),
+//             Expanded(
+//               child: Text(
+//                 order.address.isEmpty ? 'لا يوجد عنوان' : order.address,
+//                 style: const TextStyle(
+//                   fontSize: 14,
+//                 ),
+//               ),
+//             ),
+//             Column(
+//               children: [
+//                 IconButton(
+//                   tooltip: 'نسخ العنوان',
+//                   onPressed: order.address.isEmpty
+//                       ? null
+//                       : () {
+//                           Clipboard.setData(
+//                             ClipboardData(
+//                               text: order.address,
+//                             ),
+//                           );
+
+//                           if (!mounted) return;
+
+//                           AppMessage.success(
+//                             context,
+//                             'تم نسخ العنوان',
+//                           );
+//                         },
+//                   icon: const Icon(
+//                     Icons.copy,
+//                     size: 20,
+//                     color: Colors.grey,
+//                   ),
+//                   constraints: const BoxConstraints(),
+//                   padding: const EdgeInsets.only(
+//                     bottom: 8,
+//                   ),
+//                 ),
+//                 if (hasCoordinates)
+//                   IconButton(
+//                     tooltip: 'فتح الخرائط',
+//                     onPressed: () => _openMap(
+//                       location!.latitude!,
+//                       location.longitude!,
+//                     ),
+//                     icon: Icon(
+//                       Icons.map,
+//                       size: 20,
+//                       color: Colors.blue.shade700,
+//                     ),
+//                     constraints: const BoxConstraints(),
+//                     padding: EdgeInsets.zero,
+//                   ),
+//               ],
 //             ),
 //           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   Future<void> _openMap(
+//     double latitude,
+//     double longitude,
+//   ) async {
+//     final success = await LauncherUtils.openMap(
+//       latitude,
+//       longitude,
+//     );
+
+//     if (!mounted) return;
+
+//     if (!success) {
+//       AppMessage.error(
+//         context,
+//         'تعذر فتح الخرائط',
+//       );
+//     }
+//   }
+
+//   // ===========================================================================
+//   // Notes
+//   // ===========================================================================
+
+//   Widget _buildNotes(
+//     String notes,
+//   ) {
+//     return Container(
+//       width: double.infinity,
+//       padding: const EdgeInsets.all(12),
+//       decoration: BoxDecoration(
+//         color: Colors.orange.shade50,
+//         borderRadius: BorderRadius.circular(8),
+//       ),
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Icon(
+//             Icons.info_outline,
+//             color: Colors.orange.shade700,
+//             size: 20,
+//           ),
+//           const SizedBox(width: 8),
+//           Expanded(
+//             child: Text(
+//               notes,
+//               style: TextStyle(
+//                 color: Colors.orange.shade900,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ===========================================================================
+//   // Payment
+//   // ===========================================================================
+
+//   Widget _buildPaymentSection(
+//     DeliveryOrderModel order,
+//   ) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         _SectionTitle(
+//           'الدفع (${order.paymentMethod})',
+//         ),
+//         _PriceRow(
+//           'المجموع الفرعي',
+//           order.subtotal,
+//         ),
+//         _PriceRow(
+//           'رسوم التوصيل',
+//           order.deliveryFee,
+//         ),
+//         if (order.discount > 0)
+//           _PriceRow(
+//             'الخصم',
+//             -order.discount,
+//             isDiscount: true,
+//           ),
+//         if (order.couponDiscount > 0)
+//           _PriceRow(
+//             'خصم الكوبون',
+//             -order.couponDiscount,
+//             isDiscount: true,
+//           ),
+//         const Divider(
+//           height: 24,
+//         ),
+//         _PriceRow(
+//           'الإجمالي',
+//           order.total,
+//           isTotal: true,
+//         ),
+//         const SizedBox(height: 12),
+//         Row(
+//           children: [
+//             const Text(
+//               'حالة الدفع: ',
+//             ),
+//             Text(
+//               _paymentStatusLabel(
+//                 order.paymentStatus,
+//               ),
+//               style: TextStyle(
+//                 fontWeight: FontWeight.bold,
+//                 color: _paymentStatusColor(
+//                   order.paymentStatus,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   String _paymentStatusLabel(
+//     String status,
+//   ) {
+//     switch (status) {
+//       case 'paid':
+//         return 'مدفوع';
+
+//       case 'pending':
+//         return 'غير مدفوع';
+
+//       case 'failed':
+//         return 'فشل الدفع';
+
+//       default:
+//         return status.isEmpty ? 'غير محدد' : status;
+//     }
+//   }
+
+//   Color _paymentStatusColor(
+//     String status,
+//   ) {
+//     switch (status) {
+//       case 'paid':
+//         return Colors.green.shade700;
+
+//       case 'failed':
+//         return Colors.red.shade700;
+
+//       case 'pending':
+//       default:
+//         return Colors.orange.shade700;
+//     }
+//   }
+
+//   // ===========================================================================
+//   // Items
+//   // ===========================================================================
+
+//   Widget _buildOrderItem(
+//     DeliveryOrderItemModel item,
+//   ) {
+//     return Padding(
+//       padding: const EdgeInsets.only(
+//         bottom: 12,
+//       ),
+//       child: Row(
+//         children: [
+//           Container(
+//             width: 32,
+//             height: 32,
+//             decoration: BoxDecoration(
+//               color: Colors.grey.shade100,
+//               borderRadius: BorderRadius.circular(8),
+//             ),
+//             alignment: Alignment.center,
+//             child: Text(
+//               '${item.quantity}x',
+//               style: const TextStyle(
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//           ),
+//           const SizedBox(width: 12),
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   item.product?.displayName ?? 'منتج',
+//                   style: const TextStyle(
+//                     fontWeight: FontWeight.w600,
+//                   ),
+//                 ),
+//                 if (item.unit != null)
+//                   Text(
+//                     item.unit!.displayName,
+//                     style: const TextStyle(
+//                       fontSize: 12,
+//                       color: Colors.grey,
+//                     ),
+//                   ),
+//               ],
+//             ),
+//           ),
+//           if (item.isGift)
+//             Container(
+//               padding: const EdgeInsets.symmetric(
+//                 horizontal: 8,
+//                 vertical: 4,
+//               ),
+//               decoration: BoxDecoration(
+//                 color: Colors.pink.shade50,
+//                 borderRadius: BorderRadius.circular(12),
+//               ),
+//               child: const Text(
+//                 'هدية',
+//                 style: TextStyle(
+//                   color: Colors.pink,
+//                   fontSize: 12,
+//                 ),
+//               ),
+//             )
+//           else
+//             Text(
+//               '${item.total.toStringAsFixed(2)} ر.س',
+//             ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ===========================================================================
+//   // Bottom Action
+//   // ===========================================================================
+
+//   Widget _buildBottomAction({
+//     required DeliveryProvider provider,
+//     required DeliveryOrderModel order,
+//     required bool isAvailableOrder,
+//   }) {
+//     if (!isAvailableOrder) {
+//       return const SizedBox.shrink();
+//     }
+
+//     return _buildClaimAction(
+//       order: order,
+//     );
+//   }
+
+//   Widget _buildClaimAction({
+//     required DeliveryOrderModel order,
+//   }) {
+//     return Container(
+//       padding: EdgeInsets.fromLTRB(
+//         20,
+//         16,
+//         20,
+//         MediaQuery.of(context).padding.bottom + 16,
+//       ),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withValues(
+//               alpha: 0.05,
+//             ),
+//             blurRadius: 10,
+//             offset: const Offset(0, -5),
+//           ),
+//         ],
+//       ),
+//       child: SizedBox(
+//         width: double.infinity,
+//         child: ElevatedButton(
+//           onPressed: _isClaiming ? null : () => _claimOrder(order),
+//           style: ElevatedButton.styleFrom(
+//             padding: const EdgeInsets.symmetric(
+//               vertical: 16,
+//             ),
+//             backgroundColor: Colors.blue.shade700,
+//             foregroundColor: Colors.white,
+//           ),
+//           child: _isClaiming
+//               ? const AppLoading(
+//                   type: AppLoadingType.bars,
+//                   size: 24,
+//                   color: Colors.white,
+//                 )
+//               : const Text(
+//                   'استلام الطلب',
+//                   style: TextStyle(
+//                     fontSize: 16,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
 //         ),
 //       ),
 //     );
 //   }
 
-//   void _showCancelConfirmation(BuildContext context, DeliveryOrderModel order) {
-//     showDialog(
-//       context: context,
-//       builder: (ctx) => AlertDialog(
-//         title: const Text('إلغاء الطلب'),
-//         content: const Text('هل أنت متأكد من إلغاء الطلب؟'),
-//         actions: [
-//           TextButton(
-//             onPressed: () => Navigator.pop(ctx),
-//             child: const Text('تراجع', style: TextStyle(color: Colors.grey)),
-//           ),
-//           ElevatedButton(
-//             onPressed: () async {
-//               Navigator.pop(ctx);
-//               final error = await context.read<DeliveryProvider>().updateStatus(
-//                 orderId: order.id,
-//                 status: 'cancelled',
-//               );
+//   // ===========================================================================
+//   // Claim
+//   // ===========================================================================
 
-//               if (!mounted) return;
+//   Future<void> _claimOrder(
+//     DeliveryOrderModel order,
+//   ) async {
+//     if (_isClaiming) return;
 
-//               if (error != null) {
-//                 AppMessage.error(context, error);
-//               } else {
-//                 AppMessage.success(context, 'تم إلغاء الطلب بنجاح');
-//                 Navigator.pop(context); // Close details sheet
-//               }
-//             },
-//             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-//             child: const Text('تأكيد الإلغاء'),
-//           ),
-//         ],
-//       ),
+//     setState(() {
+//       _isClaiming = true;
+//     });
+
+//     final provider = context.read<DeliveryProvider>();
+
+//     final error = await provider.claimOrder(
+//       order.id,
 //     );
+
+//     if (!mounted) return;
+
+//     setState(() {
+//       _isClaiming = false;
+//     });
+
+//     if (error != null) {
+//       AppMessage.error(
+//         context,
+//         error,
+//       );
+//       return;
+//     }
+
+//     AppMessage.success(
+//       context,
+//       'تم استلام الطلب للتوصيل بنجاح',
+//     );
+
+//     Navigator.of(context).pop();
 //   }
 // }
 
-// class _SectionTitle extends StatelessWidget {
-//   final String title;
-//   const _SectionTitle(this.title);
+// // =============================================================================
+// // Status Badge
+// // =============================================================================
+
+// class _StatusBadge extends StatelessWidget {
+//   final String status;
+
+//   const _StatusBadge({
+//     required this.status,
+//   });
 
 //   @override
-//   Widget build(BuildContext context) {
+//   Widget build(
+//     BuildContext context,
+//   ) {
+//     return Container(
+//       padding: const EdgeInsets.symmetric(
+//         horizontal: 12,
+//         vertical: 6,
+//       ),
+//       decoration: BoxDecoration(
+//         color: _backgroundColor(status),
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Text(
+//         _label(status),
+//         style: TextStyle(
+//           color: _foregroundColor(status),
+//           fontWeight: FontWeight.bold,
+//         ),
+//       ),
+//     );
+//   }
+
+//   String _label(
+//     String value,
+//   ) {
+//     switch (value) {
+//       case 'pending':
+//         return 'قيد الانتظار';
+
+//       case 'confirmed':
+//         return 'تم التأكيد';
+
+//       case 'processing':
+//         return 'قيد التجهيز';
+
+//       case 'shipped':
+//         return 'خرج للتوصيل';
+
+//       case 'delivered':
+//         return 'تم التسليم';
+
+//       case 'cancelled':
+//         return 'ملغي';
+
+//       default:
+//         return value.isEmpty ? 'غير محدد' : value;
+//     }
+//   }
+
+//   Color _backgroundColor(
+//     String value,
+//   ) {
+//     switch (value) {
+//       case 'delivered':
+//         return Colors.green.shade50;
+
+//       case 'cancelled':
+//         return Colors.red.shade50;
+
+//       case 'shipped':
+//         return Colors.blue.shade50;
+
+//       case 'processing':
+//         return Colors.orange.shade50;
+
+//       case 'confirmed':
+//         return Colors.indigo.shade50;
+
+//       default:
+//         return Colors.grey.shade100;
+//     }
+//   }
+
+//   Color _foregroundColor(
+//     String value,
+//   ) {
+//     switch (value) {
+//       case 'delivered':
+//         return Colors.green.shade700;
+
+//       case 'cancelled':
+//         return Colors.red.shade700;
+
+//       case 'shipped':
+//         return Colors.blue.shade700;
+
+//       case 'processing':
+//         return Colors.orange.shade700;
+
+//       case 'confirmed':
+//         return Colors.indigo.shade700;
+
+//       default:
+//         return Colors.grey.shade700;
+//     }
+//   }
+// }
+
+// // =============================================================================
+// // Section Title
+// // =============================================================================
+
+// class _SectionTitle extends StatelessWidget {
+//   final String title;
+
+//   const _SectionTitle(
+//     this.title,
+//   );
+
+//   @override
+//   Widget build(
+//     BuildContext context,
+//   ) {
 //     return Padding(
-//       padding: const EdgeInsets.only(bottom: 12),
+//       padding: const EdgeInsets.only(
+//         bottom: 12,
+//       ),
 //       child: Text(
 //         title,
 //         style: const TextStyle(
@@ -496,6 +788,10 @@
 //     );
 //   }
 // }
+
+// // =============================================================================
+// // Info Row
+// // =============================================================================
 
 // class _InfoRow extends StatelessWidget {
 //   final IconData icon;
@@ -509,12 +805,20 @@
 //   });
 
 //   @override
-//   Widget build(BuildContext context) {
+//   Widget build(
+//     BuildContext context,
+//   ) {
 //     return Padding(
-//       padding: const EdgeInsets.only(bottom: 8),
+//       padding: const EdgeInsets.only(
+//         bottom: 8,
+//       ),
 //       child: Row(
 //         children: [
-//           Icon(icon, color: Colors.grey, size: 20),
+//           Icon(
+//             icon,
+//             color: Colors.grey,
+//             size: 20,
+//           ),
 //           const SizedBox(width: 8),
 //           Expanded(
 //             child: Text(
@@ -528,6 +832,10 @@
 //     );
 //   }
 // }
+
+// // =============================================================================
+// // Price Row
+// // =============================================================================
 
 // class _PriceRow extends StatelessWidget {
 //   final String title;
@@ -543,9 +851,13 @@
 //   });
 
 //   @override
-//   Widget build(BuildContext context) {
+//   Widget build(
+//     BuildContext context,
+//   ) {
 //     return Padding(
-//       padding: const EdgeInsets.only(bottom: 8),
+//       padding: const EdgeInsets.only(
+//         bottom: 8,
+//       ),
 //       child: Row(
 //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //         children: [
@@ -575,8 +887,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/utils/launcher_utils.dart';
-import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/app_message.dart';
+import '../../../../core/widgets/loading_widget.dart';
 import '../../models/delivery_order_model.dart';
 import '../../providers/delivery_provider.dart';
 
@@ -596,7 +908,9 @@ class DeliveryOrderDetailsSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => DeliveryOrderDetailsSheet(order: order),
+      builder: (_) => DeliveryOrderDetailsSheet(
+        order: order,
+      ),
     );
   }
 
@@ -607,19 +921,21 @@ class DeliveryOrderDetailsSheet extends StatefulWidget {
 
 class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
   bool _isClaiming = false;
+  bool _isDelivering = false;
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DeliveryProvider>();
 
     final isAvailableOrder = provider.availableOrders.any(
-      (o) => o.id == widget.order.id,
+      (order) => order.id == widget.order.id,
     );
 
-    // Use provider's order if it was updated locally.
     final currentOrder = provider.orders.firstWhere(
-      (o) => o.id == widget.order.id,
-      orElse: () => widget.order,
+      (order) => order.id == widget.order.id,
+      orElse: () => provider.selectedOrder?.id == widget.order.id
+          ? provider.selectedOrder!
+          : widget.order,
     );
 
     return Container(
@@ -635,6 +951,8 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
       child: Column(
         children: [
           const SizedBox(height: 12),
+
+          // Drag handle
           Container(
             width: 40,
             height: 4,
@@ -643,632 +961,857 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+
           const SizedBox(height: 16),
+
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'طلب #${currentOrder.orderNumber}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          currentOrder.status,
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                  _buildOrderHeader(
+                    currentOrder,
                   ),
                   const SizedBox(height: 24),
-
-                  // Customer details
-                  _SectionTitle('العميل'),
+                  const _SectionTitle(
+                    'العميل',
+                  ),
                   _InfoRow(
                     icon: Icons.person_outline,
                     title: currentOrder.customerName,
                   ),
                   if (currentOrder.customerPhone.isNotEmpty)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _InfoRow(
-                            icon: Icons.phone_outlined,
-                            title: currentOrder.customerPhone,
-                            isPhone: true,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Clipboard.setData(
-                              ClipboardData(
-                                text: currentOrder.customerPhone,
-                              ),
-                            );
-                            AppMessage.success(
-                              context,
-                              'تم نسخ الرقم',
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.copy,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () async {
-                            final success = await LauncherUtils.callPhone(
-                              currentOrder.customerPhone,
-                            );
-
-                            if (!context.mounted) return;
-
-                            if (!success) {
-                              AppMessage.error(
-                                context,
-                                'لا يمكن إجراء المكالمة',
-                              );
-                            }
-                          },
-                          icon: Icon(
-                            Icons.phone,
-                            size: 20,
-                            color: Colors.green.shade700,
-                          ),
-                        ),
-                      ],
+                    _buildPhoneRow(
+                      currentOrder.customerPhone,
                     ),
-
                   const SizedBox(height: 24),
-
-                  // Address
-                  _SectionTitle('عنوان التوصيل'),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          currentOrder.address,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(
-                                  text: currentOrder.address,
-                                ),
-                              );
-                              AppMessage.success(
-                                context,
-                                'تم نسخ العنوان',
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.copy,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            constraints: const BoxConstraints(),
-                            padding: const EdgeInsets.only(bottom: 8),
-                          ),
-                          if (currentOrder.location?.latitude != null &&
-                              currentOrder.location?.longitude != null)
-                            IconButton(
-                              onPressed: () async {
-                                final latitude =
-                                    currentOrder.location!.latitude!;
-                                final longitude =
-                                    currentOrder.location!.longitude!;
-
-                                final success = await LauncherUtils.openMap(
-                                  latitude,
-                                  longitude,
-                                );
-
-                                if (!context.mounted) return;
-
-                                if (!success) {
-                                  AppMessage.error(
-                                    context,
-                                    'تعذر فتح الخرائط',
-                                  );
-                                }
-                              },
-                              icon: Icon(
-                                Icons.map,
-                                size: 20,
-                                color: Colors.blue.shade700,
-                              ),
-                              constraints: const BoxConstraints(),
-                              padding: EdgeInsets.zero,
-                            ),
-                        ],
-                      ),
-                    ],
+                  _buildAddressSection(
+                    currentOrder,
                   ),
-
                   if (currentOrder.notes != null &&
-                      currentOrder.notes!.isNotEmpty) ...[
+                      currentOrder.notes!.trim().isNotEmpty) ...[
                     const SizedBox(height: 24),
-                    _SectionTitle('ملاحظات'),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.orange.shade700,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              currentOrder.notes!,
-                              style: TextStyle(
-                                color: Colors.orange.shade900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    const _SectionTitle(
+                      'ملاحظات',
+                    ),
+                    _buildNotes(
+                      currentOrder.notes!,
                     ),
                   ],
-
                   const SizedBox(height: 24),
-
-                  // Payment details
-                  _SectionTitle(
-                    'الدفع (${currentOrder.paymentMethod})',
+                  _buildPaymentSection(
+                    currentOrder,
                   ),
-                  _PriceRow(
-                    'المجموع الفرعي',
-                    currentOrder.subtotal,
-                  ),
-                  _PriceRow(
-                    'رسوم التوصيل',
-                    currentOrder.deliveryFee,
-                  ),
-                  if (currentOrder.discount > 0)
-                    _PriceRow(
-                      'الخصم',
-                      -currentOrder.discount,
-                      isDiscount: true,
-                    ),
-                  if (currentOrder.couponDiscount > 0)
-                    _PriceRow(
-                      'خصم الكوبون',
-                      -currentOrder.couponDiscount,
-                      isDiscount: true,
-                    ),
-                  const Divider(height: 24),
-                  _PriceRow(
-                    'الإجمالي',
-                    currentOrder.total,
-                    isTotal: true,
-                  ),
-
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Text('حالة الدفع: '),
-                      Text(
-                        currentOrder.paymentStatus,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: currentOrder.paymentStatus == 'paid'
-                              ? Colors.green
-                              : Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
-
                   const SizedBox(height: 24),
                   _SectionTitle(
                     'المنتجات (${currentOrder.items.length})',
                   ),
-                  ...currentOrder.items.map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${item.quantity}x',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.product?.displayName ?? 'منتج',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (item.unit != null)
-                                  Text(
-                                    item.unit!.displayName,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          if (item.isGift)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.pink.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'هدية',
-                                style: TextStyle(
-                                  color: Colors.pink,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            )
-                          else
-                            Text('${item.total} ر.س'),
-                        ],
-                      ),
-                    );
-                  }),
-
+                  ...currentOrder.items.map(
+                    _buildOrderItem,
+                  ),
                   const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
 
-          // Actions
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              MediaQuery.of(context).padding.bottom + 16,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: isAvailableOrder
-                ? SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isClaiming
-                          ? null
-                          : () async {
-                              setState(() => _isClaiming = true);
-
-                              final deliveryProvider =
-                                  context.read<DeliveryProvider>();
-
-                              final error = await deliveryProvider.claimOrder(
-                                currentOrder.id,
-                              );
-
-                              if (!mounted) return;
-
-                              setState(() => _isClaiming = false);
-
-                              if (error != null) {
-                                AppMessage.error(
-                                  this.context,
-                                  error,
-                                );
-                              } else {
-                                AppMessage.success(
-                                  this.context,
-                                  'تم استلام الطلب للتوصيل بنجاح',
-                                );
-                                Navigator.pop(this.context);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                        ),
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: _isClaiming
-                          ? const AppLoading(
-                              type: AppLoadingType.bars,
-                              size: 24,
-                              color: Colors.white,
-                            )
-                          : const Text(
-                              'استلام الطلب',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  )
-                : (currentOrder.status != 'delivered' &&
-                        currentOrder.status != 'cancelled')
-                    ? Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton(
-                              onPressed: provider.isUpdating
-                                  ? null
-                                  : () {
-                                      _showPaymentStatusDialog(
-                                        context,
-                                        currentOrder,
-                                      );
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                backgroundColor: Colors.green.shade600,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: provider.isUpdating
-                                  ? const AppLoading(
-                                      type: AppLoadingType.bars,
-                                      size: 24,
-                                      color: Colors.white,
-                                    )
-                                  : const Text(
-                                      'تسليم الطلب',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 1,
-                            child: OutlinedButton(
-                              onPressed: provider.isUpdating
-                                  ? null
-                                  : () {
-                                      _showCancelConfirmation(
-                                        context,
-                                        currentOrder,
-                                      );
-                                    },
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                foregroundColor: Colors.red,
-                                side: const BorderSide(
-                                  color: Colors.red,
-                                ),
-                              ),
-                              child: const Text('إلغاء'),
-                            ),
-                          ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
+          _buildBottomAction(
+            provider: provider,
+            order: currentOrder,
+            isAvailableOrder: isAvailableOrder,
           ),
         ],
       ),
     );
   }
 
-  void _showPaymentStatusDialog(
-    BuildContext context,
+  // ===========================================================================
+  // Header
+  // ===========================================================================
+
+  Widget _buildOrderHeader(
     DeliveryOrderModel order,
   ) {
-    String selectedPaymentStatus = order.paymentStatus;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            'طلب #${order.orderNumber}',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        _StatusBadge(
+          status: order.status,
+        ),
+      ],
+    );
+  }
 
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (dialogContext, setStateDialog) => AlertDialog(
-          title: const Text('تسليم الطلب'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('اختر حالة الدفع عند التسليم:'),
-              const SizedBox(height: 16),
-              RadioGroup<String>(
-                groupValue: selectedPaymentStatus,
-                onChanged: (value) {
-                  if (value == null) return;
+  // ===========================================================================
+  // Phone
+  // ===========================================================================
 
-                  setStateDialog(
-                    () => selectedPaymentStatus = value,
-                  );
-                },
-                child: Column(
-                  children: [
-                    RadioListTile<String>(
-                      title: const Text('غير مدفوع'),
-                      value: 'pending',
-                    ),
-                    RadioListTile<String>(
-                      title: const Text('مدفوع'),
-                      value: 'paid',
-                    ),
-                    RadioListTile<String>(
-                      title: const Text('فشل الدفع'),
-                      value: 'failed',
-                    ),
-                  ],
+  Widget _buildPhoneRow(
+    String phone,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: _InfoRow(
+            icon: Icons.phone_outlined,
+            title: phone,
+            isPhone: true,
+          ),
+        ),
+        IconButton(
+          tooltip: 'نسخ الرقم',
+          onPressed: () {
+            Clipboard.setData(
+              ClipboardData(
+                text: phone,
+              ),
+            );
+
+            if (!mounted) return;
+
+            AppMessage.success(
+              context,
+              'تم نسخ الرقم',
+            );
+          },
+          icon: const Icon(
+            Icons.copy,
+            size: 20,
+            color: Colors.grey,
+          ),
+        ),
+        IconButton(
+          tooltip: 'اتصال',
+          onPressed: () => _callCustomer(phone),
+          icon: Icon(
+            Icons.phone,
+            size: 20,
+            color: Colors.green.shade700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _callCustomer(
+    String phone,
+  ) async {
+    final success = await LauncherUtils.callPhone(
+      phone,
+    );
+
+    if (!mounted) return;
+
+    if (!success) {
+      AppMessage.error(
+        context,
+        'لا يمكن إجراء المكالمة',
+      );
+    }
+  }
+
+  // ===========================================================================
+  // Address
+  // ===========================================================================
+
+  Widget _buildAddressSection(
+    DeliveryOrderModel order,
+  ) {
+    final location = order.location;
+
+    final hasCoordinates =
+        location?.latitude != null && location?.longitude != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(
+          'عنوان التوصيل',
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.location_on_outlined,
+              color: Colors.grey,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                order.address.isEmpty ? 'لا يوجد عنوان' : order.address,
+                style: const TextStyle(
+                  fontSize: 14,
                 ),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(
-                'تراجع',
-                style: TextStyle(color: Colors.grey),
-              ),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
+            Column(
+              children: [
+                IconButton(
+                  tooltip: 'نسخ العنوان',
+                  onPressed: order.address.isEmpty
+                      ? null
+                      : () {
+                          Clipboard.setData(
+                            ClipboardData(
+                              text: order.address,
+                            ),
+                          );
 
-                final deliveryProvider = context.read<DeliveryProvider>();
+                          if (!mounted) {
+                            return;
+                          }
 
-                final error = await deliveryProvider.updateStatus(
-                  orderId: order.id,
-                  status: 'delivered',
-                  paymentStatus: selectedPaymentStatus,
-                );
-
-                if (!mounted) return;
-
-                if (error != null) {
-                  AppMessage.error(
-                    this.context,
-                    error,
-                  );
-                } else {
-                  AppMessage.success(
-                    this.context,
-                    'تم تسليم الطلب بنجاح',
-                  );
-                  Navigator.pop(this.context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
-              child: const Text('تأكيد التسليم'),
+                          AppMessage.success(
+                            context,
+                            'تم نسخ العنوان',
+                          );
+                        },
+                  icon: const Icon(
+                    Icons.copy,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.only(
+                    bottom: 8,
+                  ),
+                ),
+                if (hasCoordinates)
+                  IconButton(
+                    tooltip: 'فتح الخرائط',
+                    onPressed: () => _openMap(
+                      location!.latitude!,
+                      location.longitude!,
+                    ),
+                    icon: Icon(
+                      Icons.map,
+                      size: 20,
+                      color: Colors.blue.shade700,
+                    ),
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                  ),
+              ],
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openMap(
+    double latitude,
+    double longitude,
+  ) async {
+    final success = await LauncherUtils.openMap(
+      latitude,
+      longitude,
+    );
+
+    if (!mounted) return;
+
+    if (!success) {
+      AppMessage.error(
+        context,
+        'تعذر فتح الخرائط',
+      );
+    }
+  }
+
+  // ===========================================================================
+  // Notes
+  // ===========================================================================
+
+  Widget _buildNotes(
+    String notes,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: Colors.orange.shade700,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              notes,
+              style: TextStyle(
+                color: Colors.orange.shade900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Payment
+  // ===========================================================================
+
+  Widget _buildPaymentSection(
+    DeliveryOrderModel order,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          'الدفع (${order.paymentMethod})',
+        ),
+        _PriceRow(
+          'المجموع الفرعي',
+          order.subtotal,
+        ),
+        _PriceRow(
+          'رسوم التوصيل',
+          order.deliveryFee,
+        ),
+        if (order.discount > 0)
+          _PriceRow(
+            'الخصم',
+            -order.discount,
+            isDiscount: true,
+          ),
+        if (order.couponDiscount > 0)
+          _PriceRow(
+            'خصم الكوبون',
+            -order.couponDiscount,
+            isDiscount: true,
+          ),
+        const Divider(
+          height: 24,
+        ),
+        _PriceRow(
+          'الإجمالي',
+          order.total,
+          isTotal: true,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            const Text(
+              'حالة الدفع: ',
+            ),
+            Text(
+              _paymentStatusLabel(
+                order.paymentStatus,
+              ),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: _paymentStatusColor(
+                  order.paymentStatus,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _paymentStatusLabel(
+    String status,
+  ) {
+    switch (status) {
+      case 'paid':
+        return 'مدفوع';
+
+      case 'pending':
+        return 'غير مدفوع';
+
+      case 'failed':
+        return 'فشل الدفع';
+
+      default:
+        return status.isEmpty ? 'غير محدد' : status;
+    }
+  }
+
+  Color _paymentStatusColor(
+    String status,
+  ) {
+    switch (status) {
+      case 'paid':
+        return Colors.green.shade700;
+
+      case 'failed':
+        return Colors.red.shade700;
+
+      case 'pending':
+      default:
+        return Colors.orange.shade700;
+    }
+  }
+
+  // ===========================================================================
+  // Items
+  // ===========================================================================
+
+  Widget _buildOrderItem(
+    DeliveryOrderItemModel item,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 12,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '${item.quantity}x',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.product?.displayName ?? 'منتج',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (item.unit != null)
+                  Text(
+                    item.unit!.displayName,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (item.isGift)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.pink.shade50,
+                borderRadius: BorderRadius.circular(
+                  12,
+                ),
+              ),
+              child: const Text(
+                'هدية',
+                style: TextStyle(
+                  color: Colors.pink,
+                  fontSize: 12,
+                ),
+              ),
+            )
+          else
+            Text(
+              '${item.total.toStringAsFixed(2)} ر.س',
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Bottom Action
+  // ===========================================================================
+
+  Widget _buildBottomAction({
+    required DeliveryProvider provider,
+    required DeliveryOrderModel order,
+    required bool isAvailableOrder,
+  }) {
+    // Available order → claim it.
+    if (isAvailableOrder) {
+      return _buildClaimAction(
+        order: order,
+      );
+    }
+
+    // Assigned order → deliver it.
+    if (order.status == 'shipped') {
+      return _buildDeliverAction(
+        order: order,
+      );
+    }
+
+    // Delivered / cancelled / other final states.
+    return const SizedBox.shrink();
+  }
+
+  // ===========================================================================
+  // Claim button
+  // ===========================================================================
+
+  Widget _buildClaimAction({
+    required DeliveryOrderModel order,
+  }) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: 0.05,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _isClaiming
+              ? null
+              : () => _claimOrder(
+                    order,
+                  ),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+            ),
+            backgroundColor: Colors.blue.shade700,
+            foregroundColor: Colors.white,
+          ),
+          child: _isClaiming
+              ? const AppLoading(
+                  type: AppLoadingType.bars,
+                  size: 24,
+                  color: Colors.white,
+                )
+              : const Text(
+                  'استلام الطلب',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ),
     );
   }
 
-  void _showCancelConfirmation(
-    BuildContext context,
-    DeliveryOrderModel order,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('إلغاء الطلب'),
-        content: const Text('هل أنت متأكد من إلغاء الطلب؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'تراجع',
-              style: TextStyle(color: Colors.grey),
+  // ===========================================================================
+  // Deliver button
+  // ===========================================================================
+
+  Widget _buildDeliverAction({
+    required DeliveryOrderModel order,
+  }) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: 0.05,
             ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-
-              final deliveryProvider = context.read<DeliveryProvider>();
-
-              final error = await deliveryProvider.updateStatus(
-                orderId: order.id,
-                status: 'cancelled',
-              );
-
-              if (!mounted) return;
-
-              if (error != null) {
-                AppMessage.error(
-                  this.context,
-                  error,
-                );
-              } else {
-                AppMessage.success(
-                  this.context,
-                  'تم إلغاء الطلب بنجاح',
-                );
-                Navigator.pop(this.context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: const Text('تأكيد الإلغاء'),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _isDelivering
+              ? null
+              : () => _deliverOrder(
+                    order,
+                  ),
+          icon: _isDelivering
+              ? const SizedBox.shrink()
+              : const Icon(
+                  Icons.check_circle_outline,
+                ),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+            ),
+            backgroundColor: Colors.green.shade700,
+            foregroundColor: Colors.white,
+          ),
+          label: _isDelivering
+              ? const AppLoading(
+                  type: AppLoadingType.bars,
+                  size: 24,
+                  color: Colors.white,
+                )
+              : const Text(
+                  'تم التسليم',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+      ),
     );
   }
+
+  // ===========================================================================
+  // Claim
+  // ===========================================================================
+
+  Future<void> _claimOrder(
+    DeliveryOrderModel order,
+  ) async {
+    if (_isClaiming) return;
+
+    setState(() {
+      _isClaiming = true;
+    });
+
+    final provider = context.read<DeliveryProvider>();
+
+    final error = await provider.claimOrder(
+      order.id,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isClaiming = false;
+    });
+
+    if (error != null) {
+      AppMessage.error(
+        context,
+        error,
+      );
+
+      return;
+    }
+
+    AppMessage.success(
+      context,
+      'تم استلام الطلب للتوصيل بنجاح',
+    );
+
+    Navigator.of(context).pop();
+  }
+
+  // ===========================================================================
+  // Deliver
+  // ===========================================================================
+
+  Future<void> _deliverOrder(
+    DeliveryOrderModel order,
+  ) async {
+    if (_isDelivering) return;
+
+    setState(() {
+      _isDelivering = true;
+    });
+
+    final provider = context.read<DeliveryProvider>();
+
+    final error = await provider.updateOrderStatus(
+      order.id,
+      status: 'delivered',
+      paymentStatus: 'paid',
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isDelivering = false;
+    });
+
+    if (error != null) {
+      AppMessage.error(
+        context,
+        error,
+      );
+
+      return;
+    }
+
+    AppMessage.success(
+      context,
+      'تم تسليم الطلب بنجاح',
+    );
+
+    Navigator.of(context).pop();
+  }
 }
+
+// =============================================================================
+// Status Badge
+// =============================================================================
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+
+  const _StatusBadge({
+    required this.status,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: _backgroundColor(status),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        _label(status),
+        style: TextStyle(
+          color: _foregroundColor(
+            status,
+          ),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  String _label(
+    String value,
+  ) {
+    switch (value) {
+      case 'pending':
+        return 'قيد الانتظار';
+
+      case 'confirmed':
+        return 'تم التأكيد';
+
+      case 'processing':
+        return 'قيد التجهيز';
+
+      case 'shipped':
+        return 'خرج للتوصيل';
+
+      case 'delivered':
+        return 'تم التسليم';
+
+      case 'cancelled':
+        return 'ملغي';
+
+      default:
+        return value.isEmpty ? 'غير محدد' : value;
+    }
+  }
+
+  Color _backgroundColor(
+    String value,
+  ) {
+    switch (value) {
+      case 'delivered':
+        return Colors.green.shade50;
+
+      case 'cancelled':
+        return Colors.red.shade50;
+
+      case 'shipped':
+        return Colors.blue.shade50;
+
+      case 'processing':
+        return Colors.orange.shade50;
+
+      case 'confirmed':
+        return Colors.indigo.shade50;
+
+      default:
+        return Colors.grey.shade100;
+    }
+  }
+
+  Color _foregroundColor(
+    String value,
+  ) {
+    switch (value) {
+      case 'delivered':
+        return Colors.green.shade700;
+
+      case 'cancelled':
+        return Colors.red.shade700;
+
+      case 'shipped':
+        return Colors.blue.shade700;
+
+      case 'processing':
+        return Colors.orange.shade700;
+
+      case 'confirmed':
+        return Colors.indigo.shade700;
+
+      default:
+        return Colors.grey.shade700;
+    }
+  }
+}
+
+// =============================================================================
+// Section Title
+// =============================================================================
 
 class _SectionTitle extends StatelessWidget {
   final String title;
 
-  const _SectionTitle(this.title);
+  const _SectionTitle(
+    this.title,
+  );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(
+        bottom: 12,
+      ),
       child: Text(
         title,
         style: const TextStyle(
@@ -1280,6 +1823,10 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
+
+// =============================================================================
+// Info Row
+// =============================================================================
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
@@ -1293,9 +1840,13 @@ class _InfoRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(
+        bottom: 8,
+      ),
       child: Row(
         children: [
           Icon(
@@ -1317,6 +1868,10 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
+// =============================================================================
+// Price Row
+// =============================================================================
+
 class _PriceRow extends StatelessWidget {
   final String title;
   final double amount;
@@ -1331,9 +1886,13 @@ class _PriceRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(
+        bottom: 8,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

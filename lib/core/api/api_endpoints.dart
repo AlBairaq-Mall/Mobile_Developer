@@ -76,6 +76,10 @@ class ApiEndpoints {
   static String assignDeliveryDriver(String id) =>
       '/orders/$id/delivery-driver';
 
+  static String orderStatus(String orderId) {
+    return '/orders/$orderId/status';
+  }
+
   // Offers
   static const offers = '/offers';
 

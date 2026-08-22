@@ -73,12 +73,12 @@ class AppProviders {
           create: (_) => CouponProvider(DependencyInjection.couponRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => AdminUsersProvider(DependencyInjection.adminUserRepository),
+          create: (_) =>
+              AdminUsersProvider(DependencyInjection.adminUserRepository),
         ),
         ChangeNotifierProvider(
           create: (_) => AdminOrdersProvider(
             DependencyInjection.adminOrdersRepository,
-            DependencyInjection.deliveryRepository,
           ),
         ),
       ];
