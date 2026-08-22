@@ -133,7 +133,7 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
       if (!mounted) return;
 
       if (response.isSuccess) {
-        final newProducts = response.data ?? [];
+        final newProducts = response.data?.items ?? [];
 
         setState(() {
           _products.addAll(newProducts);

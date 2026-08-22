@@ -78,52 +78,55 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
       selectedUnit.id,
     );
 
-    // المنتج غير موجود في السلة:
-    // أضف أول كمية فقط.
-    if (currentQuantity == 0) {
-      final offerUnit = context.read<OffersProvider>().productUnitOffer(
-            productId: widget.product.id,
-            unitId: selectedUnit.id,
-          );
-
-      final response = await cart.addItem(
-        product: widget.product,
-        selectedUnit: selectedUnit,
-        originalPrice: offerUnit?.oldPrice ?? selectedUnit.price,
-        unitPrice: offerUnit?.price ?? selectedUnit.price,
-        quantity: 1,
-      );
-
-      if (!mounted) return;
-
-      if (response.isSuccess) {
-        final messenger = ScaffoldMessenger.of(context);
-
+    // المنتج موجود بالفعل في السلة.
+    // الزيادة تتم من زر +.
+    if (currentQuantity > 0) {
+      if (mounted) {
         context.pop();
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppMessage.success(
-            messenger.context,
-            'تمت إضافة ${widget.product.name} (${selectedUnit.unitName}) للسلة',
-          );
-        });
-      } else {
-        AppMessage.error(
-          context,
-          response.message.isNotEmpty
-              ? response.message
-              : 'حدث خطأ، حاول مرة أخرى',
-        );
       }
-
       return;
     }
 
-    // المنتج موجود بالفعل في السلة.
-    // لا نضيف كمية ثانية عند الضغط على الزر.
-    if (mounted) {
-      context.pop();
+    final offerUnit = context.read<OffersProvider>().productUnitOffer(
+          productId: widget.product.id,
+          unitId: selectedUnit.id,
+        );
+
+    final unitPrice = offerUnit?.price ?? selectedUnit.price;
+
+    final originalPrice = offerUnit?.hasDiscount == true
+        ? offerUnit?.oldPrice
+        : selectedUnit.oldPrice;
+
+    final response = await cart.addItem(
+      product: widget.product,
+      selectedUnit: selectedUnit,
+      originalPrice: originalPrice ?? unitPrice,
+      unitPrice: unitPrice,
+      quantity: 1,
+    );
+
+    if (!mounted) return;
+
+    if (!response.isSuccess) {
+      AppMessage.error(
+        context,
+        response.message.isNotEmpty
+            ? response.message
+            : 'حدث خطأ، حاول مرة أخرى',
+      );
+      return;
     }
+
+    final productName = widget.product.name;
+    final unitName = selectedUnit.unitName;
+
+    context.pop();
+
+    AppMessage.success(
+      context,
+      'تمت إضافة $productName ($unitName) للسلة',
+    );
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -241,6 +244,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                           _UnitsErrorState(error: provider.error!)
                         else if (units.isNotEmpty)
                           _UnitsSection(
+                            productId: widget.product.id,
                             units: units,
                             selectedIndex: provider.selectedUnitIndex,
                             onSelect: (i) =>
@@ -506,11 +510,13 @@ class _CategoryChip extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _UnitsSection extends StatelessWidget {
+  final String productId;
   final List<ProductUnitModel> units;
   final int selectedIndex;
   final ValueChanged<int> onSelect;
 
   const _UnitsSection({
+    required this.productId,
     required this.units,
     required this.selectedIndex,
     required this.onSelect,
@@ -518,10 +524,11 @@ class _UnitsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final offers = context.watch<OffersProvider>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // عنوان القسم
         Row(
           children: [
             const Icon(
@@ -530,24 +537,45 @@ class _UnitsSection extends StatelessWidget {
               color: AppColors.primary,
             ),
             const SizedBox(width: 6),
-            Text('اختر الوحدة', style: AppTypography.titleSmall),
+            Text(
+              'اختر الوحدة',
+              style: AppTypography.titleSmall,
+            ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 2,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(AppRadius.chip),
               ),
-              child: Text('${units.length}', style: AppTypography.badge),
+              child: Text(
+                '${units.length}',
+                style: AppTypography.badge,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-
-        // بطاقات الوحدات
         ...List.generate(units.length, (i) {
+          final unit = units[i];
+
+          final offer = offers.productUnitOffer(
+            productId: productId,
+            unitId: unit.id,
+          );
+
+          final price = offer?.price ?? unit.price;
+
+          final oldPrice =
+              offer?.hasDiscount == true ? offer?.oldPrice : unit.oldPrice;
+
           return _UnitCard(
-            unit: units[i],
+            unit: unit,
+            price: price,
+            oldPrice: oldPrice,
             isSelected: selectedIndex == i,
             onTap: () => onSelect(i),
           );
@@ -563,23 +591,32 @@ class _UnitsSection extends StatelessWidget {
 
 class _UnitCard extends StatelessWidget {
   final ProductUnitModel unit;
+  final double price;
+  final double? oldPrice;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _UnitCard({
     required this.unit,
+    required this.price,
+    required this.oldPrice,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasDiscount = oldPrice != null && oldPrice! > price;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primaryExtraLight
@@ -592,7 +629,6 @@ class _UnitCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── مؤشر الاختيار (radio) ────────────────────────────────
             AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 22,
@@ -613,10 +649,7 @@ class _UnitCard extends StatelessWidget {
                     )
                   : null,
             ),
-
             const SizedBox(width: 12),
-
-            // ── اسم الوحدة + الكمية ──────────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -631,26 +664,27 @@ class _UnitCard extends StatelessWidget {
                   ),
                   if (unit.quantity > 1) ...[
                     const SizedBox(height: 2),
-                    Text('${unit.quantity}', style: AppTypography.bodySmall),
+                    Text(
+                      '${unit.quantity}',
+                      style: AppTypography.bodySmall,
+                    ),
                   ],
                 ],
               ),
             ),
-
-            // ── السعر ───────────────────────────────────────────────
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (unit.oldPrice != null)
+                if (hasDiscount)
                   Text(
-                    '${unit.oldPrice!.toStringAsFixed(2)} ر.ي',
+                    '${oldPrice!.toStringAsFixed(2)} ر.ي',
                     style: AppTypography.caption.copyWith(
                       decoration: TextDecoration.lineThrough,
                       color: AppColors.textHint,
                     ),
                   ),
                 Text(
-                  '${unit.price.toStringAsFixed(2)} ر.ي',
+                  '${price.toStringAsFixed(2)} ر.ي',
                   style: AppTypography.priceMedium.copyWith(
                     color: isSelected ? AppColors.primaryDark : AppColors.price,
                     fontSize: 17,

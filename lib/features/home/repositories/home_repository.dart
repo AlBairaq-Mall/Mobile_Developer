@@ -1,4 +1,4 @@
-import '../../../core/models/product_model.dart';
+﻿import '../../../core/models/product_model.dart';
 import '../../products/domain/repositories/product_repository.dart';
 
 class HomeRepository {
@@ -20,9 +20,10 @@ class HomeRepository {
         return [];
       }
 
-      return response.data ?? [];
+      return response.data?.items ?? [];
     } catch (_) {
       return [];
     }
   }
 }
+

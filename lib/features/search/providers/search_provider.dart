@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 
@@ -43,7 +43,7 @@ class SearchProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  /// يستدعى من الـ TextField
+  /// ظٹط³طھط¯ط¹ظ‰ ظ…ظ† ط§ظ„ظ€ TextField
   void updateQuery(String value) {
     _query = value.trim();
 
@@ -92,7 +92,7 @@ class SearchProvider extends ChangeNotifier {
     }
 
     if (response.isSuccess && response.data != null) {
-      _results = response.data!;
+      _results = response.data!.items;
     } else {
       _results = [];
       _error = response.message;
@@ -131,3 +131,4 @@ class SearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

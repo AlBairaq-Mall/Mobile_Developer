@@ -24,17 +24,37 @@ class CategoryProductsScreen extends StatefulWidget {
 }
 
 class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
   String _sortBy = 'default';
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ProductProvider>().loadCategory(widget.categoryId);
     });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 300) {
+      final provider = context.read<ProductProvider>();
+      if (!provider.isLoading && !provider.isFetchingMore && provider.hasNextPage) {
+        provider.loadMore();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   List<ProductModel> _applyFilters(List<ProductModel> products) {
@@ -146,6 +166,28 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       );
     }
 
-    return ProductsGrid(products: filtered);
+    return Column(
+      children: [
+        Expanded(
+          child: ProductsGrid(
+            products: filtered,
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: false,
+          ),
+        ),
+        if (provider.isFetchingMore)
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

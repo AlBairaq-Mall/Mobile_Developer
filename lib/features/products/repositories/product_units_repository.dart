@@ -32,7 +32,7 @@ class ProductUnitsRepository {
         return [];
       }
 
-      final products = response.data ?? [];
+      final products = response.data?.items ?? [];
 
       for (final product in products) {
         if (product.itemCode == itemCode) {

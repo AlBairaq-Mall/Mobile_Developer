@@ -188,8 +188,17 @@ class CartProvider extends ChangeNotifier {
       );
 
       if (index != -1) {
-        _items[index] = _items[index].copyWith(
-          quantity: _items[index].quantity + quantity,
+        final currentItem = _items[index];
+
+        final effectiveOriginalPrice = originalPrice ?? unitPrice;
+
+        _items[index] = currentItem.copyWith(
+          originalPrice: effectiveOriginalPrice,
+          discount: (effectiveOriginalPrice - unitPrice)
+              .clamp(0, double.infinity)
+              .toDouble(),
+          unitPrice: unitPrice,
+          quantity: currentItem.quantity + quantity,
         );
       } else {
         final effectiveOriginalPrice = originalPrice ?? unitPrice;
@@ -209,7 +218,6 @@ class CartProvider extends ChangeNotifier {
           ),
         );
       }
-
       notifyListeners();
       await _saveCart();
 

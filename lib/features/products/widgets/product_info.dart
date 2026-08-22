@@ -44,7 +44,7 @@ class ProductInfo extends StatelessWidget {
         offerUnit?.hasDiscount == true ? offerUnit?.oldPrice : product.oldPrice;
 
     final hasDiscount = oldPrice != null && oldPrice > price;
-
+    final soldQuantity = defaultUnit?.soldQuantityLast2Days ?? 0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
@@ -95,6 +95,28 @@ class ProductInfo extends StatelessWidget {
         ),
 
         const SizedBox(height: 6),
+
+        if (soldQuantity > 200) ...[
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.local_fire_department_rounded,
+                size: 14,
+                color: AppColors.discount,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'تم شراء $soldQuantity+ قطعة',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textHint,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+        ],
 
         // 3. Current Price + Quantity Control (Bottom row)
         Row(

@@ -1,242 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// import 'package:bhm_supermarket/features/ads/providers/ads_provider.dart';
-// import 'package:bhm_supermarket/features/ads/providers/offers_provider.dart';
-// import 'package:bhm_supermarket/features/categories/providers/category_provider.dart';
-// import 'package:bhm_supermarket/features/categories/widgets/categories_pinned.dart';
-
-// import '../../../app/theme/app_spacing.dart';
-// import '../providers/home_provider.dart';
-// import '../widgets/home_banner.dart';
-// import '../widgets/home_header.dart';
-// import '../widgets/home_search_bar.dart';
-// import '../widgets/product_section.dart';
-
-// class HomeScreen extends StatefulWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
-// }
-
-// class _HomeScreenState extends State<HomeScreen> {
-//   Future<void> _refreshHome() async {
-//     await Future.wait([
-//       context.read<HomeProvider>().refresh(),
-//       context.read<CategoryProvider>().refresh(),
-//       context.read<AdsProvider>().refresh(),
-//       context.read<OffersProvider>().refresh(),
-//     ]);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: SafeArea(
-//         child: RefreshIndicator(
-//           onRefresh: _refreshHome,
-//           child: NestedScrollView(
-//             physics: const BouncingScrollPhysics(
-//               parent: AlwaysScrollableScrollPhysics(),
-//             ),
-//             headerSliverBuilder:
-//                 (BuildContext context, bool innerBoxIsScrolled) {
-//               return [
-//                 SliverToBoxAdapter(
-//                   child: Padding(
-//                     padding: const EdgeInsets.symmetric(
-//                       horizontal: AppSpacing.lg,
-//                       vertical: 6,
-//                     ),
-//                     child: Column(
-//                       children: const [
-//                         HomeHeader(),
-//                         SizedBox(height: AppSpacing.lg),
-//                         HomeBanner(),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-
-//                 // Search
-//                 SliverPersistentHeader(
-//                   pinned: true,
-//                   delegate: const _SearchDelegate(),
-//                 ),
-
-//                 // Categories
-//                 SliverPersistentHeader(
-//                   pinned: true,
-//                   delegate: const _CategoriesDelegate(),
-//                 ),
-//               ];
-//             },
-//             body: const _HomeBody(),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// /// محتوى المنتجات فقط.
-// /// عزلنا HomeProvider هنا حتى لا يعاد بناء الـ headers المثبتة.
-// class _HomeBody extends StatelessWidget {
-//   const _HomeBody();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final provider = context.watch<HomeProvider>();
-
-//     return CustomScrollView(
-//       physics: const BouncingScrollPhysics(
-//         parent: AlwaysScrollableScrollPhysics(),
-//       ),
-//       slivers: [
-//         SliverPadding(
-//           padding: const EdgeInsets.fromLTRB(
-//             AppSpacing.lg,
-//             10,
-//             AppSpacing.lg,
-//             AppSpacing.xxl,
-//           ),
-//           sliver: SliverList(
-//             delegate: SliverChildListDelegate([
-//               if (provider.isLoading)
-//                 const Padding(
-//                   padding: EdgeInsets.symmetric(
-//                     vertical: AppSpacing.xxl,
-//                   ),
-//                   child: Center(
-//                     child: CircularProgressIndicator(),
-//                   ),
-//                 ),
-//               if (!provider.isLoading) ...[
-//                 // Flash Deals
-//                 if (provider.flashDeals.isNotEmpty) ...[
-//                   ProductSection(
-//                     title: 'العروض',
-//                     products: provider.flashDeals.take(4).toList(),
-//                   ),
-//                   const SizedBox(height: AppSpacing.xl),
-//                 ],
-
-//                 // Best Sellers
-//                 if (provider.bestSellerProducts.isNotEmpty) ...[
-//                   ProductSection(
-//                     title: 'الأكثر مبيعاً',
-//                     products: provider.bestSellerProducts.take(4).toList(),
-//                   ),
-//                   const SizedBox(height: AppSpacing.xl),
-//                 ],
-
-//                 // Recommended
-//                 if (provider.recommendedProducts.isNotEmpty) ...[
-//                   ProductSection(
-//                     title: 'مختارة لك',
-//                     products: provider.recommendedProducts.take(4).toList(),
-//                   ),
-//                   const SizedBox(height: AppSpacing.xl),
-//                 ],
-
-//                 // All Products
-//                 if (provider.products.isNotEmpty)
-//                   ProductSection(
-//                     title: provider.selectedCategory.isEmpty
-//                         ? 'جميع المنتجات'
-//                         : 'المنتجات',
-//                     products: provider.products,
-//                   ),
-
-//                 const SizedBox(height: AppSpacing.xxl),
-//               ],
-//             ]),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-// class _SearchDelegate extends SliverPersistentHeaderDelegate {
-//   const _SearchDelegate();
-
-//   @override
-//   double get minExtent => 64;
-
-//   @override
-//   double get maxExtent => 64;
-
-//   @override
-//   Widget build(
-//     BuildContext context,
-//     double shrinkOffset,
-//     bool overlapsContent,
-//   ) {
-//     return Align(
-//       child: Material(
-//         elevation: overlapsContent ? 2 : 0,
-//         color: Theme.of(context).scaffoldBackgroundColor,
-//         child: SafeArea(
-//           bottom: false,
-//           child: Padding(
-//             padding: const EdgeInsets.fromLTRB(
-//               AppSpacing.lg,
-//               8,
-//               AppSpacing.lg,
-//               8,
-//             ),
-//             child: const HomeSearchBar(
-//               enableHero: true,
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   bool shouldRebuild(
-//     covariant _SearchDelegate oldDelegate,
-//   ) {
-//     return false;
-//   }
-// }
-
-// class _CategoriesDelegate extends SliverPersistentHeaderDelegate {
-//   const _CategoriesDelegate();
-
-//   @override
-//   double get minExtent => 128;
-
-//   @override
-//   double get maxExtent => 128;
-
-//   @override
-//   Widget build(
-//     BuildContext context,
-//     double shrinkOffset,
-//     bool overlapsContent,
-//   ) {
-//     return Material(
-//       color: Theme.of(context).colorScheme.surface,
-//       elevation: overlapsContent ? 3 : 0,
-//       child: const SafeArea(
-//         bottom: false,
-//         child: CategoriesPinned(),
-//       ),
-//     );
-//   }
-
-//   @override
-//   bool shouldRebuild(
-//     covariant _CategoriesDelegate oldDelegate,
-//   ) {
-//     return false;
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -495,34 +256,48 @@ class _HomeBody extends StatelessWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              if (provider.flashDeals.isNotEmpty) ...[
-                ProductSection(
-                  title: 'العروض',
-                  products: provider.flashDeals.take(4).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
+              // ============================================================
+              // HOME MODE
+              // لا يوجد قسم محدد ولا بحث
+              // ============================================================
+              if (provider.selectedCategory.isEmpty &&
+                  provider.searchText.isEmpty) ...[
+                if (provider.flashDeals.isNotEmpty) ...[
+                  ProductSection(
+                    title: 'العروض',
+                    products: provider.flashDeals,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                ],
+                if (provider.bestSellerProducts.isNotEmpty) ...[
+                  ProductSection(
+                    title: 'الأكثر مبيعاً',
+                    products: provider.bestSellerProducts,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                ],
+                if (provider.recommendedProducts.isNotEmpty) ...[
+                  ProductSection(
+                    title: 'مختارة لك',
+                    products: provider.recommendedProducts,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                ],
               ],
-              if (provider.bestSellerProducts.isNotEmpty) ...[
-                ProductSection(
-                  title: 'الأكثر مبيعاً',
-                  products: provider.bestSellerProducts.take(4).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-              if (provider.recommendedProducts.isNotEmpty) ...[
-                ProductSection(
-                  title: 'مختارة لك',
-                  products: provider.recommendedProducts.take(4).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
+
+              // ============================================================
+              // PRODUCTS / CATEGORY / SEARCH MODE
+              // ============================================================
               if (provider.products.isNotEmpty)
                 ProductSection(
-                  title: provider.selectedCategory.isEmpty
-                      ? 'جميع المنتجات'
-                      : 'المنتجات',
+                  title: provider.selectedCategory.isNotEmpty
+                      ? 'منتجات القسم'
+                      : provider.searchText.isNotEmpty
+                          ? 'نتائج البحث'
+                          : 'جميع المنتجات',
                   products: provider.products,
                 ),
+
               const SizedBox(height: AppSpacing.xxl),
             ]),
           ),
