@@ -13,10 +13,6 @@ class AppColors {
 
   static const gradientEnd = Color(0xFFE2A600);
 
-  static const adminGradientStart = Color(0xFFF5C84C);
-
-  static const adminGradientEnd = Color(0xFFE2A600);
-
   //══════════════════════════════════════════════════════
   // BRAND
   //══════════════════════════════════════════════════════

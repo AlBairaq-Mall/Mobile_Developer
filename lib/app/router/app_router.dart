@@ -1,17 +1,9 @@
-import 'package:bhm_supermarket/features/admin/presentation/admin_coupons_screen.dart';
+import 'package:bhm_supermarket/features/admin/presentation/admin_reports_screen.dart';
 import 'package:bhm_supermarket/features/orders/models/order_model.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/orders/presentation/order_details_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/address/presentation/address_management_screen.dart';
-import '../../features/admin/presentation/admin_dashboard_screen.dart';
-import '../../features/admin/presentation/admin_orders_screen.dart';
-import '../../features/admin/presentation/admin_products_screen.dart';
-import '../../features/admin/presentation/admin_users_screen.dart';
-import '../../features/admin/presentation/admin_delivery_screen.dart';
-import '../../features/admin/presentation/admin_reports_screen.dart';
-import '../../features/admin/presentation/admin_settings_screen.dart';
-import '../../features/admin/presentation/admin_offers_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/products/presentation/category_products_screen.dart';
@@ -30,6 +22,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import 'route_guards.dart';
 import 'app_routes.dart';
+// import '../../features/admin/presentation/admin_reports_screen.dart';
 
 import 'app_navigator.dart' show rootNavigatorKey;
 
@@ -145,49 +138,9 @@ class AppRouter {
             ),
           ),
           GoRoute(
-            path: AppRoutes.adminDashboard,
-            builder: (_, __) => const AdminDashboardScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminOrders,
-            builder: (_, __) => const AdminOrdersScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminProducts,
-            builder: (_, __) => const AdminProductsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminUsers,
-            builder: (_, __) => const AdminUsersScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminDelivery,
-            builder: (_, __) => const AdminDeliveryScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminReports,
-            builder: (_, __) => const AdminReportsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.adminSettings,
-            builder: (_, __) => const AdminSettingsScreen(),
-          ),
-          // GoRoute(
-          //   path: AppRoutes.adminAds,
-          //   builder: (_, __) => const AdminAdsScreen(),
-          // ),
-          GoRoute(
-            path: AppRoutes.adminOffers,
-            builder: (_, __) => const AdminOffersScreen(),
-          ),
-          GoRoute(
             path: AppRoutes.deliveryEarnings,
             builder: (_, __) => const DeliveryEarningsScreen(),
           ),
-          // GoRoute(
-          //   path: AppRoutes.deliveryLogin,
-          //   builder: (_, __) => const DeliveryLoginScreen(),
-          // ),
           GoRoute(
             path: AppRoutes.deliveryHome,
             builder: (_, __) => const DeliveryMainScreen(),
@@ -199,8 +152,8 @@ class AppRouter {
             },
           ),
           GoRoute(
-            path: AppRoutes.adminCoupons,
-            builder: (context, state) => const AdminCouponsScreen(),
+            path: AppRoutes.adminReports,
+            builder: (_, __) => const AdminReportsScreen(),
           ),
         ],
       );

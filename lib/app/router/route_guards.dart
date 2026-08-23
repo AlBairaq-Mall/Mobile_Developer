@@ -50,7 +50,7 @@ class RouteGuards {
           return auth.consumePendingRedirect();
 
         case UserRole.admin:
-          return AppRoutes.adminDashboard;
+          return AppRoutes.adminReports;
 
         case UserRole.delivery:
           return AppRoutes.deliveryHome;

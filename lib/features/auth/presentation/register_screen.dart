@@ -172,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     switch (role) {
       case UserRole.admin:
-        context.go(AppRoutes.adminDashboard);
+        context.go(AppRoutes.adminReports);
         return;
 
       case UserRole.delivery:

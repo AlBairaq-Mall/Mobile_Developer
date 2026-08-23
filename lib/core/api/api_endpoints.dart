@@ -48,18 +48,19 @@ class ApiEndpoints {
   static const notifications = '/notifications';
 
   // Admin
-  static const adminOrders = '/admin/orders';
-  static String adminOrderStatus(String id) => '/admin/orders/$id/status';
-  static String adminAssignDriver(String orderId) =>
-      '/admin/orders/$orderId/assign-driver';
-
-  // static String assignDeliveryDriver(String orderId) =>
-  //     '/orders/$orderId/delivery-driver';
-
-  static const adminProducts = '/admin/products';
-  static String adminProduct(String id) => '/admin/products/$id';
-  static const adminUsers = '/admin/users';
   static const adminReports = '/admin/reports';
+  // Reports
+
+  static const reportsSales = '/reports/sales';
+  static const reportsCustomers = '/reports/customers';
+  static const reportsProducts = '/reports/products';
+  static const reportsOrders = '/reports/orders';
+  static const reportsDeliveryDrivers = '/reports/delivery-drivers';
+
+  static String reportsDeliveryDriver(int id) =>
+      '/reports/delivery-drivers/$id';
+
+  static const reportsLocations = '/reports/locations';
 
 // ── Delivery ─────────────────────────────────────────────────────────────
 

@@ -126,7 +126,6 @@ class AppStrings {
     'delivery_addresses': 'عناوين التوصيل',
     'default_address': 'افتراضي',
     // Admin
-    'admin_dashboard': 'لوحة التحكم',
     'manage_products': 'إدارة المنتجات',
     'manage_orders': 'إدارة الطلبات',
     'manage_users': 'إدارة المستخدمين',
@@ -225,7 +224,6 @@ class AppStrings {
     'delivery_addresses': 'Delivery Addresses',
     'default_address': 'Default',
     // Admin
-    'admin_dashboard': 'Dashboard',
     'manage_products': 'Manage Products',
     'manage_orders': 'Manage Orders',
     'manage_users': 'Manage Users',

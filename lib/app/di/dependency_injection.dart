@@ -34,12 +34,9 @@ import '../../features/delivery/domain/repositories/delivery_repository.dart';
 import '../../features/coupons/data/datasources/coupon_remote_datasource.dart';
 import '../../features/coupons/data/repositories/coupon_repository_impl.dart';
 import '../../features/coupons/domain/repositories/coupon_repository.dart';
-import '../../features/admin/data/datasources/admin_user_remote_datasource.dart';
-import '../../features/admin/data/repositories/admin_user_repository_impl.dart';
-import '../../features/admin/domain/repositories/admin_user_repository.dart';
-import '../../features/admin/data/datasources/admin_orders_remote_datasource.dart';
-import '../../features/admin/data/repositories/admin_orders_repository_impl.dart';
-import '../../features/admin/domain/repositories/admin_orders_repository.dart';
+import '../../features/admin/data/datasources/admin_reports_remote_datasource.dart';
+import '../../features/admin/data/repositories/admin_reports_repository_impl.dart';
+import '../../features/admin/domain/repositories/admin_reports_repository.dart';
 
 /// Central dependency wiring — swap implementations here without touching UI.
 class DependencyInjection {
@@ -83,10 +80,8 @@ class DependencyInjection {
   static final CouponRepository couponRepository = CouponRepositoryImpl(
     CouponRemoteDataSource(dio),
   );
-
-  static final AdminUserRepository adminUserRepository =
-      AdminUserRepositoryImpl(AdminUserRemoteDataSource(dio));
-
-  static final AdminOrdersRepository adminOrdersRepository =
-      AdminOrdersRepositoryImpl(AdminOrdersRemoteDataSource(dio));
+  static final AdminReportsRepository adminReportsRepository =
+      AdminReportsRepositoryImpl(
+    AdminReportsRemoteDataSource(dio),
+  );
 }

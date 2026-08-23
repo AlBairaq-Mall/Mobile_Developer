@@ -62,27 +62,6 @@ class CartItemModel {
     };
   }
 
-  // CartItemModel copyWith({
-  //   String? cartId,
-  //   ProductModel? product,
-  //   ProductUnitModel? selectedUnit,
-  //   double? originalPrice,
-  //   double? discount,
-  //   double? unitPrice,
-  //   double? total,
-  //   int? quantity,
-  // }) {
-  //   return CartItemModel(
-  //     cartId: cartId ?? this.cartId,
-  //     product: product ?? this.product,
-  //     selectedUnit: selectedUnit ?? this.selectedUnit,
-  //     originalPrice: originalPrice ?? this.originalPrice,
-  //     discount: discount ?? this.discount,
-  //     unitPrice: unitPrice ?? this.unitPrice,
-  //     total: total ?? this.total,
-  //     quantity: quantity ?? this.quantity,
-  //   );
-  // }
   CartItemModel copyWith({
     String? cartId,
     ProductModel? product,

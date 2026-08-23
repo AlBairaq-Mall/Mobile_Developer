@@ -19,8 +19,7 @@ import '../../features/ads/providers/offers_provider.dart';
 import '../../features/navigation/providers/navigation_provider.dart';
 import '../../features/delivery/providers/delivery_provider.dart';
 import '../../features/coupons/providers/coupon_provider.dart';
-import '../../features/admin/providers/admin_users_provider.dart';
-import '../../features/admin/providers/admin_orders_provider.dart';
+import '../../features/admin/providers/admin_reports_provider.dart';
 
 class AppProviders {
   AppProviders._();
@@ -73,12 +72,8 @@ class AppProviders {
           create: (_) => CouponProvider(DependencyInjection.couponRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) =>
-              AdminUsersProvider(DependencyInjection.adminUserRepository),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => AdminOrdersProvider(
-            DependencyInjection.adminOrdersRepository,
+          create: (_) => AdminReportsProvider(
+            DependencyInjection.adminReportsRepository,
           ),
         ),
       ];

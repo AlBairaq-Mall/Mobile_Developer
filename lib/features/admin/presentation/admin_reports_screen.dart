@@ -1,63 +1,175 @@
-import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
+import 'package:provider/provider.dart';
 
-class AdminReportsScreen extends StatelessWidget {
+import '../../../app/theme/app_colors.dart';
+import '../../../core/widgets/app_page_header.dart';
+import '../../../core/widgets/loading_widget.dart';
+import '../models/admin_reports_model.dart';
+import '../providers/admin_reports_provider.dart';
+
+class AdminReportsScreen extends StatefulWidget {
   const AdminReportsScreen({super.key});
 
   @override
+  State<AdminReportsScreen> createState() => _AdminReportsScreenState();
+}
+
+class _AdminReportsScreenState extends State<AdminReportsScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminReportsProvider>().loadReports();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // TODO: ربط بـ GET /api/admin/reports
+    final provider = context.watch<AdminReportsProvider>();
+
     return Scaffold(
-      appBar: AppPageHeader(title: 'التقارير'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: const AppPageHeader(
+        title: 'التقارير',
+        showBack: false,
+      ),
+      body: provider.isLoading && provider.sales == null
+          ? const LoadingWidget()
+          : RefreshIndicator(
+              onRefresh: provider.refresh,
+              child: _ReportsBody(provider: provider),
+            ),
+    );
+  }
+}
+
+class _ReportsBody extends StatelessWidget {
+  final AdminReportsProvider provider;
+
+  const _ReportsBody({
+    required this.provider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (provider.error != null && provider.sales == null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 180),
+          Icon(
+            Icons.error_outline,
+            size: 56,
+            color: Colors.red.shade300,
+          ),
+          const SizedBox(height: 16),
+          const Center(
+            child: Text('تعذر تحميل التقارير'),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: provider.refresh,
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        _DateFilter(provider: provider),
+        const SizedBox(height: 18),
+        const Text(
+          'ملخص النظام',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SummaryGrid(
+          sales: provider.sales,
+          customers: provider.customers,
+          products: provider.products,
+          locations: provider.locations,
+        ),
+        const SizedBox(height: 24),
+        if (provider.orders != null) _OrdersSection(report: provider.orders!),
+        const SizedBox(height: 24),
+        _DriversSection(
+          provider: provider,
+        ),
+      ],
+    );
+  }
+}
+
+class _DateFilter extends StatelessWidget {
+  final AdminReportsProvider provider;
+
+  const _DateFilter({
+    required this.provider,
+  });
+
+  Future<void> _pickDate(
+    BuildContext context,
+    bool isFrom,
+  ) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (selected == null) return;
+
+    final date = '${selected.year.toString().padLeft(4, '0')}-'
+        '${selected.month.toString().padLeft(2, '0')}-'
+        '${selected.day.toString().padLeft(2, '0')}';
+
+    if (isFrom) {
+      provider.from = date;
+    } else {
+      provider.to = date;
+    }
+
+    await provider.loadReports(
+      fromDate: provider.from,
+      toDate: provider.to,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
           children: [
-            const Text(
-              'ملخص الأداء',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _pickDate(context, true),
+                icon: const Icon(Icons.calendar_today_outlined),
+                label: Text(
+                  provider.from ?? 'من تاريخ',
+                ),
+              ),
             ),
-            const SizedBox(height: 14),
-            _ReportCard(
-              title: 'مبيعات اليوم',
-              value: '45,000 ر.ي',
-              change: '+12%',
-              positive: true,
-            ),
-            _ReportCard(
-              title: 'مبيعات الأسبوع',
-              value: '280,000 ر.ي',
-              change: '+8%',
-              positive: true,
-            ),
-            _ReportCard(
-              title: 'مبيعات الشهر',
-              value: '1,200,000 ر.ي',
-              change: '-2%',
-              positive: false,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'أكثر المنتجات مبيعاً',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 14),
-            const _TopProductRow(
-              name: 'كوكاكولا شدة',
-              qty: '142 شدة',
-              amount: '1,349,000 ر.ي',
-            ),
-            const _TopProductRow(
-              name: 'بيبسي حبة',
-              qty: '980 حبة',
-              amount: '490,000 ر.ي',
-            ),
-            const _TopProductRow(
-              name: 'شيبس بطاطس',
-              qty: '560 باكت',
-              amount: '280,000 ر.ي',
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _pickDate(context, false),
+                icon: const Icon(Icons.calendar_today_outlined),
+                label: Text(
+                  provider.to ?? 'إلى تاريخ',
+                ),
+              ),
             ),
           ],
         ),
@@ -66,68 +178,406 @@ class AdminReportsScreen extends StatelessWidget {
   }
 }
 
-class _ReportCard extends StatelessWidget {
-  final String title, value, change;
-  final bool positive;
-  const _ReportCard({
-    required this.title,
-    required this.value,
-    required this.change,
-    required this.positive,
+class _SummaryGrid extends StatelessWidget {
+  final SalesReport? sales;
+  final CustomersReport? customers;
+  final ProductsReport? products;
+  final LocationsReport? locations;
+
+  const _SummaryGrid({
+    required this.sales,
+    required this.customers,
+    required this.products,
+    required this.locations,
   });
 
   @override
-  Widget build(BuildContext context) => Card(
-        margin: const EdgeInsets.only(bottom: 10),
-        child: Material(
-          child: ListTile(
-            title: Text(title),
-            subtitle: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-            ),
-            trailing: Chip(
-              label: Text(change),
-              backgroundColor: (positive ? AppColors.success : Colors.red)
-                  .withValues(alpha: 0.1),
-              labelStyle: TextStyle(
-                color: positive ? AppColors.success : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1.45,
+      children: [
+        _StatCard(
+          icon: Icons.payments_outlined,
+          title: 'المبيعات',
+          value: '${_format(sales?.totalSales ?? 0)} ر.ي',
         ),
-      );
+        _StatCard(
+          icon: Icons.shopping_bag_outlined,
+          title: 'الطلبات',
+          value: '${sales?.totalOrders ?? 0}',
+        ),
+        _StatCard(
+          icon: Icons.people_outline,
+          title: 'العملاء',
+          value: '${customers?.totalCustomers ?? 0}',
+        ),
+        _StatCard(
+          icon: Icons.inventory_2_outlined,
+          title: 'المنتجات',
+          value: '${products?.totalProducts ?? 0}',
+        ),
+        _StatCard(
+          icon: Icons.location_on_outlined,
+          title: 'المواقع',
+          value: '${locations?.totalLocations ?? 0}',
+        ),
+      ],
+    );
+  }
 }
 
-class _TopProductRow extends StatelessWidget {
-  final String name, qty, amount;
-  const _TopProductRow({
-    required this.name,
-    required this.qty,
-    required this.amount,
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const _StatCard({
+    required this.icon,
+    required this.title,
+    required this.value,
   });
 
   @override
-  Widget build(BuildContext context) => Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: Material(
-          child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: AppColors.primary,
-              child: Icon(Icons.trending_up, color: Colors.white, size: 16),
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: AppColors.primary,
             ),
-            title:
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(qty),
-            trailing: Text(
-              amount,
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                fontSize: 17,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OrdersSection extends StatelessWidget {
+  final OrdersReport report;
+
+  const _OrdersSection({
+    required this.report,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final statuses = [
+      ('قيد الانتظار', report.pending, Colors.orange),
+      ('مؤكد', report.confirmed, Colors.blue),
+      ('قيد التجهيز', report.processing, Colors.indigo),
+      ('تم الشحن', report.shipped, Colors.purple),
+      ('تم التسليم', report.delivered, Colors.green),
+      ('ملغي', report.cancelled, Colors.red),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'الطلبات',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text('إجمالي الطلبات'),
+                    ),
+                    Text(
+                      '${report.totalOrders}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text('قيمة الطلبات'),
+                    ),
+                    Text(
+                      '${_format(report.totalAmount)} ر.ي',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...statuses.map(
+          (item) => Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.circle,
+                size: 12,
+                color: item.$3,
+              ),
+              title: Text(item.$1),
+              trailing: Text(
+                '${item.$2}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _DriversSection extends StatelessWidget {
+  final AdminReportsProvider provider;
+
+  const _DriversSection({
+    required this.provider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'أداء المندوبين',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (provider.drivers.isEmpty)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(
+                child: Text(
+                  'لا توجد بيانات للمندوبين',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+        ...provider.drivers.map(
+          (driver) => Card(
+            child: ListTile(
+              onTap: () async {
+                final details = await provider.loadDriverDetails(driver.id);
+
+                if (!context.mounted || details == null) {
+                  return;
+                }
+
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => _DriverDetails(
+                    report: details,
+                  ),
+                );
+              },
+              leading: CircleAvatar(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: const Icon(
+                  Icons.delivery_dining,
+                  color: AppColors.primary,
+                ),
+              ),
+              title: Text(
+                driver.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                '${driver.deliveredOrders} طلب تم تسليمه',
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${_format(driver.totalSales)} ر.ي',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const Text(
+                    'عرض التفاصيل',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DriverDetails extends StatelessWidget {
+  final DeliveryDriverDetailsReport report;
+
+  const _DriverDetails({
+    required this.report,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                report.name,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                report.email,
+                style: const TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _DriverRow(
+                title: 'إجمالي الطلبات',
+                value: '${report.totalOrders}',
+              ),
+              _DriverRow(
+                title: 'قيد الانتظار',
+                value: '${report.pending}',
+              ),
+              _DriverRow(
+                title: 'قيد التجهيز',
+                value: '${report.processing}',
+              ),
+              _DriverRow(
+                title: 'تم الشحن',
+                value: '${report.shipped}',
+              ),
+              _DriverRow(
+                title: 'تم التسليم',
+                value: '${report.delivered}',
+              ),
+              _DriverRow(
+                title: 'ملغي',
+                value: '${report.cancelled}',
+              ),
+              const Divider(height: 28),
+              _DriverRow(
+                title: 'إجمالي المبيعات',
+                value: '${_format(report.totalSales)} ر.ي',
+                bold: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DriverRow extends StatelessWidget {
+  final String title;
+  final String value;
+  final bool bold;
+
+  const _DriverRow({
+    required this.title,
+    required this.value,
+    this.bold = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(title),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: bold ? FontWeight.bold : FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _format(num value) {
+  return value.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (match) => ',',
       );
 }

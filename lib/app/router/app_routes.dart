@@ -31,22 +31,11 @@ class AppRoutes {
   static const privacyPolicy = '/privacy-policy';
   static const termsOfUse = '/terms-of-use';
 
-  // Admin
-  static const adminDashboard = '/admin/dashboard';
-  static const adminOrders = '/admin/orders';
-  static const adminProducts = '/admin/products';
-  static const adminUsers = '/admin/users';
-  static const adminDelivery = '/admin/delivery';
+  // Admin Reports
   static const adminReports = '/admin/reports';
-  static const adminSettings = '/admin/settings';
-  static const adminAds = '/admin/ads';
-  static const adminOffers = '/admin/offers';
 
   // Delivery Driver
   static const deliveryLogin = '/delivery/login';
   static const deliveryHome = '/delivery/home';
   static const deliveryEarnings = '/delivery/earnings';
-
-  // Copouns
-  static const adminCoupons = '/admin/coupons';
 }

@@ -14,7 +14,7 @@ class AppRedirects {
 
     // Admin
     if (auth.isAdmin) {
-      return AppRoutes.adminDashboard;
+      return AppRoutes.adminReports;
     }
 
     // Delivery
