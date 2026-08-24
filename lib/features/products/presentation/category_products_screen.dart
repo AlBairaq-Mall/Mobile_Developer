@@ -41,11 +41,13 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    
+
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - 300) {
       final provider = context.read<ProductProvider>();
-      if (!provider.isLoading && !provider.isFetchingMore && provider.hasNextPage) {
+      if (!provider.isLoading &&
+          !provider.isFetchingMore &&
+          provider.hasNextPage) {
         provider.loadMore();
       }
     }

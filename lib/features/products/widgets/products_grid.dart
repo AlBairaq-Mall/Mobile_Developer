@@ -10,7 +10,7 @@ class ProductsGrid extends StatelessWidget {
   final bool shrinkWrap;
 
   const ProductsGrid({
-    super.key, 
+    super.key,
     required this.products,
     this.controller,
     this.physics = const NeverScrollableScrollPhysics(),

@@ -1,4 +1,4 @@
-﻿import '../../../core/models/product_model.dart';
+import '../../../core/models/product_model.dart';
 import '../../products/domain/repositories/product_repository.dart';
 
 class HomeRepository {
@@ -26,4 +26,3 @@ class HomeRepository {
     }
   }
 }
-

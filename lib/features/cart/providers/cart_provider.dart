@@ -264,23 +264,11 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<ApiResponse<void>> add(ProductModel product) async {
-    late final ProductUnitModel selectedUnit;
+    final selectedUnit = product.units.isEmpty ? null : product.units.first;
 
-    if (product.units.isNotEmpty) {
-      selectedUnit = product.units.firstWhere(
-        (unit) => unit.isDefault,
-        orElse: () => product.units.first,
-      );
-    } else {
-      selectedUnit = ProductUnitModel(
-        id: '0',
-        itemCode: product.itemCode,
-        unitName: product.unit,
-        price: product.price,
-        package: product.package,
-        description: '',
-        unit: product.unit,
-        isDefault: true,
+    if (selectedUnit == null) {
+      return ApiResponse.failure(
+        'المنتج لا يحتوي على وحدة بيع',
       );
     }
 
