@@ -16,7 +16,6 @@ import '../../cart/providers/cart_provider.dart';
 import '../providers/checkout_provider.dart';
 import '../models/coupon_totals.dart';
 import '../widgets/payment_method_selector.dart';
-import '../models/payment_method.dart';
 import '../../orders/utils/payment_mapper.dart';
 import '../../../app/di/dependency_injection.dart';
 
@@ -29,6 +28,8 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _couponController = TextEditingController();
+  final _notesController = TextEditingController();
+
   double _discountAmount = 0;
   double? _couponSubtotal;
   String? _appliedCouponCode;
@@ -38,6 +39,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _couponController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -103,11 +105,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final addressProvider = context.read<AddressProvider>();
     final cart = context.read<CartProvider>();
     final checkout = context.read<CheckoutProvider>();
-    final couponDiscount = CouponTotals.effectiveCouponDiscount(
-      apiDiscountAmount: _discountAmount,
-      currentSubtotal: cart.subtotal,
-      appliedSubtotal: _couponSubtotal,
-    );
 
     if (_appliedCouponCode != null &&
         !CouponTotals.isCouponCurrent(
@@ -170,12 +167,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     try {
+      final notes = _notesController.text.trim();
+
       final response = await DependencyInjection.orderRepository.createOrder(
-        addressId: addressProvider.selectedAddress!.id,
+        locationId: addressProvider.selectedAddress!.id,
         paymentMethod: paymentApiValue(checkout.paymentMethod),
-        deliveryFee: cart.deliveryFee,
-        discount: couponDiscount,
-        notes: null,
+        notes: notes.isEmpty ? null : notes,
         couponCode: _appliedCouponCode,
         items: items,
       );
@@ -234,7 +231,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ),
     );
-    final checkout = context.watch<CheckoutProvider>();
     final couponDiscount = CouponTotals.effectiveCouponDiscount(
       apiDiscountAmount: _discountAmount,
       currentSubtotal: cart.subtotal,
@@ -245,12 +241,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           appliedSubtotal: _couponSubtotal,
           currentSubtotal: cart.subtotal,
         );
-    final total = CouponTotals.grandTotal(
-      subtotal: cart.subtotal,
-      deliveryFee: cart.deliveryFee,
-      couponDiscount: couponDiscount,
-    );
-
+    final total = cart.subtotal - couponDiscount;
     return PopScope(
       // منع الخروج العرضي أثناء معالجة الطلب
       canPop: !_isPlacing,
@@ -355,17 +346,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const PaymentMethodSelector(),
 
                 // حقل رفع صورة السند إذا اختار "تحويل بنكي"
-                if (checkout.paymentMethod == PaymentMethod.card) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.upload_outlined),
-                      label: const Text("رفع صورة إيصال الدفع"),
-                    ),
-                  ),
-                ],
 
                 const SizedBox(height: 24),
 
@@ -471,17 +451,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         const Divider(),
                         _summaryRow('المجموع', cart.subtotal),
-                        _summaryRow('التوصيل', cart.deliveryFee),
                         if (couponDiscount > 0)
                           _summaryRow(
                             'الخصم',
                             -couponDiscount,
-                            color: Colors.green,
+                            color: AppColors.success,
                           ),
                         const Divider(),
-                        _summaryRow('الإجمالي', total, bold: true),
+                        _summaryRow(
+                          'الإجمالي',
+                          total,
+                          bold: true,
+                        ),
                       ],
                     ),
+                  ),
+                ),
+                //---------------------------  ملاحظات الطلب  ---------------------------
+                const SizedBox(height: 24),
+
+                _sectionTitle('ملاحظات الطلب'),
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: _notesController,
+                  minLines: 3,
+                  maxLines: 5,
+                  textInputAction: TextInputAction.newline,
+                  decoration: InputDecoration(
+                    hintText: 'اكتب أي ملاحظات حول الطلب...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.all(14),
+                    alignLabelWithHint: true,
                   ),
                 ),
 

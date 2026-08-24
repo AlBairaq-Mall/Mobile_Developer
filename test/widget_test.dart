@@ -15,7 +15,11 @@ void main() {
     'product_units': [
       {
         'id': 11,
-        'product': {'id': 1, 'name_en': 'Pepsi', 'name_ar': 'Pepsi'},
+        'product': {
+          'id': 1,
+          'name_en': 'Pepsi',
+          'name_ar': 'Pepsi',
+        },
         'unit': {
           'id': 1,
           'name_en': 'Piece',
@@ -28,8 +32,17 @@ void main() {
     ],
     'buy_quantity': 2,
     'gift': {
-      'product': {'id': 2, 'name_en': 'Juice', 'name_ar': 'Juice'},
-      'unit': {'id': 1, 'name_en': 'Piece', 'name_ar': 'Piece', 'quantity': 1},
+      'product': {
+        'id': 2,
+        'name_en': 'Juice',
+        'name_ar': 'Juice',
+      },
+      'unit': {
+        'id': 1,
+        'name_en': 'Piece',
+        'name_ar': 'Piece',
+        'quantity': 1,
+      },
     },
     'gift_quantity': 1,
     'is_active': true,
@@ -41,35 +54,53 @@ void main() {
     expect(giftOffer.gift?.quantity, 1);
   });
 
-  test('gift count follows floor(purchased / buy) × gift quantity', () async {
-    final provider = OffersProvider(_FakeOffersRepository([giftOffer]));
-    await provider.load();
+  test(
+    'gift count follows floor(purchased / buy) × gift quantity',
+    () async {
+      final provider = OffersProvider(
+        _FakeOffersRepository([giftOffer]),
+      );
 
-    List<GiftRewardModel> rewardsFor(int quantity) => provider.giftRewardsFor([
-          OfferCartLine(productId: '1', unitId: '1', quantity: quantity),
+      await provider.load();
+
+      List<GiftRewardModel> rewardsFor(int quantity) {
+        return provider.giftRewardsFor([
+          OfferCartLine(
+            productId: '1',
+            unitId: '1',
+            quantity: quantity,
+          ),
         ]);
+      }
 
-    expect(rewardsFor(1), isEmpty);
-    expect(rewardsFor(2).single.quantity, 1);
-    expect(rewardsFor(4).single.quantity, 2);
-    expect(rewardsFor(5).single.quantity, 2);
-  });
+      expect(rewardsFor(1), isEmpty);
+      expect(rewardsFor(2).single.quantity, 1);
+      expect(rewardsFor(4).single.quantity, 2);
+      expect(rewardsFor(5).single.quantity, 2);
+    },
+  );
 
   test('gift offer matches both product and unit', () async {
-    final provider = OffersProvider(_FakeOffersRepository([giftOffer]));
+    final provider = OffersProvider(
+      _FakeOffersRepository([giftOffer]),
+    );
+
     await provider.load();
 
     expect(
       provider.giftRewardsFor([
-        const OfferCartLine(productId: '1', unitId: '99', quantity: 2),
+        const OfferCartLine(
+          productId: '1',
+          unitId: '99',
+          quantity: 2,
+        ),
       ]),
       isEmpty,
     );
   });
 
-  test('percentage coupon applies only to paid products before delivery', () {
+  test('coupon discount uses the API amount without recalculation', () {
     const subtotal = 10000.0;
-    const delivery = 500.0;
     const apiDiscount = 2500.0;
 
     final discount = CouponTotals.effectiveCouponDiscount(
@@ -77,19 +108,12 @@ void main() {
       currentSubtotal: subtotal,
       appliedSubtotal: subtotal,
     );
-    final total = CouponTotals.grandTotal(
-      subtotal: subtotal,
-      deliveryFee: delivery,
-      couponDiscount: discount,
-    );
 
     expect(discount, 2500);
-    expect(total, 8000);
   });
 
   test('fixed coupon uses the API amount once', () {
     const subtotal = 10000.0;
-    const delivery = 500.0;
     const apiDiscount = 1000.0;
 
     final discount = CouponTotals.effectiveCouponDiscount(
@@ -98,19 +122,11 @@ void main() {
       appliedSubtotal: subtotal,
     );
 
-    expect(
-      CouponTotals.grandTotal(
-        subtotal: subtotal,
-        deliveryFee: delivery,
-        couponDiscount: discount,
-      ),
-      9500,
-    );
+    expect(discount, 1000);
   });
 
   test('a free gift does not change the coupon calculation base', () {
     const paidProductsSubtotal = 10000.0;
-    const delivery = 500.0;
 
     final discount = CouponTotals.effectiveCouponDiscount(
       apiDiscountAmount: 2500,
@@ -118,14 +134,7 @@ void main() {
       appliedSubtotal: paidProductsSubtotal,
     );
 
-    expect(
-      CouponTotals.grandTotal(
-        subtotal: paidProductsSubtotal,
-        deliveryFee: delivery,
-        couponDiscount: discount,
-      ),
-      8000,
-    );
+    expect(discount, 2500);
   });
 
   test('coupon discount cannot exceed the paid-products subtotal', () {
@@ -150,14 +159,25 @@ void main() {
     );
   });
 
-  test('coupon discount is subtracted once', () {
+  test('coupon discount is zero when no coupon was applied', () {
     expect(
-      CouponTotals.grandTotal(
-        subtotal: 10000,
-        deliveryFee: 0,
-        couponDiscount: 2500,
+      CouponTotals.effectiveCouponDiscount(
+        apiDiscountAmount: 2500,
+        currentSubtotal: 10000,
+        appliedSubtotal: null,
       ),
-      7500,
+      0,
+    );
+  });
+
+  test('coupon discount is zero when API returns zero', () {
+    expect(
+      CouponTotals.effectiveCouponDiscount(
+        apiDiscountAmount: 0,
+        currentSubtotal: 10000,
+        appliedSubtotal: 10000,
+      ),
+      0,
     );
   });
 }
@@ -168,10 +188,14 @@ class _FakeOffersRepository implements OffersRepository {
   _FakeOffersRepository(this.offers);
 
   @override
-  Future<ApiResponse<List<OfferModel>>> getOffers() async =>
-      ApiResponse.success(offers);
+  Future<ApiResponse<List<OfferModel>>> getOffers() async {
+    return ApiResponse.success(offers);
+  }
 
   @override
-  Future<ApiResponse<OfferModel>> getOfferById(String id) async =>
-      ApiResponse.success(offers.firstWhere((offer) => offer.id == id));
+  Future<ApiResponse<OfferModel>> getOfferById(String id) async {
+    return ApiResponse.success(
+      offers.firstWhere((offer) => offer.id == id),
+    );
+  }
 }

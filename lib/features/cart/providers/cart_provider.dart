@@ -688,8 +688,4 @@ class CartProvider extends ChangeNotifier {
       (sum, item) => sum + (item.unitPrice * item.quantity),
     );
   }
-
-  double get deliveryFee => 500;
-
-  double get grandTotal => subtotal + deliveryFee;
 }

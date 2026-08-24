@@ -187,44 +187,38 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   child: Column(
                     children: [
+                      //ملخص الطلب من هنا
                       _SummaryRow(
                         'المجموع',
                         '${cart.originalSubtotal.toStringAsFixed(0)} ر.ي',
                       ),
+
                       if (cart.offerDiscount > 0) ...[
                         const SizedBox(height: 8),
                         _SummaryRow(
-                          'خصم العروض',
+                          'الخصم',
                           '-${cart.offerDiscount.toStringAsFixed(0)} ر.ي',
-                          valueColor: Colors.green,
+                          valueColor: AppColors.success,
                         ),
                       ],
-                      const SizedBox(height: 8),
-                      _SummaryRow(
-                        'بعد الخصم',
-                        '${cart.subtotal.toStringAsFixed(0)} ر.ي',
-                      ),
-                      const SizedBox(height: 8),
-                      _SummaryRow(
-                        'التوصيل',
-                        '${cart.deliveryFee.toStringAsFixed(0)} ر.ي',
-                      ),
+
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 12),
                         child: Divider(),
                       ),
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'الإجمالي',
+                            'إجمالي المنتجات',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            '${cart.grandTotal.toStringAsFixed(0)} ر.ي',
+                            '${cart.subtotal.toStringAsFixed(0)} ر.ي',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -233,6 +227,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: () {
@@ -248,7 +243,7 @@ class _CartScreenState extends State<CartScreen> {
                           Icons.arrow_back_ios_rounded,
                           size: 16,
                         ),
-                        label: const Text('متابعةإتمام الطلب'),
+                        label: const Text('متابعة إتمام الطلب'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,

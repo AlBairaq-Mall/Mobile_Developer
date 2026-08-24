@@ -6,9 +6,6 @@ String paymentMethodText(String value) {
     case "card":
       return "بطاقة بنكية";
 
-    case "wallet":
-      return "محفظة إلكترونية";
-
     default:
       return value;
   }

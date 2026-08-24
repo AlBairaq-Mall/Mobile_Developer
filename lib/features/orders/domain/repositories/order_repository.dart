@@ -5,10 +5,8 @@ abstract class OrderRepository {
   Future<ApiResponse<List<OrderModel>>> getOrders();
 
   Future<ApiResponse<Map<String, dynamic>>> createOrder({
-    required String addressId,
+    required String locationId,
     required String paymentMethod,
-    required double deliveryFee,
-    required double discount,
     String? notes,
     String? couponCode,
     required List<Map<String, dynamic>> items,

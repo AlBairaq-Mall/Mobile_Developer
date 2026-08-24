@@ -17,27 +17,25 @@ class OrderRemoteDataSource extends BaseRemoteDataSource {
       );
 
   Future<ApiResponse<Map<String, dynamic>>> createOrder({
-    required String addressId,
+    required String locationId,
     required String paymentMethod,
     required List<Map<String, dynamic>> items,
-    required double deliveryFee,
-    required double discount,
-    String? notes,
     String? couponCode,
-  }) =>
-      postEnvelope<Map<String, dynamic>>(
-        ApiEndpoints.orders,
-        data: {
-          "location_id": int.parse(addressId),
-          "payment_method": paymentMethod,
-          "delivery_fee": deliveryFee,
-          "discount": discount,
-          if (notes != null) "notes": notes,
-          "items": items,
-          if (couponCode != null) "coupon_code": couponCode,
-        },
-        parser: (json) => JsonParser.map(json),
-      );
+    String? notes,
+  }) {
+    return postEnvelope<Map<String, dynamic>>(
+      ApiEndpoints.orders,
+      data: {
+        'location_id': int.parse(locationId),
+        'payment_method': paymentMethod,
+        'items': items,
+        if (couponCode != null && couponCode.isNotEmpty)
+          'coupon_code': couponCode,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      },
+      parser: (json) => JsonParser.map(json),
+    );
+  }
 
   Future<ApiResponse<Map<String, dynamic>>> trackOrder(String orderNumber) =>
       getEnvelope<Map<String, dynamic>>(

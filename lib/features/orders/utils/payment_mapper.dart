@@ -7,8 +7,5 @@ String paymentApiValue(PaymentMethod method) {
 
     case PaymentMethod.card:
       return "card";
-
-    case PaymentMethod.wallet:
-      return "cash";
   }
 }

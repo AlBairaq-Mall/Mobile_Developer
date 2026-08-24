@@ -22,15 +22,11 @@ class PaymentMethodSelector extends StatelessWidget {
         children: const [
           RadioListTile<PaymentMethod>(
             value: PaymentMethod.cash,
-            title: Text("الدفع عند الاستلام"),
-          ),
-          RadioListTile<PaymentMethod>(
-            value: PaymentMethod.wallet,
-            title: Text("المحفظة"),
+            title: Text('الدفع عند الاستلام'),
           ),
           RadioListTile<PaymentMethod>(
             value: PaymentMethod.card,
-            title: Text("بطاقة بنكية"),
+            title: Text('بطاقة بنكية'),
           ),
         ],
       ),
