@@ -8,7 +8,6 @@ class DeliveryEarningsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: GET /api/delivery/earnings
     return Scaffold(
       appBar: const AppPageHeader(title: 'أرباحي', showBack: false),
       body: SingleChildScrollView(

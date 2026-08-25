@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_routes.dart';
 import '../models/order_model.dart';
-import '../utils/order_status_color.dart';
+import '../models/order_status.dart';
+// unused
 
 class OrderCard extends StatelessWidget {
   final OrderModel order;
@@ -34,15 +35,13 @@ class OrderCard extends StatelessWidget {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: orderStatusColor(
-                      order.status,
-                    ).withValues(alpha: .15),
+                    color: order.statusEnum.color.withValues(alpha: .15),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
-                    orderStatusText(order.status),
+                    order.statusEnum.label,
                     style: TextStyle(
-                      color: orderStatusColor(order.status),
+                      color: order.statusEnum.color,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

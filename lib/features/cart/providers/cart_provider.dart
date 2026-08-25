@@ -66,7 +66,7 @@ class CartProvider extends ChangeNotifier {
 
   int getCartItemIndex(String productId, String unitId) {
     return _items.indexWhere(
-      (item) => item.product.id == productId && item.selectedUnit.id == unitId,
+      (item) => item.product.id == productId && item.unit.id == unitId,
     );
   }
 
@@ -158,7 +158,7 @@ class CartProvider extends ChangeNotifier {
 
   Future<ApiResponse<void>> addItem({
     required ProductModel product,
-    required ProductUnitModel selectedUnit,
+    required ProductUnitModel unit,
     required double unitPrice,
     double? originalPrice,
     int quantity = 1,
@@ -167,7 +167,7 @@ class CartProvider extends ChangeNotifier {
       return ApiResponse.failure('الكمية غير صحيحة');
     }
 
-    final key = '${product.id}_${selectedUnit.id}';
+    final key = '${product.id}_${unit.id}';
 
     if (_busy || _processingItems.contains(key)) {
       return ApiResponse.failure('يرجى الانتظار');
@@ -177,14 +177,14 @@ class CartProvider extends ChangeNotifier {
 
     _setItemProcessing(
       product.id,
-      selectedUnit.id,
+      unit.id,
       true,
     );
 
     try {
       final index = getCartItemIndex(
         product.id,
-        selectedUnit.id,
+        unit.id,
       );
 
       if (index != -1) {
@@ -207,14 +207,13 @@ class CartProvider extends ChangeNotifier {
           CartItemModel(
             cartId: null,
             product: product,
-            selectedUnit: selectedUnit,
+            unit: unit,
             originalPrice: effectiveOriginalPrice,
             discount: (effectiveOriginalPrice - unitPrice)
                 .clamp(0, double.infinity)
                 .toDouble(),
             unitPrice: unitPrice,
             quantity: quantity,
-            total: unitPrice * quantity,
           ),
         );
       }
@@ -229,7 +228,7 @@ class CartProvider extends ChangeNotifier {
 
       final response = await _repository.addToCart(
         productId: product.id,
-        unitId: selectedUnit.id,
+        unitId: unit.id,
         quantity: quantity,
       );
 
@@ -257,26 +256,10 @@ class CartProvider extends ChangeNotifier {
 
       _setItemProcessing(
         product.id,
-        selectedUnit.id,
+        unit.id,
         false,
       );
     }
-  }
-
-  Future<ApiResponse<void>> add(ProductModel product) async {
-    final selectedUnit = product.units.isEmpty ? null : product.units.first;
-
-    if (selectedUnit == null) {
-      return ApiResponse.failure(
-        'المنتج لا يحتوي على وحدة بيع',
-      );
-    }
-
-    return addItem(
-      product: product,
-      selectedUnit: selectedUnit,
-      unitPrice: selectedUnit.price,
-    );
   }
 
   Future<void> increase(int index) async {
@@ -286,7 +269,7 @@ class CartProvider extends ChangeNotifier {
 
     final item = _items[index];
 
-    final key = '${item.product.id}_${item.selectedUnit.id}';
+    final key = '${item.product.id}_${item.unit.id}';
 
     if (_processingItems.contains(key)) {
       return;
@@ -294,7 +277,7 @@ class CartProvider extends ChangeNotifier {
 
     _setItemProcessing(
       item.product.id,
-      item.selectedUnit.id,
+      item.unit.id,
       true,
     );
 
@@ -330,7 +313,7 @@ class CartProvider extends ChangeNotifier {
     } finally {
       _setItemProcessing(
         item.product.id,
-        item.selectedUnit.id,
+        item.unit.id,
         false,
       );
     }
@@ -343,7 +326,7 @@ class CartProvider extends ChangeNotifier {
 
     final item = _items[index];
 
-    final key = '${item.product.id}_${item.selectedUnit.id}';
+    final key = '${item.product.id}_${item.unit.id}';
 
     if (_processingItems.contains(key)) {
       return;
@@ -351,7 +334,7 @@ class CartProvider extends ChangeNotifier {
 
     _setItemProcessing(
       item.product.id,
-      item.selectedUnit.id,
+      item.unit.id,
       true,
     );
 
@@ -414,7 +397,7 @@ class CartProvider extends ChangeNotifier {
     } finally {
       _setItemProcessing(
         item.product.id,
-        item.selectedUnit.id,
+        item.unit.id,
         false,
       );
     }
@@ -536,14 +519,11 @@ class CartProvider extends ChangeNotifier {
 
       final serverItems = List<CartItemModel>.from(serverResponse.data!);
 
-      // العناصر التي فشلت مزامنتها ستبقى محلياً.
-      final failedLocalItems = <CartItemModel>[];
-
       for (final localItem in localItems) {
         final serverIndex = serverItems.indexWhere(
           (serverItem) =>
               serverItem.product.id == localItem.product.id &&
-              serverItem.selectedUnit.id == localItem.selectedUnit.id,
+              serverItem.unit.id == localItem.unit.id,
         );
 
         // ─────────────────────────────────────────────────────────────
@@ -552,12 +532,15 @@ class CartProvider extends ChangeNotifier {
         if (serverIndex == -1) {
           final response = await _repository.addToCart(
             productId: localItem.product.id,
-            unitId: localItem.selectedUnit.id,
+            unitId: localItem.unit.id,
             quantity: localItem.quantity,
           );
 
-          if (!response.isSuccess) {
-            failedLocalItems.add(localItem);
+          if (response.isSuccess) {
+            _items.removeWhere((item) =>
+                item.product.id == localItem.product.id &&
+                item.unit.id == localItem.unit.id);
+            await _saveCart();
           }
 
           continue;
@@ -569,11 +552,12 @@ class CartProvider extends ChangeNotifier {
         final serverItem = serverItems[serverIndex];
 
         if (serverItem.cartId == null) {
-          // لا نستطيع تحديث عنصر بدون cartId.
-          failedLocalItems.add(localItem);
           continue;
         }
 
+        // BACKEND IDEMPOTENCY REQUIRED FOR FULL GUARANTEE
+        // إذا فشل الاتصال بعد تحديث السيرفر بنجاح، ستتضاعف الكمية هنا
+        // في المحاولة التالية لعدم وجود idempotency key من الـ Backend.
         final mergedQuantity = serverItem.quantity + localItem.quantity;
 
         final response = await _repository.updateQuantity(
@@ -581,9 +565,11 @@ class CartProvider extends ChangeNotifier {
           quantity: mergedQuantity,
         );
 
-        if (!response.isSuccess) {
-          // فشل التحديث → نحافظ على نسخة الضيف محلياً.
-          failedLocalItems.add(localItem);
+        if (response.isSuccess) {
+          _items.removeWhere((item) =>
+              item.product.id == localItem.product.id &&
+              item.unit.id == localItem.unit.id);
+          await _saveCart();
         }
       }
 
@@ -597,12 +583,12 @@ class CartProvider extends ChangeNotifier {
           latestResponse.data!,
         );
 
-        // نعيد العناصر التي فشلت مزامنتها محلياً.
-        for (final failedItem in failedLocalItems) {
+        // نعيد العناصر التي فشلت مزامنتها وظلت في _items
+        for (final failedItem in _items) {
           final existingIndex = mergedItems.indexWhere(
             (serverItem) =>
                 serverItem.product.id == failedItem.product.id &&
-                serverItem.selectedUnit.id == failedItem.selectedUnit.id,
+                serverItem.unit.id == failedItem.unit.id,
           );
 
           if (existingIndex != -1) {
@@ -618,29 +604,6 @@ class CartProvider extends ChangeNotifier {
         _items
           ..clear()
           ..addAll(mergedItems);
-
-        await _saveCart();
-      } else {
-        // حتى لو فشل التحميل النهائي، لا نفقد العناصر المحلية الفاشلة.
-        _items
-          ..clear()
-          ..addAll(serverItems);
-
-        for (final failedItem in failedLocalItems) {
-          final existingIndex = _items.indexWhere(
-            (serverItem) =>
-                serverItem.product.id == failedItem.product.id &&
-                serverItem.selectedUnit.id == failedItem.selectedUnit.id,
-          );
-
-          if (existingIndex != -1) {
-            _items[existingIndex] = failedItem.copyWith(
-              cartId: _items[existingIndex].cartId,
-            );
-          } else {
-            _items.add(failedItem);
-          }
-        }
 
         await _saveCart();
       }

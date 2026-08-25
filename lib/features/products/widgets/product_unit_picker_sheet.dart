@@ -565,16 +565,7 @@ class _ProductPickerCardState extends State<_ProductPickerCard> {
                             fontSize: 15,
                           ),
                         ),
-                        if (product.brand.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            product.brand,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+
                         const SizedBox(height: 6),
                         Text(
                           '${units.length} وحدة متاحة',
@@ -694,9 +685,9 @@ class _UnitOption extends StatelessWidget {
                       color: selected ? AppColors.primary : null,
                     ),
                   ),
-                  if (unit.package.isNotEmpty)
+                  if (unit.quantity > 0)
                     Text(
-                      unit.package,
+                      'الكمية: ${unit.quantity}',
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                 ],

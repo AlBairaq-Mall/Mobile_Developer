@@ -21,13 +21,6 @@ class CategoriesPinned extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 2),
-            //   child: SectionHeader(
-            //     title: 'الأقسام',
-            //     onSeeAll: () => context.read<NavigationProvider>().changeTab(1),
-            //   ),
-            // ),
             const SizedBox(height: 4),
             SizedBox(
               height: 78,

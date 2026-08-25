@@ -1,35 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../models/payment_method.dart';
-import '../providers/checkout_provider.dart';
 
 class PaymentMethodSelector extends StatelessWidget {
-  const PaymentMethodSelector({super.key});
+  const PaymentMethodSelector({
+    super.key,
+    required this.selectedMethod,
+    required this.onChanged,
+  });
+
+  final PaymentMethod selectedMethod;
+  final ValueChanged<PaymentMethod> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CheckoutProvider>();
-
-    return RadioGroup<PaymentMethod>(
-      groupValue: provider.paymentMethod,
-      onChanged: (value) {
-        if (value != null) {
-          provider.setPaymentMethod(value);
-        }
-      },
-      child: Column(
-        children: const [
-          RadioListTile<PaymentMethod>(
-            value: PaymentMethod.cash,
-            title: Text('الدفع عند الاستلام'),
-          ),
-          RadioListTile<PaymentMethod>(
-            value: PaymentMethod.card,
-            title: Text('بطاقة بنكية'),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        // ignore: deprecated_member_use
+        RadioListTile<PaymentMethod>(
+          value: PaymentMethod.cash,
+          // ignore: deprecated_member_use
+          groupValue: selectedMethod,
+          // ignore: deprecated_member_use
+          onChanged: (value) {
+            if (value != null) onChanged(value);
+          },
+          title: Text(PaymentMethod.cash.label),
+        ),
+        // ignore: deprecated_member_use
+        RadioListTile<PaymentMethod>(
+          value: PaymentMethod.card,
+          // ignore: deprecated_member_use
+          groupValue: selectedMethod,
+          // ignore: deprecated_member_use
+          onChanged: (value) {
+            if (value != null) onChanged(value);
+          },
+          title: Text(PaymentMethod.card.label),
+        ),
+      ],
     );
   }
 }

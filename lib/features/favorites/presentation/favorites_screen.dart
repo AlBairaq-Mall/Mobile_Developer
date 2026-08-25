@@ -7,6 +7,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../../products/widgets/product_card.dart';
+import '../../ads/providers/offers_provider.dart';
 
 /// Favorites screen backed by [FavoritesProvider].
 class FavoritesScreen extends StatefulWidget {
@@ -68,7 +69,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             TextButton.icon(
               onPressed: () {
                 for (final p in favProducts) {
-                  cartProv.add(p);
+                  final unit = p.units.isEmpty ? null : p.units.first;
+                  if (unit != null) {
+                    final offerUnit = context.read<OffersProvider>().productUnitOffer(
+                          productId: p.id,
+                          unitId: unit.id,
+                        );
+                    cartProv.addItem(
+                      product: p,
+                      unit: unit,
+                      unitPrice: offerUnit?.price ?? unit.price,
+                      originalPrice: offerUnit?.oldPrice ?? unit.price,
+                    );
+                  }
                 }
                 AppMessage.success(
                   context,

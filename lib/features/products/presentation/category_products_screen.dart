@@ -66,8 +66,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       filtered = filtered
           .where(
             (p) =>
-                p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                p.brand.toLowerCase().contains(_searchQuery.toLowerCase()),
+                p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
           )
           .toList();
     }

@@ -72,7 +72,7 @@ class CartItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        item.selectedUnit.unitName,
+                        item.unit.unitName,
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 11,

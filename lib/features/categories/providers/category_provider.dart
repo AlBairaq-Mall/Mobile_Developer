@@ -26,9 +26,7 @@ class CategoryProvider extends ChangeNotifier {
   /// Result is cached; no allocation on repeated calls.
   List<CategoryModel> get mainCategories => _cachedMainCategories;
 
-  List<CategoryModel> subCategories(String parentId) =>
-      _categories.where((c) => c.parentId == parentId).toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
 
   Future<void> loadCategories({bool showLoading = true}) async {
     // ──────────────────────────────────────────────────────────────────────

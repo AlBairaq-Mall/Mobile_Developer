@@ -1,8 +1,10 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_colors.dart';
 import '../models/order_model.dart';
-import '../utils/order_status_color.dart';
+import '../models/order_status.dart';
+// unused
 import '../utils/payment_method_text.dart';
 import '../widgets/order_progress.dart';
 
@@ -16,9 +18,6 @@ class OrderDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // الخصم النهائي = الخصم العام + خصم الكوبون
-    final totalDiscount = order.discount + order.couponDiscount;
-
     return Scaffold(
       appBar: const AppPageHeader(
         title: 'تفاصيل الطلب',
@@ -48,15 +47,15 @@ class OrderDetailsScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: orderStatusColor(order.status).withValues(
+                  color: order.statusEnum.color.withValues(
                     alpha: .15,
                   ),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(
-                  orderStatusText(order.status),
+                  order.statusEnum.label,
                   style: TextStyle(
-                    color: orderStatusColor(order.status),
+                    color: order.statusEnum.color,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -107,7 +106,9 @@ class OrderDetailsScreen extends StatelessWidget {
                   ),
                   _infoRow(
                     'حالة الدفع',
-                    order.paymentStatus,
+                    order.paymentStatus.toLowerCase() == 'pending'
+                        ? 'قيد الانتظار'
+                        : order.paymentStatus,
                   ),
                   _infoRow(
                     'العنوان',
@@ -145,16 +146,36 @@ class OrderDetailsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: ListTile(
-                leading: const CircleAvatar(
+                leading: CircleAvatar(
+                  backgroundColor: item.isGift ? AppColors.success.withValues(alpha: 0.1) : null,
                   child: Icon(
-                    Icons.shopping_bag_outlined,
+                    item.isGift ? Icons.card_giftcard : Icons.shopping_bag_outlined,
+                    color: item.isGift ? AppColors.success : null,
                   ),
                 ),
-                title: Text(
-                  item.product.nameAr,
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.product?.nameAr ?? 'منتج غير متوفر',
+                      ),
+                    ),
+                    if (item.isGift)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.success,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'هدية',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ),
+                  ],
                 ),
                 subtitle: Text(
-                  '${item.unit.unitName} • ${item.price} ر.ي',
+                  '${item.unit?.unitName ?? 'غير معروف'} • ${item.price} ر.ي',
                 ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -195,17 +216,24 @@ class OrderDetailsScreen extends StatelessWidget {
                   ),
 
                   // رسوم التوصيل
-                  if (order.deliveryFee > 0)
-                    _priceRow(
-                      'التوصيل',
-                      order.deliveryFee,
-                    ),
+                  _priceRow(
+                    'التوصيل',
+                    order.deliveryFee,
+                  ),
 
-                  // الخصم العام + خصم الكوبون
-                  if (totalDiscount > 0)
+                  // الخصم العام
+                  if (order.discount > 0)
                     _priceRow(
                       'الخصم',
-                      -totalDiscount,
+                      -order.discount,
+                      color: Colors.green,
+                    ),
+
+                  // خصم الكوبون
+                  if (order.couponDiscount > 0)
+                    _priceRow(
+                      'خصم الكوبون',
+                      -order.couponDiscount,
                       color: Colors.green,
                     ),
 

@@ -260,8 +260,7 @@ class _HomeBody extends StatelessWidget {
               // HOME MODE
               // لا يوجد قسم محدد ولا بحث
               // ============================================================
-              if (provider.selectedCategory.isEmpty &&
-                  provider.searchText.isEmpty) ...[
+              if (provider.selectedCategory.isEmpty) ...[
                 if (provider.flashDeals.isNotEmpty) ...[
                   ProductSection(
                     title: 'العروض',
@@ -292,9 +291,7 @@ class _HomeBody extends StatelessWidget {
                 ProductSection(
                   title: provider.selectedCategory.isNotEmpty
                       ? 'منتجات القسم'
-                      : provider.searchText.isNotEmpty
-                          ? 'نتائج البحث'
-                          : 'جميع المنتجات',
+                      : 'جميع المنتجات',
                   products: provider.products,
                 ),
 

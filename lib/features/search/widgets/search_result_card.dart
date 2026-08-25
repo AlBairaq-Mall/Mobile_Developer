@@ -37,11 +37,7 @@ class SearchResultCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    product.brand,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
+
                   const SizedBox(height: 10),
                   AppPrice(price: product.price),
                 ],

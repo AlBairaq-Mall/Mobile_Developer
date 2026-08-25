@@ -14,15 +14,32 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+
+    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
       context.read<OrdersProvider>().loadOrders();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<OrdersProvider>().loadMore();
+    }
   }
 
   @override
@@ -38,6 +55,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
             return const LoadingWidget();
           }
 
+          if (provider.error != null && provider.orders.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(provider.error!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: provider.refresh,
+                    child: const Text("إعادة المحاولة"),
+                  ),
+                ],
+              ),
+            );
+          }
+
           if (provider.orders.isEmpty) {
             return const Center(child: Text("لا توجد طلبات"));
           }
@@ -45,8 +78,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
           return RefreshIndicator(
             onRefresh: provider.refresh,
             child: ListView.builder(
-              itemCount: provider.orders.length,
+              controller: _scrollController,
+              itemCount: provider.orders.length + (provider.loadingMore ? 1 : 0),
               itemBuilder: (_, index) {
+                if (index == provider.orders.length) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 return OrderCard(provider.orders[index]);
               },
             ),

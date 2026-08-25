@@ -13,10 +13,11 @@ import '../../../core/widgets/app_message.dart';
 import '../../address/providers/address_provider.dart';
 import '../../address/widgets/address_card.dart';
 import '../../cart/providers/cart_provider.dart';
-import '../providers/checkout_provider.dart';
+
 import '../models/coupon_totals.dart';
+import '../models/payment_method.dart';
 import '../widgets/payment_method_selector.dart';
-import '../../orders/utils/payment_mapper.dart';
+
 import '../../../app/di/dependency_injection.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -29,6 +30,8 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _couponController = TextEditingController();
   final _notesController = TextEditingController();
+
+  PaymentMethod _paymentMethod = PaymentMethod.cash;
 
   double _discountAmount = 0;
   double? _couponSubtotal;
@@ -104,7 +107,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _placeOrder() async {
     final addressProvider = context.read<AddressProvider>();
     final cart = context.read<CartProvider>();
-    final checkout = context.read<CheckoutProvider>();
 
     if (_appliedCouponCode != null &&
         !CouponTotals.isCouponCurrent(
@@ -140,28 +142,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final items = <Map<String, dynamic>>[];
 
     for (final item in cart.items) {
-      final productId = int.tryParse(item.product.id);
-      final unitId = int.tryParse(item.selectedUnit.id);
-
-      if (productId == null || unitId == null) {
-        if (mounted) {
-          AppMessage.error(
-            context,
-            'بيانات المنتج أو الوحدة غير صالحة، يرجى تحديث السلة والمحاولة مرة أخرى.',
-            title: 'تعذر إتمام الطلب',
-          );
-        }
-
-        setState(() {
-          _isPlacing = false;
-        });
-
-        return;
-      }
-
       items.add({
-        'product_id': productId,
-        'unit_id': unitId,
+        'product_id': item.product.id,
+        'unit_id': item.unit.id,
         'quantity': item.quantity,
       });
     }
@@ -171,7 +154,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final response = await DependencyInjection.orderRepository.createOrder(
         locationId: addressProvider.selectedAddress!.id,
-        paymentMethod: paymentApiValue(checkout.paymentMethod),
+        paymentMethod: _paymentMethod.apiValue,
         notes: notes.isEmpty ? null : notes,
         couponCode: _appliedCouponCode,
         items: items,
@@ -226,7 +209,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       cart.items.map(
         (item) => OfferCartLine(
           productId: item.product.id,
-          unitId: item.selectedUnit.id,
+          unitId: item.unit.id,
           quantity: item.quantity,
         ),
       ),
@@ -241,7 +224,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           appliedSubtotal: _couponSubtotal,
           currentSubtotal: cart.subtotal,
         );
-    final total = cart.subtotal - couponDiscount;
+    // total calculation is deferred to backend
     return PopScope(
       // منع الخروج العرضي أثناء معالجة الطلب
       canPop: !_isPlacing,
@@ -343,7 +326,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 // ── القسم الثالث: طريقة الدفع ─────────────────────────
                 _sectionTitle('طريقة الدفع'),
                 const SizedBox(height: 12),
-                const PaymentMethodSelector(),
+                PaymentMethodSelector(
+                  selectedMethod: _paymentMethod,
+                  onChanged: (method) {
+                    setState(() {
+                      _paymentMethod = method;
+                    });
+                  },
+                ),
 
                 // حقل رفع صورة السند إذا اختار "تحويل بنكي"
 
@@ -453,15 +443,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         _summaryRow('المجموع', cart.subtotal),
                         if (couponDiscount > 0)
                           _summaryRow(
-                            'الخصم',
+                            'خصم الكوبون',
                             -couponDiscount,
                             color: AppColors.success,
                           ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 3),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('رسوم التوصيل', style: TextStyle(color: Colors.grey)),
+                              Text('تُحدد عند إنشاء الطلب', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            ],
+                          ),
+                        ),
                         const Divider(),
-                        _summaryRow(
-                          'الإجمالي',
-                          total,
-                          bold: true,
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 3),
+                          child: Center(
+                            child: Text(
+                              'سيتم عرض الإجمالي النهائي في تفاصيل الطلب',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
                       ],
                     ),

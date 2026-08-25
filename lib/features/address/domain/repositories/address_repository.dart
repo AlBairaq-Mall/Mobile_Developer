@@ -13,7 +13,7 @@ abstract class AddressRepository {
   });
 
   Future<ApiResponse<AddressModel>> updateLocation({
-    required int id,
+    required String id,
     required String title,
     required String address,
     double? latitude,
@@ -21,5 +21,5 @@ abstract class AddressRepository {
     bool isDefault,
   });
 
-  Future<ApiResponse<void>> deleteLocation(int id);
+  Future<ApiResponse<void>> deleteLocation(String id);
 }

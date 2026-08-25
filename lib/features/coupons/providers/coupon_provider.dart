@@ -271,25 +271,7 @@ class ApiCouponCheckResult {
     this.message,
   });
 
-  //   factory ApiCouponCheckResult.fromJson(
-  //   Map<String, dynamic> json,
-  // ) {
-  //   final rawDiscount = json['discount_amount'];
 
-  //   double discount = 0;
-
-  //   if (rawDiscount is num) {
-  //     discount = rawDiscount.toDouble();
-  //   } else if (rawDiscount != null) {
-  //     discount = double.tryParse(rawDiscount.toString()) ?? 0;
-  //   }
-
-  //   return ApiCouponCheckResult(
-  //     valid: json['discount_amount'] != null,
-  //     discountAmount: discount,
-  //     message: json['message']?.toString(),
-  //   );
-  // }
   factory ApiCouponCheckResult.fromJson(Map<String, dynamic> json) {
     final rawDiscount = json['discount_amount'];
 

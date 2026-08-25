@@ -1,16 +1,17 @@
 import 'package:bhm_supermarket/core/network/api_response.dart';
+import 'package:bhm_supermarket/core/pagination/pagination_meta.dart';
 import 'package:bhm_supermarket/features/orders/data/datasources/order_remote_datasource.dart';
 import 'package:bhm_supermarket/features/orders/domain/repositories/order_repository.dart';
 import 'package:bhm_supermarket/features/orders/models/order_model.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
-  final OrderRemoteDataSource _remote;
+  final OrderRemoteDataSource _remoteDataSource;
 
-  OrderRepositoryImpl(this._remote);
+  OrderRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<ApiResponse<List<OrderModel>>> getOrders() {
-    return _remote.getOrders();
+  Future<ApiResponse<PaginatedResult<List<OrderModel>>>> getOrders({int page = 1}) {
+    return _remoteDataSource.getOrders(page: page);
   }
 
   @override
@@ -21,7 +22,7 @@ class OrderRepositoryImpl implements OrderRepository {
     String? couponCode,
     required List<Map<String, dynamic>> items,
   }) {
-    return _remote.createOrder(
+    return _remoteDataSource.createOrder(
       locationId: locationId,
       paymentMethod: paymentMethod,
       notes: notes,

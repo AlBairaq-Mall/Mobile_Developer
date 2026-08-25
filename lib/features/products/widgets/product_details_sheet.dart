@@ -96,11 +96,11 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
 
     final originalPrice = offerUnit?.hasDiscount == true
         ? offerUnit?.oldPrice
-        : selectedUnit.oldPrice;
+        : null;
 
     final response = await cart.addItem(
       product: widget.product,
-      selectedUnit: selectedUnit,
+      unit: selectedUnit,
       originalPrice: originalPrice ?? unitPrice,
       unitPrice: unitPrice,
       quantity: 1,
@@ -214,14 +214,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                           style: AppTypography.headlineSmall,
                         ),
 
-                        // البراند
-                        if (widget.product.brand.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.product.brand,
-                            style: AppTypography.bodySmall,
-                          ),
-                        ],
+
 
                         // الوصف
                         if (widget.product.description.isNotEmpty) ...[
@@ -270,7 +263,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
               price: selectedOffer?.price ?? selectedUnit.price,
               oldPrice: selectedOffer?.hasDiscount == true
                   ? selectedOffer!.oldPrice
-                  : selectedUnit.oldPrice,
+                  : null,
               quantity: cartQuantity,
               isLoading: isQuantityProcessing,
               onIncrease: () async {
@@ -570,7 +563,7 @@ class _UnitsSection extends StatelessWidget {
           final price = offer?.price ?? unit.price;
 
           final oldPrice =
-              offer?.hasDiscount == true ? offer?.oldPrice : unit.oldPrice;
+              offer?.hasDiscount == true ? offer?.oldPrice : null;
 
           return _UnitCard(
             unit: unit,

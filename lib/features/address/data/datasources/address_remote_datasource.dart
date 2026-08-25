@@ -42,7 +42,7 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
   }
 
   Future<ApiResponse<AddressModel>> updateLocation({
-    required int id,
+    required String id,
     required String title,
     required String address,
     double? latitude,
@@ -70,6 +70,6 @@ class AddressRemoteDataSource extends BaseRemoteDataSource {
     );
   }
 
-  Future<ApiResponse<void>> deleteLocation(int id) =>
+  Future<ApiResponse<void>> deleteLocation(String id) =>
       deleteEnvelope("${ApiEndpoints.locations}/$id");
 }

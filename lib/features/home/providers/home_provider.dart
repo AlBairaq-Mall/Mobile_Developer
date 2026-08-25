@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../core/models/product_model.dart';
 import '../../products/domain/repositories/product_repository.dart';
@@ -25,7 +25,6 @@ class HomeProvider extends ChangeNotifier {
   List<ProductModel> _recommendedProducts = [];
 
   String _selectedCategory = '';
-  String _searchText = '';
 
   HomeLoadState _state = HomeLoadState.initial;
   String? _error;
@@ -51,82 +50,10 @@ class HomeProvider extends ChangeNotifier {
 
   String get selectedCategory => _selectedCategory;
 
-  String get searchText => _searchText;
-  // نضع جميع العناصر التي ستعرض على الهوم في متغير واحد
-  List<ProductModel> _uniqueProducts(
-    List<ProductModel> products,
-  ) {
-    final seen = <String>{};
-
-    return products.where((product) {
-      return seen.add(product.id);
-    }).toList();
-  }
-
-  List<ProductModel> get flashDeals =>
-      List.unmodifiable(_uniqueProducts(_flashDeals).take(4).toList());
-
-  List<ProductModel> get bestSellerProducts {
-    final usedIds = {
-      ...flashDeals.map((product) => product.id),
-    };
-
-    return List.unmodifiable(
-      _uniqueProducts(
-        _bestSellerProducts
-            .where(
-              (product) => !usedIds.contains(product.id),
-            )
-            .toList(),
-      ).take(4).toList(),
-    );
-  }
-
-  List<ProductModel> get recommendedProducts {
-    final usedIds = {
-      ...flashDeals.map((product) => product.id),
-      ...bestSellerProducts.map((product) => product.id),
-    };
-
-    return List.unmodifiable(
-      _uniqueProducts(
-        _recommendedProducts
-            .where(
-              (product) => !usedIds.contains(product.id),
-            )
-            .toList(),
-      ).take(4).toList(),
-    );
-  }
-
-  List<ProductModel> get products {
-    final usedIds = {
-      ...flashDeals.map((product) => product.id),
-      ...bestSellerProducts.map((product) => product.id),
-      ...recommendedProducts.map((product) => product.id),
-    };
-
-    return List.unmodifiable(
-      _uniqueProducts(
-        _products
-            .where(
-              (product) => !usedIds.contains(product.id),
-            )
-            .toList(),
-      ),
-    );
-  }
-
-  // عشان ما تتكرر العناصر ووققفناها وعملنا التي فوق
-  // List<ProductModel> get products => List.unmodifiable(_products);
-
-  // List<ProductModel> get flashDeals => List.unmodifiable(_flashDeals);
-
-  // List<ProductModel> get bestSellerProducts =>
-  //     List.unmodifiable(_bestSellerProducts);
-
-  // List<ProductModel> get recommendedProducts =>
-  //     List.unmodifiable(_recommendedProducts);
+  List<ProductModel> get flashDeals => List.unmodifiable(_flashDeals);
+  List<ProductModel> get bestSellerProducts => List.unmodifiable(_bestSellerProducts);
+  List<ProductModel> get recommendedProducts => List.unmodifiable(_recommendedProducts);
+  List<ProductModel> get products => List.unmodifiable(_products);
 
   // ---------------------------------------------------------------------------
   // Load
@@ -155,107 +82,78 @@ class HomeProvider extends ChangeNotifier {
     }());
 
     try {
-      /*
-       * نرسل الطلبات الأربعة بالتوازي:
-       *
-       * 1. المنتجات العامة
-       * 2. Flash Deals
-       * 3. Best Sellers
-       * 4. Recommended
-       *
-       * category_id و search يتم تطبيقهما على المنتجات العامة فقط،
-       * لأنهما مرتبطان بتصفح/بحث المنتجات العادي.
-       */
+      if (_selectedCategory.isNotEmpty) {
+        // إذا كان هناك قسم محدد، نحتاج فقط منتجات هذا القسم
+        final response = await _repository.getProducts(
+          categoryId: _selectedCategory,
+          page: 1,
+        );
 
-      final responses = await Future.wait([
-        _repository.getProducts(
-          categoryId: _selectedCategory.isEmpty ? null : _selectedCategory,
-          search: _searchText.isEmpty ? null : _searchText,
-          page: 1,
-        ),
-        _repository.getProducts(
-          page: 1,
-          isFlashDeal: true,
-        ),
-        _repository.getProducts(
-          page: 1,
-          isBestSeller: true,
-        ),
-        _repository.getProducts(
-          page: 1,
-          isRecommended: true,
-        ),
-      ]);
+        stopwatch.stop();
 
-      stopwatch.stop();
+        if (request != _requestId) return;
 
-      if (request != _requestId) {
-        return;
+        if (!response.isSuccess || response.data == null) {
+          _error = response.message;
+          _state = HomeLoadState.error;
+          return;
+        }
+
+        _products = List<ProductModel>.from(response.data!.items);
+        _flashDeals = [];
+        _bestSellerProducts = [];
+        _recommendedProducts = [];
+
+        _error = null;
+        _state = _products.isEmpty ? HomeLoadState.empty : HomeLoadState.success;
+      } else {
+        // في الشاشة الرئيسية (بدون قسم)، نحتاج جميع الأقسام
+        final responses = await Future.wait([
+          _repository.getProducts(page: 1),
+          _repository.getProducts(page: 1, isFlashDeal: true),
+          _repository.getProducts(page: 1, isBestSeller: true),
+          _repository.getProducts(page: 1, isRecommended: true),
+        ]);
+
+        stopwatch.stop();
+
+        if (request != _requestId) return;
+
+        final generalResponse = responses[0];
+        final flashResponse = responses[1];
+        final bestSellerResponse = responses[2];
+        final recommendedResponse = responses[3];
+
+        if (!generalResponse.isSuccess || generalResponse.data == null) {
+          _error = generalResponse.message;
+          _state = HomeLoadState.error;
+          return;
+        }
+
+        final usedIds = <String>{};
+
+        _flashDeals = flashResponse.isSuccess && flashResponse.data != null
+            ? flashResponse.data!.items.where((p) => usedIds.add(p.id)).take(4).toList()
+            : [];
+
+        _bestSellerProducts = bestSellerResponse.isSuccess && bestSellerResponse.data != null
+            ? bestSellerResponse.data!.items.where((p) => usedIds.add(p.id)).take(4).toList()
+            : [];
+
+        _recommendedProducts = recommendedResponse.isSuccess && recommendedResponse.data != null
+            ? recommendedResponse.data!.items.where((p) => usedIds.add(p.id)).take(4).toList()
+            : [];
+
+        _products = generalResponse.data!.items.where((p) => usedIds.add(p.id)).toList();
+
+        _error = null;
+        _state = _products.isEmpty &&
+                _flashDeals.isEmpty &&
+                _bestSellerProducts.isEmpty &&
+                _recommendedProducts.isEmpty
+            ? HomeLoadState.empty
+            : HomeLoadState.success;
       }
-
-      final generalResponse = responses[0];
-      final flashResponse = responses[1];
-      final bestSellerResponse = responses[2];
-      final recommendedResponse = responses[3];
-
-      // -----------------------------------------------------------------------
-      // General products
-      // -----------------------------------------------------------------------
-
-      if (!generalResponse.isSuccess || generalResponse.data == null) {
-        _error = generalResponse.message;
-        _state = HomeLoadState.error;
-        return;
-      }
-
-      // -----------------------------------------------------------------------
-      // General
-      // -----------------------------------------------------------------------
-
-      _products = List<ProductModel>.from(
-        generalResponse.data!.items,
-      );
-
-      // -----------------------------------------------------------------------
-      // Flash Deals
-      // -----------------------------------------------------------------------
-
-      _flashDeals = flashResponse.isSuccess && flashResponse.data != null
-          ? List<ProductModel>.from(
-              flashResponse.data!.items.take(4),
-            )
-          : [];
-
-      // -----------------------------------------------------------------------
-      // Best Sellers
-      // -----------------------------------------------------------------------
-
-      _bestSellerProducts =
-          bestSellerResponse.isSuccess && bestSellerResponse.data != null
-              ? List<ProductModel>.from(
-                  bestSellerResponse.data!.items.take(4),
-                )
-              : [];
-
-      // -----------------------------------------------------------------------
-      // Recommended
-      // -----------------------------------------------------------------------
-
-      _recommendedProducts =
-          recommendedResponse.isSuccess && recommendedResponse.data != null
-              ? List<ProductModel>.from(
-                  recommendedResponse.data!.items.take(4),
-                )
-              : [];
-
-      _error = null;
-
-      _state = _products.isEmpty &&
-              _flashDeals.isEmpty &&
-              _bestSellerProducts.isEmpty &&
-              _recommendedProducts.isEmpty
-          ? HomeLoadState.empty
-          : HomeLoadState.success;
 
       assert(() {
         debugPrint(
@@ -315,7 +213,6 @@ class HomeProvider extends ChangeNotifier {
     }
 
     _selectedCategory = categoryId;
-
     loadProducts(showLoading: false);
   }
 
@@ -325,33 +222,6 @@ class HomeProvider extends ChangeNotifier {
     }
 
     _selectedCategory = '';
-
-    loadProducts(showLoading: false);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Search
-  // ---------------------------------------------------------------------------
-
-  void search(String value) {
-    final text = value.trim();
-
-    if (_searchText == text) {
-      return;
-    }
-
-    _searchText = text;
-
-    loadProducts(showLoading: false);
-  }
-
-  void clearSearch() {
-    if (_searchText.isEmpty) {
-      return;
-    }
-
-    _searchText = '';
-
     loadProducts(showLoading: false);
   }
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/order_status.dart';
+import '../../../app/theme/app_colors.dart';
+
 class OrderProgress extends StatelessWidget {
   final String status;
 
@@ -7,18 +10,24 @@ class OrderProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const statuses = [
-      "pending",
-      "confirmed",
-      "processing",
-      "shipped",
-      "delivered",
+    final currentStatus = OrderStatusExt.fromString(status);
+
+    const stages = [
+      OrderStatus.pending,
+      OrderStatus.confirmed,
+      OrderStatus.preparing,
+      OrderStatus.shipped,
+      OrderStatus.delivered,
     ];
 
-    final currentIndex = statuses.indexOf(status);
+    if (currentStatus == OrderStatus.cancelled || currentStatus == OrderStatus.unknown) {
+       return const SizedBox();
+    }
+
+    final currentIndex = stages.indexOf(currentStatus);
 
     return Row(
-      children: List.generate(statuses.length, (index) {
+      children: List.generate(stages.length, (index) {
         final active = index <= currentIndex;
 
         return Expanded(
@@ -26,14 +35,14 @@ class OrderProgress extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: active ? Colors.green : Colors.grey.shade300,
-                child: Icon(Icons.check, size: 16, color: Colors.white),
+                backgroundColor: active ? AppColors.primary : Colors.grey.shade300,
+                child: const Icon(Icons.check, size: 16, color: Colors.white),
               ),
               const SizedBox(height: 6),
-              if (index != statuses.length - 1)
+              if (index != stages.length - 1)
                 Container(
                   height: 4,
-                  color: active ? Colors.green : Colors.grey.shade300,
+                  color: active ? AppColors.primary : Colors.grey.shade300,
                 ),
             ],
           ),

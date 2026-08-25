@@ -3,50 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/widgets/app_page_header.dart';
 
-enum OrderStatus {
-  pending,
-  preparing,
-  ready,
-  outForDelivery,
-  delivered,
-  cancelled,
-}
-
-extension OrderStatusExt on OrderStatus {
-  String get label {
-    switch (this) {
-      case OrderStatus.pending:
-        return 'جديد';
-      case OrderStatus.preparing:
-        return 'قيد التجهيز';
-      case OrderStatus.ready:
-        return 'جاهز للاستلام';
-      case OrderStatus.outForDelivery:
-        return 'خرج للتوصيل';
-      case OrderStatus.delivered:
-        return 'تم التسليم';
-      case OrderStatus.cancelled:
-        return 'ملغي';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case OrderStatus.pending:
-        return Icons.receipt_long_outlined;
-      case OrderStatus.preparing:
-        return Icons.restaurant_outlined;
-      case OrderStatus.ready:
-        return Icons.inventory_2_outlined;
-      case OrderStatus.outForDelivery:
-        return Icons.delivery_dining_outlined;
-      case OrderStatus.delivered:
-        return Icons.check_circle_outline;
-      case OrderStatus.cancelled:
-        return Icons.cancel_outlined;
-    }
-  }
-}
+import '../models/order_status.dart';
 
 /// شاشة تتبع الطلب (الصفحة رقم 11 في الوثيقة).
 /// تعرض مراحل الطلب بشكل مرئي مع المرحلة الحالية مبرزة.
@@ -65,9 +22,9 @@ class OrderTrackingScreen extends StatelessWidget {
     // مراحل الطلب الطبيعية (بدون "ملغي")
     const stages = [
       OrderStatus.pending,
+      OrderStatus.confirmed,
       OrderStatus.preparing,
-      OrderStatus.ready,
-      OrderStatus.outForDelivery,
+      OrderStatus.shipped,
       OrderStatus.delivered,
     ];
 

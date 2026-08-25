@@ -30,7 +30,7 @@ class AddressRepositoryImpl implements AddressRepository {
 
   @override
   Future<ApiResponse<AddressModel>> updateLocation({
-    required int id,
+    required String id,
     required String title,
     required String address,
     double? latitude,
@@ -47,6 +47,6 @@ class AddressRepositoryImpl implements AddressRepository {
       );
 
   @override
-  Future<ApiResponse<void>> deleteLocation(int id) =>
+  Future<ApiResponse<void>> deleteLocation(String id) =>
       _remote.deleteLocation(id);
 }

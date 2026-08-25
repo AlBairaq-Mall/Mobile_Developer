@@ -5,7 +5,7 @@ import '../../products/models/product_unit_model.dart';
 class CartItemModel {
   final ProductModel product;
   final String? cartId;
-  final ProductUnitModel selectedUnit;
+  final ProductUnitModel unit;
 
   /// السعر الأصلي قبل العرض
   final double originalPrice;
@@ -16,26 +16,22 @@ class CartItemModel {
   /// السعر بعد العرض
   final double unitPrice;
 
-  /// السعر الإجمالي بعد العرض
-  final double total;
-
   final int quantity;
 
   const CartItemModel({
     this.cartId,
     required this.product,
-    required this.selectedUnit,
+    required this.unit,
     required this.originalPrice,
     required this.discount,
     required this.unitPrice,
-    required this.total,
     required this.quantity,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
       product: ProductModel.fromJson(JsonParser.map(json['product'])),
-      selectedUnit: ProductUnitModel.fromJson(JsonParser.map(json['unit'])),
+      unit: ProductUnitModel.fromJson(JsonParser.map(json['unit'])),
       cartId: json['id']?.toString(),
       originalPrice: JsonParser.doubleValue(
         json['original_price'] ?? json['price'] ?? json['unit_price'],
@@ -44,7 +40,6 @@ class CartItemModel {
       unitPrice: JsonParser.doubleValue(
         json['new_price'] ?? json['price'] ?? json['unit_price'],
       ),
-      total: JsonParser.doubleValue(json['total']),
       quantity: JsonParser.intValue(json['quantity']),
     );
   }
@@ -52,24 +47,22 @@ class CartItemModel {
   Map<String, dynamic> toJson() {
     return {
       'product': product.toJson(),
-      'unit': selectedUnit.toJson(),
+      'unit': unit.toJson(),
       'id': cartId,
       'original_price': originalPrice,
       'discount': discount,
       'new_price': unitPrice,
       'quantity': quantity,
-      'total': total,
     };
   }
 
   CartItemModel copyWith({
     String? cartId,
     ProductModel? product,
-    ProductUnitModel? selectedUnit,
+    ProductUnitModel? unit,
     double? originalPrice,
     double? discount,
     double? unitPrice,
-    double? total,
     int? quantity,
   }) {
     final newUnitPrice = unitPrice ?? this.unitPrice;
@@ -78,11 +71,10 @@ class CartItemModel {
     return CartItemModel(
       cartId: cartId ?? this.cartId,
       product: product ?? this.product,
-      selectedUnit: selectedUnit ?? this.selectedUnit,
+      unit: unit ?? this.unit,
       originalPrice: originalPrice ?? this.originalPrice,
       discount: discount ?? this.discount,
       unitPrice: newUnitPrice,
-      total: total ?? (newUnitPrice * newQuantity),
       quantity: newQuantity,
     );
   }

@@ -8,7 +8,7 @@ import '../../features/address/providers/address_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/cart/providers/cart_provider.dart';
 import '../../features/categories/providers/category_provider.dart';
-import '../../features/checkout/providers/checkout_provider.dart';
+
 import '../../features/favorites/providers/favorites_provider.dart';
 import '../../features/home/providers/home_provider.dart';
 import '../../features/orders/providers/orders_provider.dart';
@@ -43,7 +43,7 @@ class AppProviders {
         ChangeNotifierProvider(
           create: (_) => AddressProvider(DependencyInjection.addressRepository),
         ),
-        ChangeNotifierProvider(create: (_) => CheckoutProvider()),
+
         ChangeNotifierProvider(
           create: (_) => HomeProvider(DependencyInjection.productRepository),
         ),

@@ -16,6 +16,8 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_widget.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
+import '../../ads/models/offer_model.dart';
+import '../../ads/providers/offers_provider.dart';
 import '../widgets/product_card.dart';
 
 /// Full product details screen with unit selection and related products.
@@ -51,10 +53,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
     if (product == null || selected == null) return;
 
+    final offerUnit = context.read<OffersProvider>().productUnitOffer(
+          productId: product.id,
+          unitId: selected.id,
+        );
+
     final response = await context.read<CartProvider>().addItem(
           product: product,
-          selectedUnit: selected,
-          unitPrice: selected.price,
+          unit: selected,
+          unitPrice: offerUnit?.price ?? selected.price,
+          originalPrice: offerUnit?.oldPrice ?? selected.price,
           quantity: provider.quantity,
         );
 
@@ -87,6 +95,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     final selectedIndex = provider.selectedUnitIndex;
 
     final error = provider.error;
+
+    final offerUnit = selected == null
+        ? null
+        : context.select<OffersProvider, OfferProductUnitModel?>(
+            (offers) => offers.productUnitOffer(
+              productId: currentProduct?.id ?? '',
+              unitId: selected.id,
+            ),
+          );
 
     final favProv = context.watch<FavoritesProvider>();
     final isFav =
@@ -163,50 +180,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   ),
                           ),
                         ),
-                        if (currentProduct != null &&
-                            currentProduct.isFlashDeal)
-                          Positioned(
-                            top: 100,
-                            right: 18,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.xxl,
-                                ),
-                              ),
-                              child: Text(
-                                "خصم 🔥",
-                                style: AppTypography.titleLarge,
-                              ),
-                            ),
-                          ),
-                        if (currentProduct != null &&
-                            currentProduct.isBestSeller)
-                          Positioned(
-                            top: 145,
-                            right: 18,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.xxl,
-                                ),
-                              ),
-                              child: Text(
-                                "⭐ الأكثر مبيعاً",
-                                style: AppTypography.titleLarge,
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -250,29 +223,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
                           const SizedBox(height: AppSpacing.sm),
 
-                          //-----------------------------------------------------
-                          // Brand
-                          //-----------------------------------------------------
-                          if (currentProduct.brand.isNotEmpty)
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.storefront_outlined,
-                                  size: 18,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Expanded(
-                                  child: Text(
-                                    currentProduct.brand,
-                                    style: AppTypography.bodyMedium.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
                           const SizedBox(height: AppSpacing.xl),
 
                           //-----------------------------------------------------
@@ -295,9 +245,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      if (selected?.oldPrice != null)
+                                      if (offerUnit?.hasDiscount == true)
                                         Text(
-                                          "${selected!.oldPrice!.toStringAsFixed(0)} ر.ي",
+                                          "${offerUnit!.oldPrice.toStringAsFixed(0)} ر.ي",
                                           style: AppTypography.oldPrice,
                                         ),
                                       Text(
@@ -353,7 +303,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               children: [
                                 _DetailRow(
                                   "رقم الصنف",
-                                  currentProduct.itemCode,
+                                  currentProduct.uniqueNumber,
                                 ),
                                 _DetailRow("الباركود", currentProduct.barcode),
                                 _DetailRow(
@@ -447,7 +397,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         ),
                                         const SizedBox(height: AppSpacing.xs),
                                         Text(
-                                          unit.package,
+                                          unit.quantity.toString(),
                                           style: AppTypography.bodySmall,
                                         ),
                                         const SizedBox(height: AppSpacing.sm),
@@ -593,7 +543,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         children: [
                           Text("الإجمالي", style: AppTypography.bodySmall),
                           Text(
-                            "${(selected.price * provider.quantity).toStringAsFixed(0)} ر.ي",
+                            "${((offerUnit?.price ?? selected.price) * provider.quantity).toStringAsFixed(0)} ر.ي",
                             style: AppTypography.priceLarge,
                           ),
                         ],

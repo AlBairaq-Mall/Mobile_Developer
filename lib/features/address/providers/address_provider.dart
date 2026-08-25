@@ -13,7 +13,10 @@ class AddressProvider extends ChangeNotifier {
 
   bool _loading = false;
 
+  bool _actionLoading = false;
+
   bool get loading => _loading;
+  bool get actionLoading => _actionLoading;
 
   List<AddressModel> get addresses => _addresses;
 
@@ -60,91 +63,116 @@ class AddressProvider extends ChangeNotifier {
     double? longitude,
     bool isDefault = false,
   }) async {
-    final response = await _repository.createLocation(
-      title: title,
-      address: address,
-      latitude: latitude,
-      longitude: longitude,
-      isDefault: isDefault,
-    );
-
-    if (!response.isSuccess) {
-      return response.message.isNotEmpty
-          ? response.message
-          : 'فشلت عملية إضافة العنوان';
-    }
-
-    await loadAddresses();
-
+    if (_actionLoading) return null;
+    _actionLoading = true;
     notifyListeners();
 
-    return null;
+    try {
+      final response = await _repository.createLocation(
+        title: title,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        isDefault: isDefault,
+      );
+
+      if (!response.isSuccess) {
+        return response.message.isNotEmpty
+            ? response.message
+            : 'فشلت عملية إضافة العنوان';
+      }
+
+      await loadAddresses();
+      return null;
+    } finally {
+      _actionLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<String?> editAddress({
-    required int id,
+    required String id,
     required String title,
     required String address,
     double? latitude,
     double? longitude,
     bool isDefault = false,
   }) async {
-    final response = await _repository.updateLocation(
-      id: id,
-      title: title,
-      address: address,
-      latitude: latitude,
-      longitude: longitude,
-      isDefault: isDefault,
-    );
-
-    if (!response.isSuccess) {
-      return response.message.isNotEmpty
-          ? response.message
-          : 'فشلت عملية تعديل العنوان';
-    }
-
-    await loadAddresses();
-
+    if (_actionLoading) return null;
+    _actionLoading = true;
     notifyListeners();
 
-    return null;
+    try {
+      final response = await _repository.updateLocation(
+        id: id,
+        title: title,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        isDefault: isDefault,
+      );
+
+      if (!response.isSuccess) {
+        return response.message.isNotEmpty
+            ? response.message
+            : 'فشلت عملية تعديل العنوان';
+      }
+
+      await loadAddresses();
+      return null;
+    } finally {
+      _actionLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<bool> deleteAddress(int id) async {
-    final response = await _repository.deleteLocation(id);
-
-    if (!response.isSuccess) {
-      return false;
-    }
-
-    await loadAddresses();
-
+  Future<bool> deleteAddress(String id) async {
+    if (_actionLoading) return false;
+    _actionLoading = true;
     notifyListeners();
 
-    return true;
+    try {
+      final response = await _repository.deleteLocation(id);
+
+      if (!response.isSuccess) {
+        return false;
+      }
+
+      await loadAddresses();
+      return true;
+    } finally {
+      _actionLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> setDefault(String id) async {
+    if (_actionLoading) return false;
+
     final address = _addresses.firstWhere((e) => e.id == id);
 
-    final response = await _repository.updateLocation(
-      id: int.parse(id),
-      title: address.title,
-      address: address.address,
-      latitude: address.latitude,
-      longitude: address.longitude,
-      isDefault: true,
-    );
-
-    if (!response.isSuccess) {
-      return false;
-    }
-
-    await loadAddresses();
-
+    _actionLoading = true;
     notifyListeners();
 
-    return true;
+    try {
+      final response = await _repository.updateLocation(
+        id: id,
+        title: address.title,
+        address: address.address,
+        latitude: address.latitude,
+        longitude: address.longitude,
+        isDefault: true,
+      );
+
+      if (!response.isSuccess) {
+        return false;
+      }
+
+      await loadAddresses();
+      return true;
+    } finally {
+      _actionLoading = false;
+      notifyListeners();
+    }
   }
 }

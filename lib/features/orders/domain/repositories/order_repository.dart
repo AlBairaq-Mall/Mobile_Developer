@@ -1,8 +1,9 @@
 import 'package:bhm_supermarket/core/network/api_response.dart';
-import 'package:bhm_supermarket/features/orders/models/order_model.dart';
+import '../../../../core/pagination/pagination_meta.dart';
+import '../../models/order_model.dart';
 
 abstract class OrderRepository {
-  Future<ApiResponse<List<OrderModel>>> getOrders();
+  Future<ApiResponse<PaginatedResult<List<OrderModel>>>> getOrders({int page = 1});
 
   Future<ApiResponse<Map<String, dynamic>>> createOrder({
     required String locationId,

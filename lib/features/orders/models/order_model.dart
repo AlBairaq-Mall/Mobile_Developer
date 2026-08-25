@@ -1,6 +1,8 @@
 import '../../../core/utils/json_parser.dart';
 import '../../address/models/address_model.dart';
+import '../../checkout/models/payment_method.dart';
 import 'order_item_model.dart';
+import 'order_status.dart';
 
 class OrderModel {
   final String id;
@@ -24,6 +26,9 @@ class OrderModel {
   final String paymentMethod;
   final String paymentStatus;
   final String status;
+
+  OrderStatus get statusEnum => OrderStatusExt.fromString(status);
+  PaymentMethod get paymentMethodEnum => PaymentMethodExt.fromString(paymentMethod);
 
   final String? notes;
 

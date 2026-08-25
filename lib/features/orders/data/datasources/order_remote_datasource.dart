@@ -1,15 +1,17 @@
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/datasource/base_remote_datasource.dart';
 import '../../../../core/network/api_response.dart';
+import '../../../../core/pagination/pagination_meta.dart';
 import '../../../../core/utils/json_parser.dart';
 import '../../models/order_model.dart';
 
 class OrderRemoteDataSource extends BaseRemoteDataSource {
   OrderRemoteDataSource(super.dio);
 
-  Future<ApiResponse<List<OrderModel>>> getOrders() =>
-      getPaginated<List<OrderModel>>(
+  Future<ApiResponse<PaginatedResult<List<OrderModel>>>> getOrders({int page = 1}) =>
+      getWithMeta<List<OrderModel>>(
         ApiEndpoints.myOrders,
+        query: {'page': page},
         parser: (json) => JsonParser.list(
           json,
           (e) => OrderModel.fromJson(JsonParser.map(e)),
@@ -26,7 +28,7 @@ class OrderRemoteDataSource extends BaseRemoteDataSource {
     return postEnvelope<Map<String, dynamic>>(
       ApiEndpoints.orders,
       data: {
-        'location_id': int.parse(locationId),
+        'location_id': locationId,
         'payment_method': paymentMethod,
         'items': items,
         if (couponCode != null && couponCode.isNotEmpty)

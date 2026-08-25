@@ -6,6 +6,7 @@ import '../../../app/widgets/app_cached_image.dart';
 import '../../../app/widgets/app_price.dart';
 import '../../../core/models/product_model.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../ads/providers/offers_provider.dart';
 
 class ProductQuickView extends StatelessWidget {
   final ProductModel product;
@@ -50,13 +51,7 @@ class ProductQuickView extends StatelessWidget {
                 product.name,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
-              Text(
-                product.brand,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 15),
-              AppPrice(price: product.price, oldPrice: product.oldPrice),
+              AppPrice(price: product.price),
               const SizedBox(height: 15),
               Text(
                 product.description,
@@ -69,10 +64,17 @@ class ProductQuickView extends StatelessWidget {
                 onPressed: () {
                   if (product.units.isEmpty) return;
 
+                  final unit = product.units.first;
+                  final offerUnit = context.read<OffersProvider>().productUnitOffer(
+                        productId: product.id,
+                        unitId: unit.id,
+                      );
+
                   context.read<CartProvider>().addItem(
                         product: product,
-                        selectedUnit: product.units.first,
-                        unitPrice: product.units.first.price,
+                        unit: unit,
+                        unitPrice: offerUnit?.price ?? unit.price,
+                        originalPrice: offerUnit?.oldPrice ?? unit.price,
                       );
 
                   // Capture before pop to avoid stale context

@@ -42,7 +42,7 @@ class _CartScreenState extends State<CartScreen> {
       cart.items.map(
         (item) => OfferCartLine(
           productId: item.product.id,
-          unitId: item.selectedUnit.id,
+          unitId: item.unit.id,
           quantity: item.quantity,
         ),
       ),

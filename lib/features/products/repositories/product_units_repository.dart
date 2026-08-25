@@ -20,13 +20,11 @@ class ProductUnitsRepository {
     }
   }
 
-  /// توافق مع الكود القديم.
-  ///
-  /// يبحث عن المنتج بواسطة unique_number / itemCode،
+  /// يبحث عن المنتج بواسطة unique_number،
   /// ثم يعيد وحداته من ProductModel.
-  Future<List<ProductUnitModel>> getUnitsByItemCode(String itemCode) async {
+  Future<List<ProductUnitModel>> getUnitsByUniqueNumber(String uniqueNumber) async {
     try {
-      final response = await productRepository.getProducts(search: itemCode);
+      final response = await productRepository.getProducts(search: uniqueNumber);
 
       if (!response.isSuccess) {
         return [];
@@ -35,7 +33,7 @@ class ProductUnitsRepository {
       final products = response.data?.items ?? [];
 
       for (final product in products) {
-        if (product.itemCode == itemCode) {
+        if (product.uniqueNumber == uniqueNumber) {
           return product.units;
         }
       }

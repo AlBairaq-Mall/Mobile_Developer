@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../../core/models/product_model.dart';
 import '../widgets/product_details_sheet.dart';
-import 'product_badge.dart';
 import 'product_card_container.dart';
 import 'product_favorite_button.dart';
 import 'product_image.dart';
@@ -81,26 +79,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
 
-                /// Badge
-                if (product.isFlashDeal)
-                  const PositionedDirectional(
-                    top: 10,
-                    start: 10,
-                    child: ProductBadge(
-                      title: 'عرض السوبر',
-                      color: AppColors.badgeSale,
-                    ),
-                  ),
 
-                if (product.isBestSeller && !product.isFlashDeal)
-                  const PositionedDirectional(
-                    top: 10,
-                    start: 10,
-                    child: ProductBadge(
-                      title: 'الأكثر',
-                      color: AppColors.badgeBest,
-                    ),
-                  ),
 
                 /// Add button (Removed from here, now unified inside ProductInfo)
               ],

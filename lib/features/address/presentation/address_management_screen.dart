@@ -191,7 +191,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
     ).then((confirmed) async {
       if (confirmed != true || !context.mounted) return;
 
-      final success = await provider.deleteAddress(int.parse(id));
+      final success = await provider.deleteAddress(id);
 
       if (!context.mounted) return;
       if (success) {
@@ -293,7 +293,7 @@ class _AddressFormSheet extends StatefulWidget {
 
 class _AddressFormSheetState extends State<_AddressFormSheet> {
   final _titleCtrl = TextEditingController();
-  final _streetCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
 
   bool _isDefault = false;
   bool _isSaving = false;
@@ -310,14 +310,14 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
 
     if (e != null) {
       _titleCtrl.text = e.title;
-      _streetCtrl.text = e.address;
+      _addressCtrl.text = e.address;
       _isDefault = e.isDefault;
       _latitude = e.latitude;
       _longitude = e.longitude;
     }
 
     if (widget.pickedLocation != null) {
-      _streetCtrl.text = widget.pickedLocation!.address;
+      _addressCtrl.text = widget.pickedLocation!.address;
       _latitude = widget.pickedLocation!.latitude;
       _longitude = widget.pickedLocation!.longitude;
     }
@@ -326,7 +326,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _streetCtrl.dispose();
+    _addressCtrl.dispose();
     super.dispose();
   }
 
@@ -337,7 +337,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
     }
 
     final title = _titleCtrl.text.trim();
-    final address = _streetCtrl.text.trim();
+    final address = _addressCtrl.text.trim();
 
     // ─────────────────────────────────────────────────────────────
     // التحقق من اسم العنوان
@@ -427,7 +427,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
       // ───────────────────────────────────────────────────────────
 
       error = await provider.editAddress(
-        id: int.parse(widget.existing!.id),
+        id: widget.existing!.id,
         title: title,
         address: address,
         latitude: _latitude,
@@ -486,7 +486,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
             ),
             const SizedBox(height: 20),
             _field("اسم العنوان", _titleCtrl),
-            _field("الشارع", _streetCtrl),
+            _field("الشارع", _addressCtrl),
             const SizedBox(height: 10),
             InkWell(
               borderRadius: BorderRadius.circular(16),
@@ -504,7 +504,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 setState(() {
                   _latitude = pickedLocation.latitude;
                   _longitude = pickedLocation.longitude;
-                  _streetCtrl.text = pickedLocation.address;
+                  _addressCtrl.text = pickedLocation.address;
                 });
               },
               child: Container(
