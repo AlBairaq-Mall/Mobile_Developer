@@ -2,8 +2,14 @@ import 'package:bhm_supermarket/features/address/providers/address_provider.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/tokens/app_radius.dart';
+import '../../../core/design_system/tokens/app_shadows.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../navigation/providers/navigation_provider.dart';
 import '../../orders/providers/orders_provider.dart';
@@ -45,234 +51,231 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final addressProvider = context.watch<AddressProvider>();
     final favoritesProvider = context.watch<FavoritesProvider>();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header gradient
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 20,
-                bottom: 32,
-                left: 24,
-                right: 24,
-              ),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primaryLight, AppColors.primaryDark],
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
+        child: AppConstrainedContent(
+          child: Column(
+            children: [
+              // Header gradient
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 20, // Content dimension
+                  bottom: AppSpacing.xxl,
+                  left: AppSpacing.xl,
+                  right: AppSpacing.xl,
                 ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryLight, AppColors.primaryDark], // Intentional visual identity exception
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(AppRadius.xxl),
+                    bottomRight: Radius.circular(AppRadius.xxl),
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  // Avatar
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 16,
+                child: Column(
+                  children: [
+                    // Avatar
+                    Container(
+                      width: 80, // Component dimension
+                      height: 80, // Component dimension
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        shape: BoxShape.circle,
+                        boxShadow: AppShadows.card,
+                      ),
+                      child: Center(
+                        child: Text(
+                          user?.name.isNotEmpty == true
+                              ? user!.name.substring(0, 1)
+                              : '👤',
+                          style: AppTypography.displaySmall.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      user?.name ?? 'المستخدم',
+                      style: AppTypography.titleLarge.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      user?.phone ?? user?.email ?? '',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colorScheme.onPrimary.withValues(alpha: 0.85),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    // Stats
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _StatBadge('${ordersProvider.orders.length}', 'طلب'),
+                        const SizedBox(width: AppSpacing.md),
+                        _StatBadge(
+                          '${addressProvider.addresses.length}',
+                          'عناوين',
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        _StatBadge('${favoritesProvider.ids.length}', 'مفضلة'),
                       ],
                     ),
-                    child: Center(
-                      child: Text(
-                        user?.name.isNotEmpty == true
-                            ? user!.name.substring(0, 1)
-                            : '👤',
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    user?.name ?? 'المستخدم',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user?.phone ?? user?.email ?? '',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Stats
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _StatBadge('${ordersProvider.orders.length}', 'طلب'),
-                      const SizedBox(width: 16),
-                      _StatBadge(
-                        '${addressProvider.addresses.length}',
-                        'عناوين',
-                      ),
-                      const SizedBox(width: 16),
-                      _StatBadge('${favoritesProvider.ids.length}', 'مفضلة'),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _MenuSection('حسابي', [
-                    _MenuItem(
-                      Icons.receipt_long_outlined,
-                      'طلباتي',
-                      AppColors.info,
-                      () => context.push(AppRoutes.orders),
-                    ),
-                    _MenuItem(
-                      Icons.favorite_border_rounded,
-                      'المفضلة',
-                      AppColors.error,
-                      () => context.read<NavigationProvider>().changeTab(3),
-                    ),
-                    _MenuItem(
-                      Icons.location_on_outlined,
-                      'عناوين التوصيل',
-                      AppColors.success,
-                      () => context.push(AppRoutes.addresses),
-                    ),
-                    _MenuItem(
-                      Icons.notifications_outlined,
-                      'الإشعارات',
-                      AppColors.accent,
-                      () => context.push(AppRoutes.notifications),
-                    ),
-                    _MenuItem(
-                      Icons.settings_outlined,
-                      'الإعدادات',
-                      AppColors.textSecondary,
-                      () => context.push(AppRoutes.settings),
-                    ),
-                  ]),
-
-                  const SizedBox(height: 16),
-
-                  _MenuSection('الدعم والمعلومات', [
-                    _MenuItem(
-                      Icons.info_outline,
-                      'من نحن',
-                      AppColors.primary,
-                      () => context.push(AppRoutes.aboutUs),
-                    ),
-                    _MenuItem(
-                      Icons.phone_outlined,
-                      'اتصل بنا',
-                      AppColors.info,
-                      () => context.push(AppRoutes.contactUs),
-                    ),
-                    _MenuItem(
-                      Icons.help_outline_rounded,
-                      'الأسئلة الشائعة',
-                      AppColors.accent,
-                      () => context.push(AppRoutes.faq),
-                    ),
-                    _MenuItem(
-                      Icons.privacy_tip_outlined,
-                      'سياسة الخصوصية',
-                      AppColors.textSecondary,
-                      () => context.push(AppRoutes.privacyPolicy),
-                    ),
-                  ]),
-
-                  const SizedBox(height: 16),
-
-                  // Logout
-                  GestureDetector(
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        title: const Text('تسجيل الخروج'),
-                        content: const Text('هل تريد تسجيل الخروج من حسابك؟'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('إلغاء'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await context.read<AuthProvider>().logout();
-
-                              if (!ctx.mounted) return;
-
-                              Navigator.pop(ctx);
-                              context.go(AppRoutes.login);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.error,
-                              minimumSize: const Size(80, 40),
-                            ),
-                            child: const Text('خروج'),
-                          ),
-                        ],
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Column(
+                  children: [
+                    _MenuSection('حسابي', [
+                      _MenuItem(
+                        Icons.receipt_long_outlined,
+                        'طلباتي',
+                        AppColors.info, // Semantic colors that match specific info roles
+                        () => context.push(AppRoutes.orders),
                       ),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.error.withValues(alpha: 0.2),
+                      _MenuItem(
+                        Icons.favorite_border_rounded,
+                        'المفضلة',
+                        colorScheme.error,
+                        () => context.read<NavigationProvider>().changeTab(3),
+                      ),
+                      _MenuItem(
+                        Icons.location_on_outlined,
+                        'عناوين التوصيل',
+                        AppColors.success, // Semantic success
+                        () => context.push(AppRoutes.addresses),
+                      ),
+                      _MenuItem(
+                        Icons.notifications_outlined,
+                        'الإشعارات',
+                        AppColors.accent, // Semantic accent
+                        () => context.push(AppRoutes.notifications),
+                      ),
+                      _MenuItem(
+                        Icons.settings_outlined,
+                        'الإعدادات',
+                        colorScheme.onSurfaceVariant,
+                        () => context.push(AppRoutes.settings),
+                      ),
+                    ]),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    _MenuSection('الدعم والمعلومات', [
+                      _MenuItem(
+                        Icons.info_outline,
+                        'من نحن',
+                        colorScheme.primary,
+                        () => context.push(AppRoutes.aboutUs),
+                      ),
+                      _MenuItem(
+                        Icons.phone_outlined,
+                        'اتصل بنا',
+                        AppColors.info,
+                        () => context.push(AppRoutes.contactUs),
+                      ),
+                      _MenuItem(
+                        Icons.help_outline_rounded,
+                        'الأسئلة الشائعة',
+                        AppColors.accent,
+                        () => context.push(AppRoutes.faq),
+                      ),
+                      _MenuItem(
+                        Icons.privacy_tip_outlined,
+                        'سياسة الخصوصية',
+                        colorScheme.onSurfaceVariant,
+                        () => context.push(AppRoutes.privacyPolicy),
+                      ),
+                    ]),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    // Logout
+                    GestureDetector(
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.xlRadius,
+                          ),
+                          title: const Text('تسجيل الخروج'),
+                          content: const Text('هل تريد تسجيل الخروج من حسابك؟'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('إلغاء'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                await context.read<AuthProvider>().logout();
+
+                                if (!ctx.mounted) return;
+
+                                Navigator.pop(ctx);
+                                context.go(AppRoutes.login);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.error,
+                                minimumSize: const Size(80, 40),
+                              ),
+                              child: const Text('خروج'),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.logout_rounded, color: AppColors.error),
-                          SizedBox(width: 12),
-                          Text(
-                            'تسجيل الخروج',
-                            style: TextStyle(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: colorScheme.error.withValues(alpha: 0.06),
+                          borderRadius: AppRadius.lgRadius,
+                          border: Border.all(
+                            color: colorScheme.error.withValues(alpha: 0.2),
                           ),
-                        ],
+                        ),
+                        child: Row(
+                          children: [
+                            AppIcon(Icons.logout_rounded, color: colorScheme.error, size: AppIconSize.medium),
+                            const SizedBox(width: AppSpacing.sm),
+                            Text(
+                              'تسجيل الخروج',
+                              style: AppTypography.titleSmall.copyWith(
+                                color: colorScheme.error,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
-                  const Text(
-                    'البيرق هايبر ماركت v1.0.0',
-                    style: TextStyle(color: AppColors.textHint, fontSize: 12),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'البيرق هايبر ماركت v1.0.0',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: colorScheme.outline,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -283,32 +286,34 @@ class _StatBadge extends StatelessWidget {
   final String value, label;
   const _StatBadge(this.value, this.label);
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: colorScheme.onPrimary.withValues(alpha: 0.2),
+        borderRadius: AppRadius.mdRadius,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: AppTypography.titleMedium.copyWith(
+              color: colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 11,
-              ),
+          ),
+          Text(
+            label,
+            style: AppTypography.labelSmall.copyWith(
+              color: colorScheme.onPrimary.withValues(alpha: 0.85),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _MenuItem {
@@ -324,71 +329,75 @@ class _MenuSection extends StatelessWidget {
   final List<_MenuItem> items;
   const _MenuSection(this.title, this.items);
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 4, bottom: 10),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
-              ),
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          // CRITICAL FIX: Replaced `only(right: 4)` with directional start padding
+          padding: const EdgeInsetsDirectional.only(start: AppSpacing.xs, bottom: AppSpacing.sm),
+          child: Text(
+            title,
+            style: AppTypography.labelLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-          Material(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            clipBehavior: Clip.antiAlias,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                children: items.asMap().entries.map((e) {
-                  final i = e.key;
-                  final item = e.value;
-                  return Column(
-                    children: [
-                      ListTile(
-                        onTap: item.onTap,
-                        leading: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: item.color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(item.icon, color: item.color, size: 20),
+        ),
+        Material(
+          color: colorScheme.surface,
+          borderRadius: AppRadius.xlRadius,
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.xlRadius,
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Column(
+              children: items.asMap().entries.map((e) {
+                final i = e.key;
+                final item = e.value;
+                return Column(
+                  children: [
+                    ListTile(
+                      onTap: item.onTap,
+                      leading: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: item.color.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.smRadius, // Slightly rounded for inner items
                         ),
-                        title: Text(
-                          item.label,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        trailing: const Icon(
-                          Icons.chevron_left,
-                          color: AppColors.textHint,
-                          size: 20,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 2,
+                        child: AppIcon(item.icon, color: item.color, size: AppIconSize.small),
+                      ),
+                      title: Text(
+                        item.label,
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (i < items.length - 1)
-                        const Divider(height: 1, indent: 72, endIndent: 16),
-                    ],
-                  );
-                }).toList(),
-              ),
+                      trailing: AppIcon(
+                        Icons.chevron_left,
+                        color: colorScheme.outline,
+                        size: AppIconSize.small,
+                        directionSensitive: true,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                    ),
+                    if (i < items.length - 1)
+                      Divider(height: 1, indent: 72, endIndent: AppSpacing.md),
+                  ],
+                );
+              }).toList(),
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 }

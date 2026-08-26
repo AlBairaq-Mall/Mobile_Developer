@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/design_system/components/app_icon.dart';
+import '../theme/app_typography.dart';
 
 class AppQuantitySelector extends StatelessWidget {
   final int quantity;
@@ -23,12 +25,12 @@ class AppQuantitySelector extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(onPressed: onDecrease, icon: const Icon(Icons.remove)),
+          IconButton(onPressed: onDecrease, icon: const AppIcon(Icons.remove, size: AppIconSize.small)),
           Text(
             quantity.toString(),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold),
           ),
-          IconButton(onPressed: onIncrease, icon: const Icon(Icons.add)),
+          IconButton(onPressed: onIncrease, icon: const AppIcon(Icons.add, size: AppIconSize.small)),
         ],
       ),
     );

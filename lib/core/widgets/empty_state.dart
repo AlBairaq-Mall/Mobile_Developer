@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/widgets/app_button.dart';
 
-// ════════════════════════════════════════════════════════════
-// EmptyState — لا توجد بيانات (ليس خطأ)
-// ════════════════════════════════════════════════════════════
+import '../design_system/components/feedback/app_empty_state.dart';
+import '../design_system/components/feedback/app_error_state.dart';
 
-/// يُعرض عندما القائمة/الصفحة فارغة طبيعياً.
-/// مثال: "لا توجد طلبات" / "المفضلة فارغة"
-/// لا تستخدمه لحالات الخطأ — استخدم [ErrorState] أو [NetworkErrorState].
+/// Legacy EmptyState Facade
 class EmptyState extends StatelessWidget {
   final IconData? icon;
   final String title;
@@ -27,81 +22,17 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ── Icon bubble ──────────────────────────────────────────────
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Center(
-                child: icon != null
-                    ? Icon(icon, size: 42, color: AppColors.primary)
-                    : const Icon(Icons.inbox_rounded,
-                        size: 42, color: AppColors.primary),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // ── Title ────────────────────────────────────────────────────
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            // ── Subtitle ─────────────────────────────────────────────────
-            if (subtitle != null && subtitle!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                subtitle!,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            // ── Action ───────────────────────────────────────────────────
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 180,
-                child: AppButton(
-                  text: actionLabel!,
-                  onPressed: onAction,
-                  height: 44,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      actionLabel: actionLabel,
+      onAction: onAction,
     );
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// ErrorState — خطأ عام (يختلف بصرياً عن EmptyState)
-// ════════════════════════════════════════════════════════════
-
-/// يُعرض عندما تفشل عملية تحميل البيانات.
-/// مثال: "تعذر تحميل المنتجات"
-///
-/// مميز بصرياً عن [EmptyState]:
-/// - خلفية حمراء خفيفة
-/// - أيقونة خطأ واضحة
-/// - رسالة retry
+/// Legacy ErrorState Facade
 class ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -116,74 +47,15 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ── Error icon bubble (حمراء — مختلفة عن EmptyState) ─────────
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.errorLight,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                color: AppColors.error,
-                size: 44,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // ── Title ────────────────────────────────────────────────────
-            Text(
-              title ?? 'تعذر تحميل البيانات',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            // ── Message ──────────────────────────────────────────────────
-            Text(
-              message,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            // ── Retry ────────────────────────────────────────────────────
-            if (onRetry != null) ...[
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 180,
-                child: AppButton(
-                  text: 'إعادة المحاولة',
-                  onPressed: onRetry,
-                  height: 44,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return AppErrorState(
+      message: message,
+      onRetry: onRetry,
+      title: title,
     );
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// NetworkErrorState — خطأ شبكة متخصص
-// ════════════════════════════════════════════════════════════
-
-/// يُعرض عند انقطاع الإنترنت أو timeout.
+/// Legacy NetworkErrorState Facade
 class NetworkErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
   final String? message;
@@ -192,7 +64,7 @@ class NetworkErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ErrorState(
+    return AppErrorState(
       title: 'لا يوجد اتصال بالإنترنت',
       message: message ?? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.',
       onRetry: onRetry,

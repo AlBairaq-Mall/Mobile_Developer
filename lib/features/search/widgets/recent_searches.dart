@@ -1,48 +1,9 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// import '../providers/search_provider.dart';
-
-// class RecentSearches extends StatelessWidget {
-//   const RecentSearches({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final provider = context.watch<SearchProvider>();
-
-//     if (provider.recentSearches.isEmpty) {
-//       return const SizedBox();
-//     }
-
-//     return ListView.builder(
-//       shrinkWrap: true,
-//       physics: const NeverScrollableScrollPhysics(),
-//       itemCount: provider.recentSearches.length,
-//       itemBuilder: (_, index) {
-//         final item = provider.recentSearches[index];
-
-//         return ListTile(
-//           leading: const Icon(Icons.history),
-//           title: Text(item),
-//           trailing: IconButton(
-//             icon: const Icon(Icons.close),
-//             onPressed: () {
-//               provider.removeRecent(item);
-//             },
-//           ),
-//           onTap: () {
-//             provider.search(item);
-//           },
-//         );
-//       },
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
 import '../providers/search_provider.dart';
 
 class RecentSearches extends StatelessWidget {
@@ -53,23 +14,10 @@ class RecentSearches extends StatelessWidget {
     final provider = context.watch<SearchProvider>();
 
     if (provider.recentSearches.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search_rounded, size: 70, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              "ابدأ بكتابة اسم المنتج",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "يمكنك البحث بالاسم أو الباركود أو القسم",
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
+      return const AppEmptyState(
+        icon: Icons.search_rounded,
+        title: "ابدأ بكتابة اسم المنتج",
+        subtitle: "يمكنك البحث بالاسم أو الباركود أو القسم",
       );
     }
 
@@ -100,16 +48,18 @@ class RecentSearches extends StatelessWidget {
           child: ListView.separated(
             physics: const BouncingScrollPhysics(),
             itemCount: provider.recentSearches.length,
-            separatorBuilder: (_, __) =>
-                Divider(height: 1, color: Colors.grey.shade200),
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
             itemBuilder: (_, index) {
               final item = provider.recentSearches[index];
 
               return ListTile(
-                leading: const Icon(Icons.history),
+                leading: const AppIcon(Icons.history, size: AppIconSize.medium),
                 title: Text(item),
                 trailing: IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const AppIcon(Icons.close, size: AppIconSize.medium),
                   onPressed: () => provider.removeRecent(item),
                 ),
                 onTap: () {

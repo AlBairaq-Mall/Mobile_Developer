@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../design_system/components/app_icon.dart';
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_typography.dart';
 
 // ════════════════════════════════════════════════════════════
 // AppDialog — مكوّن الـ Dialog الموحّد للتطبيق
@@ -128,7 +130,7 @@ class _ConfirmDialog extends StatelessWidget {
                     color: _accentLight,
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: Icon(_icon, color: _accentColor, size: 24),
+                  child: AppIcon(_icon, color: _accentColor, size: AppIconSize.medium),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -137,18 +139,16 @@ class _ConfirmDialog extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                        style: AppTypography.titleLarge.copyWith(
                           height: 1.3,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         message,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.bodySmall.copyWith(
                           fontSize: 13,
+                          color: AppColors.textSecondary,
                           height: 1.6,
                         ),
                       ),
@@ -235,10 +235,10 @@ class _InfoDialog extends StatelessWidget {
                     color: AppColors.infoLight,
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: const Icon(
+                  child: const AppIcon(
                     Icons.info_outline_rounded,
                     color: AppColors.info,
-                    size: 24,
+                    size: AppIconSize.medium,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -248,18 +248,16 @@ class _InfoDialog extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                        style: AppTypography.titleLarge.copyWith(
                           height: 1.3,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         message,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.bodySmall.copyWith(
                           fontSize: 13,
+                          color: AppColors.textSecondary,
                           height: 1.6,
                         ),
                       ),

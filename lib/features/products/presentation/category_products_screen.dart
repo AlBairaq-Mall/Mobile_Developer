@@ -1,11 +1,15 @@
-import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
-import 'package:flutter/material.dart';
-
-import 'package:provider/provider.dart';
+import 'package:bhm_supermarket/app/theme/app_colors.dart';
+import 'package:bhm_supermarket/app/theme/app_radius.dart';
+import 'package:bhm_supermarket/app/theme/app_spacing.dart';
+import 'package:bhm_supermarket/core/design_system/components/app_icon.dart';
+import 'package:bhm_supermarket/core/design_system/patterns/app_responsive.dart';import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
+import 'package:flutter/material.dart';import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import '../../ads/providers/offers_provider.dart';
 import '../../../core/models/product_model.dart';
-import '../../../core/widgets/empty_state.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../models/product_unit_model.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import '../widgets/products_grid.dart';
 
 /// Category products screen — loads from the product repository.
@@ -35,7 +39,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<ProductProvider>().loadCategory(widget.categoryId);
+      if (widget.categoryId == 'special_offers') {
+        context.read<ProductProvider>().loadCategory('');
+      } else {
+        context.read<ProductProvider>().loadCategory(widget.categoryId);
+      }
     });
   }
 
@@ -93,14 +101,14 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     // final products = provider.products;
     // final isLoading = provider.isLoading;
     // final error = provider.error;
-    final title = widget.categoryName ?? 'المنتجات';
+    final title = widget.categoryName ?? (widget.categoryId == 'special_offers' ? 'العروض' : 'المنتجات');
 
     return Scaffold(
       appBar: AppPageHeader(
         title: title,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
+            icon: const AppIcon(Icons.sort_rounded, size: AppIconSize.medium),
             onSelected: (val) => setState(() => _sortBy = val),
             itemBuilder: (_) => const [
               PopupMenuItem(value: 'default', child: Text('الترتيب الافتراضي')),
@@ -116,17 +124,17 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
             child: TextField(
               onChanged: (val) => setState(() => _searchQuery = val),
               decoration: InputDecoration(
                 hintText: 'ابحث في $title...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const AppIcon(Icons.search_rounded, size: AppIconSize.medium),
                 isDense: true,
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.surfaceVariant,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -134,17 +142,115 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ),
         ),
       ),
-      body: _buildBody(provider),
+      body: AppConstrainedContent(
+        child: _buildBody(provider),
+      ),
     );
   }
 
   Widget _buildBody(ProductProvider provider) {
-    if (provider.isLoading) {
-      return const LoadingWidget();
+    if (widget.categoryId == 'special_offers') {
+      if (provider.isLoading && provider.products.isEmpty) {
+        return const Center(child: AppLoading());
+      }
+
+      if (provider.error != null && provider.products.isEmpty) {
+        return AppEmptyState(
+          icon: Icons.warning_rounded,
+          title: 'تعذر تحميل العروض',
+          subtitle: provider.error,
+          actionLabel: 'إعادة المحاولة',
+          onAction: () => provider.loadCategory(''),
+        );
+      }
+
+      final offersProvider = context.watch<OffersProvider>();
+      final List<ProductModel> offerProducts = [];
+
+      for (final product in provider.products) {
+        final offerUnits = <ProductUnitModel>[];
+        for (final unit in product.units) {
+          final hasOffer = offersProvider.offers.any((offer) =>
+              offer.isActive &&
+              offer.productUnits.any(
+                  (u) => u.productId == product.id && u.unitId == unit.id));
+          if (hasOffer) {
+            offerUnits.add(unit);
+          }
+        }
+        if (offerUnits.isNotEmpty) {
+          offerProducts.add(product.copyWith(units: offerUnits));
+        }
+      }
+
+      final filtered = _applyFilters(offerProducts);
+      if (filtered.isEmpty) {
+        return Stack(
+          children: [
+            ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: _scrollController,
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.sizeOf(context).height * 0.6,
+                  ),
+                  child: const AppEmptyState(
+                    icon: Icons.local_offer_rounded,
+                    title: 'لا توجد عروض',
+                    subtitle: 'اسحب للأعلى للبحث عن المزيد من العروض',
+                  ),
+                ),
+              ],
+            ),
+            if (provider.isFetchingMore)
+              const PositionedDirectional(
+                bottom: AppSpacing.lg,
+                start: 0,
+                end: 0,
+                child: Center(
+                  child: SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: AppLoading(size: 24),
+                  ),
+                ),
+              ),
+          ],
+        );
+      }
+
+      return Column(
+        children: [
+          Expanded(
+            child: ProductsGrid(
+              products: filtered,
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: false,
+            ),
+          ),
+          if (provider.isFetchingMore)
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Center(
+                child: SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: AppLoading(size: 24),
+                ),
+              ),
+            ),
+        ],
+      );
     }
 
-    if (provider.error != null) {
-      return EmptyState(
+    if (provider.isLoading && provider.products.isEmpty) {
+      return const Center(child: AppLoading());
+    }
+
+    if (provider.error != null && provider.products.isEmpty) {
+      return AppEmptyState(
         icon: Icons.warning_rounded,
         title: 'تعذر تحميل المنتجات',
         subtitle: provider.error,
@@ -160,7 +266,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     );
 
     if (filtered.isEmpty) {
-      return const EmptyState(
+      return const AppEmptyState(
         icon: Icons.inventory_2_rounded,
         title: 'لا توجد منتجات',
         subtitle: 'لا توجد منتجات في هذا القسم حالياً',
@@ -179,12 +285,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         ),
         if (provider.isFetchingMore)
           const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Center(
               child: SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5),
+                child: AppLoading(size: 24),
               ),
             ),
           ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../models/cart_item_model.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -17,25 +20,27 @@ class CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           // Image
           ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             child: Container(
-              width: 72,
-              height: 72,
-              color: AppColors.background,
+              width: 72, // Intentional component dimension
+              height: 72, // Intentional component dimension
+              color: colorScheme.surfaceContainerHighest,
               child: item.product.image.isEmpty
                   ? const Center(
-                      child: Text('🛍️', style: TextStyle(fontSize: 32)),
+                      child: Text('🛍️', style: TextStyle(fontSize: 32)), // Intentional component dimension
                     )
                   : AppCachedImage(
                       imageUrl: item.product.image,
@@ -43,7 +48,7 @@ class CartItemCard extends StatelessWidget {
                     ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
 
           // Info
           Expanded(
@@ -54,75 +59,71 @@ class CartItemCard extends StatelessWidget {
                   item.product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
+                        horizontal: AppSpacing.sm,
+                        vertical: 2, // Intentional component dimension
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
                       child: Text(
                         item.unit.unitName,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 11,
+                        style: AppTypography.labelSmall.copyWith(
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (item.hasDiscount)
                       Text(
                         (item.originalPrice * item.quantity).toStringAsFixed(0),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
+                        style: AppTypography.labelSmall.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
                     Text(
                       '${item.totalPrice.toStringAsFixed(0)} ر.ي',
-                      style: const TextStyle(
-                        color: AppColors.primary,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
                       ),
                     ),
 
                     // Quantity controls
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
                       child: Row(
                         children: [
                           _QtyBtn(
                             icon: Icons.remove_rounded,
                             onTap: onDecrease,
+                            semanticLabel: 'تقليل الكمية',
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                             child: Text(
                               '${item.quantity}',
-                              style: const TextStyle(
+                              style: AppTypography.titleSmall.copyWith(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
                               ),
                             ),
                           ),
@@ -130,6 +131,7 @@ class CartItemCard extends StatelessWidget {
                             icon: Icons.add_rounded,
                             onTap: onIncrease,
                             isAdd: true,
+                            semanticLabel: 'زيادة الكمية',
                           ),
                         ],
                       ),
@@ -149,23 +151,38 @@ class _QtyBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool isAdd;
-  const _QtyBtn({required this.icon, required this.onTap, this.isAdd = false});
+  final String semanticLabel;
+  const _QtyBtn({
+    required this.icon,
+    required this.onTap,
+    this.isAdd = false,
+    required this.semanticLabel,
+  });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        // INTENTIONAL TOUCH TARGET EXCEPTION: Kept 34x34 to avoid visual drift in card height.
         child: Container(
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: isAdd ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: isAdd ? colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
-          child: Icon(
+          child: AppIcon(
             icon,
-            size: 18,
-            color: isAdd ? Colors.white : AppColors.textPrimary,
+            size: AppIconSize.small,
+            color: isAdd ? colorScheme.onPrimary : colorScheme.onSurface,
           ),
         ),
-      );
+      ),
+    );
+  }
 }

@@ -8,6 +8,7 @@ import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_shadows.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -102,7 +103,7 @@ class _HeaderIconButton extends StatelessWidget {
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, color: AppColors.textPrimary),
+              AppIcon(icon, color: Theme.of(context).colorScheme.onSurface),
               if (hasBadge)
                 Positioned(
                   top: 12,
@@ -110,8 +111,8 @@ class _HeaderIconButton extends StatelessWidget {
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
                       shape: BoxShape.circle,
                     ),
                   ),

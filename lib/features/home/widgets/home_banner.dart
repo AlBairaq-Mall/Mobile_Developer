@@ -2,12 +2,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bhm_supermarket/app/design/app_curves.dart';
 import 'package:bhm_supermarket/app/design/app_durations.dart';
-import 'package:bhm_supermarket/app/theme/app_colors.dart';
 import 'package:bhm_supermarket/features/ads/providers/ads_provider.dart';
 
 import '../../ads/widgets/network_banner_card.dart';
@@ -65,7 +64,7 @@ class _HomeBannerState extends State<HomeBanner> {
     if (provider.loading) {
       return const SizedBox(
         height: 178,
-        child: Center(child: InlineLoadingWidget()),
+        child: Center(child: AppLoading(type: AppLoadingType.dots, size: 18)),
       );
     }
 
@@ -115,7 +114,9 @@ class _HomeBannerState extends State<HomeBanner> {
                 width: active ? 20 : 5,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: active ? AppColors.primary : AppColors.border,
+                  color: active
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(3),
                 ),
               );

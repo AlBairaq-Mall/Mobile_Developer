@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import '../../../core/widgets/loading_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,7 +8,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
@@ -193,9 +194,10 @@ class _PickLocationSheetState extends State<PickLocationSheet> {
         height: screenHeight * 0.88,
         child: Column(
           children: [
-            _SheetHandle(),
+            _SheetHandle(colorScheme: colorScheme),
             _SheetHeader(
               onClose: _confirming ? null : () => Navigator.of(context).pop(),
+              colorScheme: colorScheme,
             ),
             const SizedBox(height: AppSpacing.sm),
             Expanded(
@@ -203,6 +205,7 @@ class _PickLocationSheetState extends State<PickLocationSheet> {
                 mapController: _mapController,
                 center: _center,
                 confirming: _confirming,
+                colorScheme: colorScheme,
                 onMapReady: () {
                   _mapReady = true;
                   _mapController.move(_center, _defaultZoom);
@@ -245,6 +248,10 @@ class _PickLocationSheetState extends State<PickLocationSheet> {
 // ─────────────────────────────────────────────────────────────
 
 class _SheetHandle extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _SheetHandle({required this.colorScheme});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -253,7 +260,7 @@ class _SheetHandle extends StatelessWidget {
         width: 40,
         height: 4,
         decoration: BoxDecoration(
-          color: Colors.grey.shade300,
+          color: colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
       ),
@@ -263,8 +270,9 @@ class _SheetHandle extends StatelessWidget {
 
 class _SheetHeader extends StatelessWidget {
   final VoidCallback? onClose;
+  final ColorScheme colorScheme;
 
-  const _SheetHeader({required this.onClose});
+  const _SheetHeader({required this.onClose, required this.colorScheme});
 
   @override
   Widget build(BuildContext context) {
@@ -273,14 +281,17 @@ class _SheetHeader extends StatelessWidget {
       child: Row(
         children: [
           // Close button
-          _IconCircleButton(icon: Icons.close_rounded, onPressed: onClose),
+          _IconCircleButton(
+            icon: Icons.close_rounded,
+            onPressed: onClose,
+            colorScheme: colorScheme,
+          ),
           // Title
-          const Expanded(
+          Expanded(
             child: Text(
               'اختيار الموقع',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 17,
+              style: AppTypography.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.3,
               ),
@@ -299,11 +310,13 @@ class _IconCircleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final double size;
+  final ColorScheme colorScheme;
 
   const _IconCircleButton({
     required this.icon,
     required this.onPressed,
-    this.size = 40,
+    required this.colorScheme,
+    this.size = 40, // INTENTIONAL COMPONENT DIMENSION
   });
 
   @override
@@ -312,14 +325,14 @@ class _IconCircleButton extends StatelessWidget {
       width: size,
       height: size,
       child: Material(
-        color: Colors.white,
+        color: colorScheme.surface,
         elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.12),
+        shadowColor: Colors.black.withValues(alpha: 0.12), // INTENTIONAL VISUAL EXCEPTION (Elevation mapping)
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.pill),
           onTap: onPressed,
-          child: Icon(icon, size: 18, color: AppColors.primaryDark),
+          child: AppIcon(icon, size: AppIconSize.small, color: colorScheme.onSurface),
         ),
       ),
     );
@@ -330,6 +343,7 @@ class _MapSection extends StatelessWidget {
   final MapController mapController;
   final LatLng center;
   final bool confirming;
+  final ColorScheme colorScheme;
   final VoidCallback onMapReady;
   final ValueChanged<LatLng> onPositionChanged;
   final VoidCallback onZoomIn;
@@ -340,6 +354,7 @@ class _MapSection extends StatelessWidget {
     required this.mapController,
     required this.center,
     required this.confirming,
+    required this.colorScheme,
     required this.onMapReady,
     required this.onPositionChanged,
     required this.onZoomIn,
@@ -379,40 +394,43 @@ class _MapSection extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _LocationPin(),
+                  _LocationPin(colorScheme: colorScheme),
                   // Stem shadow offset
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 32), // INTENTIONAL COMPONENT DIMENSION
                 ],
               ),
             ),
 
             // ── Zoom column (top-left for RTL comfort) ─────────
-            Positioned(
-              left: 12,
+            PositionedDirectional(
+              start: 12,
               top: 16,
               child: Column(
                 children: [
                   _IconCircleButton(
                     icon: Icons.add_rounded,
                     onPressed: onZoomIn,
+                    colorScheme: colorScheme,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   _IconCircleButton(
                     icon: Icons.remove_rounded,
                     onPressed: onZoomOut,
+                    colorScheme: colorScheme,
                   ),
                 ],
               ),
             ),
 
             // ── My-location button (bottom-left) ───────────────
-            Positioned(
-              left: 12,
+            PositionedDirectional(
+              start: 12,
               bottom: 16,
               child: _IconCircleButton(
                 icon: Icons.my_location_rounded,
                 onPressed: onMyLocation,
-                size: 44,
+                size: 44, // INTENTIONAL COMPONENT DIMENSION
+                colorScheme: colorScheme,
               ),
             ),
 
@@ -422,10 +440,10 @@ class _MapSection extends StatelessWidget {
                 color: Colors.black.withValues(alpha: 0.25),
                 child: Center(
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 56, // INTENTIONAL COMPONENT DIMENSION
+                    height: 56, // INTENTIONAL COMPONENT DIMENSION
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                       boxShadow: [
                         BoxShadow(
@@ -434,9 +452,9 @@ class _MapSection extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(14),
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: AppLoading(size: 24),
                     ),
                   ),
                 ),
@@ -449,6 +467,10 @@ class _MapSection extends StatelessWidget {
 }
 
 class _LocationPin extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _LocationPin({required this.colorScheme});
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -456,32 +478,32 @@ class _LocationPin extends StatelessWidget {
       children: [
         // Glow ring
         Container(
-          width: 52,
-          height: 52,
+          width: 52, // INTENTIONAL COMPONENT DIMENSION
+          height: 52, // INTENTIONAL COMPONENT DIMENSION
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
+            color: colorScheme.primary.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
         ),
         // Pin icon
         Container(
-          width: 38,
-          height: 38,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          width: 38, // INTENTIONAL COMPONENT DIMENSION
+          height: 38, // INTENTIONAL COMPONENT DIMENSION
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
             shape: BoxShape.circle,
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black26,
+                color: Colors.black26, // INTENTIONAL VISUAL EXCEPTION
                 blurRadius: 10,
                 offset: Offset(0, 3),
               ),
             ],
           ),
-          child: const Icon(
+          child: AppIcon(
             Icons.location_on_rounded,
-            color: AppColors.primary,
-            size: 22,
+            color: colorScheme.primary,
+            size: AppIconSize.medium,
           ),
         ),
       ],
@@ -512,10 +534,10 @@ class _BottomCard extends StatelessWidget {
         AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.06), // INTENTIONAL VISUAL EXCEPTION
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -529,16 +551,16 @@ class _BottomCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 40, // INTENTIONAL COMPONENT DIMENSION
+                height: 40, // INTENTIONAL COMPONENT DIMENSION
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: const Icon(
+                child: AppIcon(
                   Icons.location_on_rounded,
-                  color: AppColors.primary,
-                  size: 20,
+                  color: colorScheme.primary,
+                  size: AppIconSize.small,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -548,7 +570,7 @@ class _BottomCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.4,
                   ),
                 ),
@@ -561,11 +583,11 @@ class _BottomCard extends StatelessWidget {
           // ── Confirm button ─────────────────────────────────
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: 52, // INTENTIONAL COMPONENT DIMENSION FOR ACCESSIBILITY
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
@@ -573,16 +595,16 @@ class _BottomCard extends StatelessWidget {
               ),
               onPressed: confirming ? null : onConfirm,
               icon: confirming
-                  ? const AppLoading(
+                  ? AppLoading(
                       type: AppLoadingType.bars,
                       size: 18,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                     )
-                  : const Icon(Icons.check_rounded, size: 20),
+                  : const AppIcon(Icons.check_rounded, size: AppIconSize.small),
               label: Text(
                 confirming ? 'جارٍ تحديد العنوان...' : 'تأكيد الموقع',
                 style: AppTypography.labelLarge.copyWith(
-                  color: Colors.white,
+                  color: colorScheme.onPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),

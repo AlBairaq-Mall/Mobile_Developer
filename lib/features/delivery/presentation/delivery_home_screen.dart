@@ -3,7 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/widgets/loading_widget.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_error_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/delivery_order_model.dart';
 import '../providers/delivery_provider.dart';
@@ -238,6 +245,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
     if (!mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     messenger.hideCurrentSnackBar();
 
@@ -245,14 +253,14 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
       SnackBar(
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        margin: const EdgeInsets.all(AppSpacing.lg),
         content: Row(
           children: [
-            Icon(
+            AppIcon(
               icon,
-              color: Colors.white,
+              color: colorScheme.onInverseSurface,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -260,12 +268,18 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: AppTypography.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: colorScheme.onInverseSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(message),
+                  Text(
+                    message,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: colorScheme.onInverseSurface,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -308,10 +322,12 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final provider = context.watch<DeliveryProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: colorScheme.surface,
         body: SafeArea(
           child: Column(
             children: [
@@ -319,9 +335,9 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
                 userName: user?.name ?? 'السائق',
                 activeOrdersCount: provider.activeOrders.length,
               ),
-              const Material(
-                color: Colors.white,
-                child: TabBar(
+              Material(
+                color: colorScheme.surface,
+                child: const TabBar(
                   tabs: [
                     Tab(text: 'طلبات متاحة'),
                     Tab(text: 'طلباتي'),
@@ -329,20 +345,22 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
                 ),
               ),
               Expanded(
-                child: provider.isLoading &&
-                        provider.availableOrders.isEmpty &&
-                        provider.orders.isEmpty
-                    ? const LoadingWidget()
-                    : TabBarView(
-                        children: [
-                          _buildAvailableOrders(
-                            provider,
-                          ),
-                          _buildMyOrders(
-                            provider,
-                          ),
-                        ],
-                      ),
+                child: AppConstrainedContent(
+                  child: provider.isLoading &&
+                          provider.availableOrders.isEmpty &&
+                          provider.orders.isEmpty
+                      ? const Center(child: AppLoading())
+                      : TabBarView(
+                          children: [
+                            _buildAvailableOrders(
+                              provider,
+                            ),
+                            _buildMyOrders(
+                              provider,
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ],
           ),
@@ -359,8 +377,8 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
     DeliveryProvider provider,
   ) {
     if (provider.error != null && provider.availableOrders.isEmpty) {
-      return _ErrorState(
-        error: provider.error!,
+      return AppErrorState(
+        message: provider.error!,
         onRetry: _manualRefresh,
       );
     }
@@ -372,8 +390,9 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 160),
-            _EmptyState(
-              message: 'لا توجد طلبات متاحة حالياً',
+            AppEmptyState(
+              title: 'لا توجد طلبات متاحة حالياً',
+              icon: Icons.list_alt,
             ),
           ],
         ),
@@ -384,7 +403,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
       onRefresh: _manualRefresh,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         itemCount: provider.availableOrders.length,
         itemBuilder: (context, index) {
           return _AvailableOrderCard(
@@ -403,8 +422,8 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
     DeliveryProvider provider,
   ) {
     if (provider.error != null && provider.activeOrders.isEmpty) {
-      return _ErrorState(
-        error: provider.error!,
+      return AppErrorState(
+        message: provider.error!,
         onRetry: _manualRefresh,
       );
     }
@@ -416,8 +435,9 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 160),
-            _EmptyState(
-              message: 'ليس لديك طلبات قيد التوصيل',
+            AppEmptyState(
+              title: 'ليس لديك طلبات قيد التوصيل',
+              icon: Icons.delivery_dining,
             ),
           ],
         ),
@@ -428,7 +448,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen>
       onRefresh: _manualRefresh,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         itemCount: provider.activeOrders.length,
         itemBuilder: (context, index) {
           return _MyOrderCard(
@@ -455,48 +475,48 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.blue.shade700,
-            Colors.blue.shade500,
+            colorScheme.primary,
+            colorScheme.primary.withValues(alpha: 0.8),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
         ),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 24,
-            backgroundColor: Colors.white24,
-            child: Icon(
+            backgroundColor: colorScheme.onPrimary.withValues(alpha: 0.24),
+            child: AppIcon(
               Icons.delivery_dining,
-              color: Colors.white,
-              size: 28,
+              color: colorScheme.onPrimary,
+              size: AppIconSize.large,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'مرحباً، $userName',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 3),
-                const Text(
+                Text(
                   'سائق التوصيل',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: colorScheme.onPrimary.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -505,19 +525,18 @@ class _Header extends StatelessWidget {
           if (activeOrdersCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 10,
+                horizontal: AppSpacing.md,
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: colorScheme.onPrimary.withValues(alpha: 0.24),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 '$activeOrdersCount طلب',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: AppTypography.labelMedium.copyWith(
+                  color: colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
                 ),
               ),
             ),
@@ -540,12 +559,15 @@ class _AvailableOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      elevation: 2,
+      elevation: 0,
       child: InkWell(
         onTap: () {
           DeliveryOrderDetailsSheet.show(
@@ -555,7 +577,7 @@ class _AvailableOrderCard extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -564,101 +586,97 @@ class _AvailableOrderCard extends StatelessWidget {
                 children: [
                   Text(
                     'طلب #${order.orderNumber}',
-                    style: const TextStyle(
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                   Text(
                     '${order.total.toStringAsFixed(0)} ر.ي',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
+                    style: AppTypography.titleMedium.copyWith(
+                      color: colorScheme.primary,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const Icon(
+                  AppIcon(
                     Icons.person_outline,
-                    size: 16,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 8),
-                  Text(order.customerName),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    order.customerName,
+                    style: AppTypography.bodyMedium,
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(
+                  AppIcon(
                     Icons.location_on_outlined,
-                    size: 16,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       order.address,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.grey,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(
+                  AppIcon(
                     Icons.shopping_bag_outlined,
-                    size: 16,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 8),
-                  Text('${order.items.length} منتجات'),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    '${order.items.length} منتجات',
+                    style: AppTypography.bodyMedium,
+                  ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: AppSpacing.sm,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       order.paymentMethod,
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
+                      style: AppTypography.labelSmall,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: AppButton(
+                  variant: AppButtonVariant.secondary,
                   onPressed: () {
                     DeliveryOrderDetailsSheet.show(
                       context,
                       order,
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade50,
-                    foregroundColor: Colors.blue.shade700,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'عرض التفاصيل والاستلام',
-                  ),
+                  text: 'عرض التفاصيل والاستلام',
                 ),
               ),
             ],
@@ -682,12 +700,15 @@ class _MyOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      elevation: 2,
+      elevation: 0,
       child: InkWell(
         onTap: () {
           DeliveryOrderDetailsSheet.show(
@@ -697,7 +718,7 @@ class _MyOrderCard extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -706,9 +727,8 @@ class _MyOrderCard extends StatelessWidget {
                 children: [
                   Text(
                     'طلب #${order.orderNumber}',
-                    style: const TextStyle(
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                   _StatusBadge(
@@ -716,34 +736,37 @@ class _MyOrderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const Icon(
+                  AppIcon(
                     Icons.person_outline,
-                    size: 16,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 8),
-                  Text(order.customerName),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    order.customerName,
+                    style: AppTypography.bodyMedium,
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(
+                  AppIcon(
                     Icons.location_on_outlined,
-                    size: 16,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       order.address,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.grey,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -772,18 +795,17 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 8,
+        horizontal: AppSpacing.sm,
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: _backgroundColor(status),
+        color: _backgroundColor(status, context),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         _label(status),
-        style: TextStyle(
-          color: _foregroundColor(status),
-          fontSize: 12,
+        style: AppTypography.labelSmall.copyWith(
+          color: _foregroundColor(status, context),
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -805,124 +827,45 @@ class _StatusBadge extends StatelessWidget {
       case 'cancelled':
         return 'ملغي';
       default:
-        return value.isEmpty ? 'غير محدد' : value;
+        return value.isEmpty ? 'غير محددة' : value;
     }
   }
 
-  Color _backgroundColor(String value) {
+  Color _backgroundColor(String value, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     switch (value) {
-      case 'delivered':
-        return Colors.green.shade50;
-      case 'cancelled':
-        return Colors.red.shade50;
-      case 'shipped':
-        return Colors.blue.shade50;
-      case 'processing':
-        return Colors.orange.shade50;
+      case 'pending':
       case 'confirmed':
-        return Colors.indigo.shade50;
+      case 'processing':
+        return Colors.orange.withValues(alpha: 0.1);
+      case 'shipped':
+        return colorScheme.primary.withValues(alpha: 0.1);
+      case 'delivered':
+        return Colors.green.withValues(alpha: 0.1);
+      case 'cancelled':
+        return colorScheme.error.withValues(alpha: 0.1);
       default:
-        return Colors.grey.shade100;
+        return colorScheme.surfaceContainerHighest;
     }
   }
 
-  Color _foregroundColor(String value) {
+  Color _foregroundColor(String value, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     switch (value) {
+      case 'pending':
+      case 'confirmed':
+      case 'processing':
+        return Colors.orange.shade700;
+      case 'shipped':
+        return colorScheme.primary;
       case 'delivered':
         return Colors.green.shade700;
       case 'cancelled':
-        return Colors.red.shade700;
-      case 'shipped':
-        return Colors.blue.shade700;
-      case 'processing':
-        return Colors.orange.shade700;
-      case 'confirmed':
-        return Colors.indigo.shade700;
+        return colorScheme.error;
       default:
-        return Colors.grey.shade700;
+        return colorScheme.onSurfaceVariant;
     }
-  }
-}
-
-// =============================================================================
-// Empty State
-// =============================================================================
-
-class _EmptyState extends StatelessWidget {
-  final String message;
-
-  const _EmptyState({
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 64,
-            color: Colors.grey.shade300,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// Error State
-// =============================================================================
-
-class _ErrorState extends StatelessWidget {
-  final String error;
-  final VoidCallback onRetry;
-
-  const _ErrorState({
-    required this.error,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red.shade300,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.red,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('إعادة المحاولة'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -10,6 +10,10 @@ import 'product_image.dart';
 import 'product_info.dart';
 import 'product_cart_control.dart';
 import '../../auth/utils/auth_gate.dart';
+import '../../ads/providers/offers_provider.dart';
+import '../../ads/models/offer_model.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../app/theme/app_spacing.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -18,10 +22,43 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // select: only rebuilds this card when THIS product's favorite state changes.
     final isFavorite = context.select<FavoritesProvider, bool>(
       (f) => f.isFavorite(product.id),
     );
+
+    final defaultUnit = product.defaultUnit;
+    OfferProductUnitModel? promoUnit;
+    OfferModel? promoOffer;
+    GiftRewardModel? giftReward;
+    OfferModel? giftOffer;
+
+    if (defaultUnit != null) {
+      final offersProvider = context.watch<OffersProvider>();
+
+      promoUnit = offersProvider.productUnitOffer(
+        productId: product.id,
+        unitId: defaultUnit.id,
+      );
+
+      if (promoUnit != null) {
+         try {
+           promoOffer = offersProvider.offers.firstWhere((o) => o.productUnits.any((u) => u.id == promoUnit!.id));
+         } catch (_) {}
+      }
+
+      final fakeLine = OfferCartLine(
+        productId: product.id,
+        unitId: defaultUnit.id,
+        quantity: 99999,
+      );
+      final rewards = offersProvider.giftRewardsFor([fakeLine]);
+      if (rewards.isNotEmpty) {
+         giftReward = rewards.first;
+         try {
+           giftOffer = offersProvider.offers.firstWhere((o) => o.id == giftReward!.offerId);
+         } catch (_) {}
+      }
+    }
 
     return ProductCardContainer(
       onTap: () {
@@ -49,10 +86,9 @@ class ProductCard extends StatelessWidget {
         );
       },
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: 180,
+          Expanded(
             child: Stack(
               children: [
                 Positioned.fill(
@@ -61,6 +97,82 @@ class ProductCard extends StatelessWidget {
                     heroTag: 'product_${product.id}',
                   ),
                 ),
+
+                /// Badges
+                if (promoOffer != null || giftOffer != null)
+                  PositionedDirectional(
+                    top: 8,
+                    start: 8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (promoOffer != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              borderRadius: BorderRadius.circular(AppRadius.xs),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  promoOffer.type == 'percentage'
+                                      ? Icons.percent_rounded
+                                      : promoOffer.type == 'gift'
+                                          ? Icons.card_giftcard_rounded
+                                          : Icons.local_offer_rounded,
+                                  size: 10,
+                                  color: Theme.of(context).colorScheme.onError,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  promoOffer.type == 'percentage'
+                                      ? 'خصم'
+                                      : promoOffer.type == 'gift'
+                                          ? 'هدية'
+                                          : 'عرض خاص',
+                                  style: AppTypography.caption.copyWith(
+                                    color: Theme.of(context).colorScheme.onError,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (promoOffer != null && giftOffer != null)
+                          const SizedBox(height: 4),
+                        if (giftOffer != null && giftReward != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.tertiary,
+                              borderRadius: BorderRadius.circular(AppRadius.xs),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.card_giftcard_rounded,
+                                  size: 10,
+                                  color: Theme.of(context).colorScheme.onTertiary,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  'هدية +${giftReward.gift.quantity}',
+                                  style: AppTypography.caption.copyWith(
+                                    color: Theme.of(context).colorScheme.onTertiary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
 
                 /// Favorite
                 PositionedDirectional(
@@ -85,13 +197,11 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
-              child: ProductInfo(
-                product: product,
-                quantityWidget: ProductCartControl(product: product),
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            child: ProductInfo(
+              product: product,
+              quantityWidget: ProductCartControl(product: product),
             ),
           ),
         ],

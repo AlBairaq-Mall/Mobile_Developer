@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
 class AppChip extends StatelessWidget {
   final String text;
@@ -16,10 +17,9 @@ class AppChip extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: AppTypography.bodySmall.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 12,
         ),
       ),
     );

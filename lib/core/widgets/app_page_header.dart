@@ -1,4 +1,5 @@
 import 'package:bhm_supermarket/app/theme/app_colors.dart';
+import 'package:bhm_supermarket/app/theme/app_typography.dart';
 import 'package:bhm_supermarket/app/widgets/app_back_button.dart';
 import 'package:flutter/material.dart';
 
@@ -63,16 +64,14 @@ class AppPageHeader extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: AppTypography.titleLarge.copyWith(
               color: titleColor ?? AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
             ),
           ),
           if (subtitle != null)
             Text(
               subtitle!,
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              style: AppTypography.caption,
             ),
         ],
       ),

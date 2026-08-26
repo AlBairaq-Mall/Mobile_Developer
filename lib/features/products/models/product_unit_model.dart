@@ -12,6 +12,10 @@ class ProductUnitModel {
   final int soldQuantityLast2Days;
   final int buyersCountLast2Days;
 
+  final double originalPrice;
+  final double discount;
+  final double finalPrice;
+
   const ProductUnitModel({
     required this.id,
     this.nameAr = '',
@@ -20,6 +24,9 @@ class ProductUnitModel {
     required this.price,
     this.soldQuantityLast2Days = 0,
     this.buyersCountLast2Days = 0,
+    this.originalPrice = 0,
+    this.discount = 0,
+    this.finalPrice = 0,
   });
 
   /// اسم الوحدة حسب اللغة الحالية.
@@ -40,6 +47,15 @@ class ProductUnitModel {
       buyersCountLast2Days: JsonParser.intValue(
         json['buyers_count_last_2_days'],
       ),
+      originalPrice: JsonParser.doubleValue(
+        json['original_price'],
+      ),
+      discount: JsonParser.doubleValue(
+        json['discount'],
+      ),
+      finalPrice: JsonParser.doubleValue(
+        json['final_price'],
+      ),
     );
   }
 
@@ -52,6 +68,9 @@ class ProductUnitModel {
       'price': price,
       'sold_quantity_last_2_days': soldQuantityLast2Days,
       'buyers_count_last_2_days': buyersCountLast2Days,
+      'original_price': originalPrice,
+      'discount': discount,
+      'final_price': finalPrice,
     };
   }
 

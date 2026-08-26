@@ -1,9 +1,14 @@
 import 'package:bhm_supermarket/core/widgets/app_page_header.dart';
 import 'package:flutter/material.dart';
-import '../../../core/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
 import '../../../core/widgets/app_message.dart';
 import '../../../core/widgets/app_dialog.dart';
 import '../models/address_model.dart';
@@ -63,40 +68,28 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       body: Consumer<AddressProvider>(
         builder: (context, provider, _) {
           if (provider.loading) {
-            return const LoadingWidget();
+              return const Center(child: AppLoading());
           }
 
           if (provider.addresses.isEmpty) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xxl),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.location_off,
-                      size: 80,
-                      color: Colors.grey,
+                    const AppEmptyState(
+                      icon: Icons.location_off,
+                      title: "لا يوجد أي عنوان",
+                      subtitle: "أضف عنوانك الأول لإتمام الطلب",
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "لا يوجد أي عنوان",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "أضف عنوانك الأول لإتمام الطلب",
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.add_location_alt),
-                        label: const Text("إضافة عنوان"),
+                      height: 48,
+                      child: AppButton(
+                        icon: const AppIcon(Icons.add_location_alt, size: AppIconSize.medium),
+                        text: "إضافة عنوان",
                         onPressed: () {
                           _showAddressDialog(context);
                         },
@@ -234,7 +227,7 @@ class _AddressTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     address.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTypography.titleSmall,
                   ),
                 ),
                 if (address.isDefault)
@@ -482,7 +475,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
           children: [
             Text(
               widget.existing == null ? "إضافة عنوان" : "تعديل عنوان",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTypography.titleLarge,
             ),
             const SizedBox(height: 20),
             _field("اسم العنوان", _titleCtrl),

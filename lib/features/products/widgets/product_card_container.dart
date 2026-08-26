@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_shadows.dart';
 
 class ProductCardContainer extends StatelessWidget {
   final Widget child;
@@ -10,22 +12,15 @@ class ProductCardContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: onTap,
         child: Ink(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xffEEF1F4), width: .8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .035),
-                blurRadius: 10,
-                offset: Offset(0, 2),
-              ),
-            ],
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            boxShadow: AppShadows.product,
           ),
           child: child,
         ),

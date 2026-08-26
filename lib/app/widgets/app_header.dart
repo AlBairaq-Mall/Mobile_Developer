@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design_system/components/app_icon.dart';
 import '../router/navigation_helper.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -27,16 +29,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        style: AppTypography.titleLarge,
       ),
       leading: showBack
           ? IconButton(
               onPressed: () {
                 NavigationHelper.back(context);
               },
-              icon: const Icon(
+              icon: const AppIcon(
                 Icons.arrow_back_ios_new_rounded,
                 color: AppColors.textPrimary,
+                size: AppIconSize.medium,
+                directionSensitive: true,
               ),
             )
           : null,

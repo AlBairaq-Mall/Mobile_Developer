@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../../core/widgets/app_page_header.dart';
 
 class NotificationModel {
@@ -37,38 +42,78 @@ class NotificationsScreen extends StatelessWidget {
       ),
     ];
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: const AppPageHeader(title: 'الإشعارات'),
-      body: notifications.isEmpty
-          ? const Center(child: Text('لا توجد إشعارات حالياً'))
-          : ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: notifications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final n = notifications[index];
-                return Card(
-                  child: Material(
-                    color: n.read ? null : Colors.green.withValues(alpha: 0.06),
-                    child: ListTile(
-                      leading: const Icon(Icons.notifications_outlined),
-                      title: Text(
-                        n.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+      body: AppConstrainedContent(
+        child: notifications.isEmpty
+            ? const AppEmptyState(
+                icon: Icons.notifications_off_outlined,
+                title: 'لا توجد إشعارات',
+                subtitle: 'لا توجد إشعارات حالياً',
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: notifications.length,
+                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final n = notifications[index];
+                  return Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                       ),
-                      subtitle: Text(n.body),
-                      trailing: !n.read
-                          ? const Icon(
-                              Icons.circle,
-                              size: 10,
-                              color: Colors.green,
-                            )
-                          : null,
                     ),
-                  ),
-                );
-              },
-            ),
+                    color: colorScheme.surface,
+                    margin: EdgeInsets.zero,
+                    child: Material(
+                      color: n.read ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.06),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.xs,
+                        ),
+                        leading: AppIcon(
+                          Icons.notifications_outlined,
+                          color: colorScheme.primary,
+                          size: AppIconSize.medium,
+                        ),
+                        title: Text(
+                          n.title,
+                          style: AppTypography.titleMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.xs),
+                          child: Text(
+                            n.body,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        trailing: !n.read
+                            ? Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

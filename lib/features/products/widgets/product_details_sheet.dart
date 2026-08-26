@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/models/product_model.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../ads/models/offer_model.dart';
@@ -87,21 +89,13 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
       return;
     }
 
-    final offerUnit = context.read<OffersProvider>().productUnitOffer(
-          productId: widget.product.id,
-          unitId: selectedUnit.id,
-        );
-
-    final unitPrice = offerUnit?.price ?? selectedUnit.price;
-
-    final originalPrice = offerUnit?.hasDiscount == true
-        ? offerUnit?.oldPrice
-        : null;
+    final unitPrice = selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price;
+    final originalPrice = selectedUnit.originalPrice > unitPrice ? selectedUnit.originalPrice : unitPrice;
 
     final response = await cart.addItem(
       product: widget.product,
       unit: selectedUnit,
-      originalPrice: originalPrice ?? unitPrice,
+      originalPrice: originalPrice,
       unitPrice: unitPrice,
       quantity: 1,
     );
@@ -150,14 +144,6 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             ),
           );
 
-    final selectedOffer = selectedUnit == null
-        ? null
-        : context.select<OffersProvider, OfferProductUnitModel?>(
-            (offers) => offers.productUnitOffer(
-              productId: widget.product.id,
-              unitId: selectedUnit.id,
-            ),
-          );
     final images = widget.product.images;
 
     final isQuantityProcessing = selectedUnit == null
@@ -198,15 +184,15 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                   ),
 
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // التصنيف
-                        if (widget.product.categoryName.isNotEmpty)
+                        if (widget.product.categoryName.isNotEmpty) ...[
                           _CategoryChip(label: widget.product.categoryName),
-
-                        const SizedBox(height: 10),
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
 
                         // اسم المنتج
                         Text(
@@ -228,7 +214,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                           ),
                         ],
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppSpacing.lg),
 
                         // ── قسم الوحدات ──────────────────────────────
                         if (provider.isLoading)
@@ -260,9 +246,9 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           if (selectedUnit != null)
             _BottomBar(
               selectedUnit: selectedUnit,
-              price: selectedOffer?.price ?? selectedUnit.price,
-              oldPrice: selectedOffer?.hasDiscount == true
-                  ? selectedOffer!.oldPrice
+              price: selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price,
+              oldPrice: selectedUnit.originalPrice > (selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price)
+                  ? selectedUnit.originalPrice
                   : null,
               quantity: cartQuantity,
               isLoading: isQuantityProcessing,
@@ -376,7 +362,7 @@ class _ImageSection extends StatelessWidget {
           else
             Container(
               width: double.infinity,
-              color: AppColors.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: const Center(
                 child: Icon(
                   Icons.shopping_bag_rounded,
@@ -455,17 +441,17 @@ class _CircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.9),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
       shape: const CircleBorder(),
       elevation: 1,
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(
+          padding: const EdgeInsets.all(AppSpacing.xs),
+          child: AppIcon(
             icon,
-            size: 22,
+            size: AppIconSize.medium,
             color: iconColor ?? AppColors.textPrimary,
           ),
         ),
@@ -524,12 +510,12 @@ class _UnitsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(
+            const AppIcon(
               Icons.layers_outlined,
-              size: 18,
+              size: AppIconSize.small,
               color: AppColors.primary,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               'اختر الوحدة',
               style: AppTypography.titleSmall,
@@ -555,20 +541,25 @@ class _UnitsSection extends StatelessWidget {
         ...List.generate(units.length, (i) {
           final unit = units[i];
 
-          final offer = offers.productUnitOffer(
+          final unitOfferUnit = offers.productUnitOffer(
             productId: productId,
             unitId: unit.id,
           );
+          OfferModel? unitPromoOffer;
+          if (unitOfferUnit != null) {
+            try {
+              unitPromoOffer = offers.offers.firstWhere((o) => o.productUnits.any((u) => u.id == unitOfferUnit.id));
+            } catch (_) {}
+          }
 
-          final price = offer?.price ?? unit.price;
-
-          final oldPrice =
-              offer?.hasDiscount == true ? offer?.oldPrice : null;
+          final price = unit.finalPrice > 0 ? unit.finalPrice : unit.price;
+          final oldPrice = unit.originalPrice > price ? unit.originalPrice : null;
 
           return _UnitCard(
             unit: unit,
             price: price,
             oldPrice: oldPrice,
+            promoOffer: unitPromoOffer,
             isSelected: selectedIndex == i,
             onTap: () => onSelect(i),
           );
@@ -586,6 +577,7 @@ class _UnitCard extends StatelessWidget {
   final ProductUnitModel unit;
   final double price;
   final double? oldPrice;
+  final OfferModel? promoOffer;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -593,6 +585,7 @@ class _UnitCard extends StatelessWidget {
     required this.unit,
     required this.price,
     required this.oldPrice,
+    this.promoOffer,
     required this.isSelected,
     required this.onTap,
   });
@@ -605,11 +598,8 @@ class _UnitCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
-        ),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primaryExtraLight
@@ -635,25 +625,55 @@ class _UnitCard extends StatelessWidget {
                 color: isSelected ? AppColors.primary : Colors.transparent,
               ),
               child: isSelected
-                  ? const Icon(
+                  ? const AppIcon(
                       Icons.check_rounded,
-                      size: 14,
+                      size: AppIconSize.small,
                       color: Colors.white,
                     )
                   : null,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    unit.unitName,
-                    style: AppTypography.titleSmall.copyWith(
-                      color: isSelected
-                          ? AppColors.primaryDark
-                          : AppColors.textPrimary,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        unit.unitName,
+                        style: AppTypography.titleSmall.copyWith(
+                          color: isSelected
+                              ? AppColors.primaryDark
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                      if (promoOffer != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: promoOffer!.type == 'gift'
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.error,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Text(
+                            promoOffer!.type == 'percentage'
+                                ? 'خصم'
+                                : promoOffer!.type == 'gift'
+                                    ? 'هدية'
+                                    : 'عرض خاص',
+                            style: AppTypography.caption.copyWith(
+                              color: promoOffer!.type == 'gift'
+                                  ? Theme.of(context).colorScheme.onTertiary
+                                  : Theme.of(context).colorScheme.onError,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   if (unit.quantity > 1) ...[
                     const SizedBox(height: 2),
@@ -722,13 +742,14 @@ class _BottomBar extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     final isInCart = quantity > 0;
+    final effectiveQuantity = quantity > 0 ? quantity : 1;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        14,
-        20,
-        bottomPadding + 14,
+      padding: EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        bottomPadding + AppSpacing.md,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -747,7 +768,7 @@ class _BottomBar extends StatelessWidget {
             onIncrease: onIncrease,
             onDecrease: onDecrease,
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -755,14 +776,14 @@ class _BottomBar extends StatelessWidget {
               children: [
                 if (oldPrice != null && oldPrice! > price)
                   Text(
-                    '${(oldPrice! * quantity).toStringAsFixed(2)} ر.ي',
+                    '${(oldPrice! * effectiveQuantity).toStringAsFixed(2)} ر.ي',
                     style: AppTypography.caption.copyWith(
                       decoration: TextDecoration.lineThrough,
                       color: AppColors.textHint,
                     ),
                   ),
                 Text(
-                  '${(price * quantity).toStringAsFixed(2)} ر.ي',
+                  '${(price * effectiveQuantity).toStringAsFixed(2)} ر.ي',
                   style: AppTypography.priceLarge,
                 ),
                 Text(
@@ -772,7 +793,7 @@ class _BottomBar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           SizedBox(
             height: 48,
             child: FilledButton.icon(
@@ -797,11 +818,11 @@ class _BottomBar extends StatelessWidget {
                       size: 18,
                       color: Colors.white,
                     )
-                  : Icon(
+                  : AppIcon(
                       isInCart
                           ? Icons.check_rounded
                           : Icons.shopping_cart_outlined,
-                      size: 20,
+                      size: AppIconSize.medium,
                     ),
               label: Text(
                 isLoading
@@ -884,9 +905,9 @@ class _QtyButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Padding(
         padding: const EdgeInsets.all(10),
-        child: Icon(
+        child: AppIcon(
           icon,
-          size: 18,
+          size: AppIconSize.small,
           color: onTap != null ? AppColors.primary : AppColors.textHint,
         ),
       ),
@@ -907,7 +928,7 @@ class _UnitsLoadingState extends StatelessWidget {
       children: List.generate(
         2,
         (_) => Container(
-          margin: const EdgeInsets.only(bottom: 10),
+          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
           height: 62,
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant,
@@ -926,7 +947,7 @@ class _UnitsErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.errorLight,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -934,8 +955,8 @@ class _UnitsErrorState extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.error),
-          const SizedBox(width: 10),
+          const AppIcon(Icons.error_outline_rounded, color: AppColors.error, size: AppIconSize.medium),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               error.isNotEmpty ? error : 'تعذر تحميل بيانات المنتج',
@@ -954,7 +975,7 @@ class _NoUnitsWarning extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.warningLight,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -962,8 +983,8 @@ class _NoUnitsWarning extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.warning),
-          const SizedBox(width: 10),
+          const AppIcon(Icons.info_outline_rounded, color: AppColors.warning, size: AppIconSize.medium),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               'لم يتم ربط وحدات بهذا المنتج بعد.',
@@ -983,7 +1004,7 @@ class _UnavailableBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 14, 20, bottomPadding + 14),
+      padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, bottomPadding + AppSpacing.md),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
@@ -997,8 +1018,8 @@ class _UnavailableBottomBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.block_rounded, color: AppColors.textHint, size: 18),
-          const SizedBox(width: 8),
+          const AppIcon(Icons.block_rounded, color: AppColors.textHint, size: AppIconSize.small),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             'هذا المنتج غير متاح للشراء حالياً',
             style: AppTypography.bodyMedium.copyWith(color: AppColors.textHint),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/order_status.dart';
-import '../../../app/theme/app_colors.dart';
 
 class OrderProgress extends StatelessWidget {
   final String status;
@@ -11,6 +10,7 @@ class OrderProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentStatus = OrderStatusExt.fromString(status);
+    final colorScheme = Theme.of(context).colorScheme;
 
     const stages = [
       OrderStatus.pending,
@@ -35,14 +35,14 @@ class OrderProgress extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: active ? AppColors.primary : Colors.grey.shade300,
-                child: const Icon(Icons.check, size: 16, color: Colors.white),
+                backgroundColor: active ? colorScheme.primary : colorScheme.outlineVariant,
+                child: Icon(Icons.check, size: 16, color: colorScheme.onPrimary),
               ),
               const SizedBox(height: 6),
               if (index != stages.length - 1)
                 Container(
                   height: 4,
-                  color: active ? AppColors.primary : Colors.grey.shade300,
+                  color: active ? colorScheme.primary : colorScheme.outlineVariant,
                 ),
             ],
           ),

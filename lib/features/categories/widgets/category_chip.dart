@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/models/category_model.dart';
 
 class CategoryChip extends StatelessWidget {
@@ -37,16 +38,16 @@ class CategoryChip extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: selected
                     ? AppColors.primary.withValues(alpha: .12)
-                    : const Color(0xffF5F6F8),
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
               child: Padding(
                 padding: const EdgeInsets.all(11),
                 child: category == null
-                    ? Icon(
+                    ? AppIcon(
                         Icons.apps_rounded,
                         color:
                             selected ? AppColors.primary : AppColors.textHint,
-                        size: 24,
+                        size: AppIconSize.medium,
                       )
                     : Hero(
                         tag: 'cat_${category!.id}',
@@ -56,12 +57,12 @@ class CategoryChip extends StatelessWidget {
                                 fit: BoxFit.contain,
                                 radius: 0,
                               )
-                            : Icon(
+                            : AppIcon(
                                 Icons.category_rounded,
                                 color: selected
                                     ? AppColors.primary
                                     : AppColors.textHint,
-                                size: 24,
+                                size: AppIconSize.medium,
                               ),
                       ),
               ),

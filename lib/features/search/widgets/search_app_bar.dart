@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../providers/search_provider.dart';
 
 class SearchAppBar extends StatelessWidget {
@@ -22,11 +23,11 @@ class SearchAppBar extends StatelessWidget {
         // },
         decoration: InputDecoration(
           hintText: 'ابحث عن منتج',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const AppIcon(Icons.search, size: AppIconSize.medium),
           suffixIcon: provider.controller.text.isEmpty
               ? null
               : IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const AppIcon(Icons.clear, size: AppIconSize.medium),
                   onPressed: () {
                     provider.controller.clear();
                     provider.clear();

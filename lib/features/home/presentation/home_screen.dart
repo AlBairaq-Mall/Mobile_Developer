@@ -5,8 +5,14 @@ import 'package:bhm_supermarket/features/ads/providers/ads_provider.dart';
 import 'package:bhm_supermarket/features/ads/providers/offers_provider.dart';
 import 'package:bhm_supermarket/features/categories/providers/category_provider.dart';
 import 'package:bhm_supermarket/features/categories/widgets/categories_pinned.dart';
-
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_error_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../providers/home_provider.dart';
 import '../widgets/home_banner.dart';
 import '../widgets/home_header.dart';
@@ -59,8 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: NestedScrollView(
+      body: AppConstrainedContent(
+        child: SafeArea(
+          child: NestedScrollView(
           // NestedScrollView يدير OuterScrollView (headers) + InnerScrollView (body).
           // يجب أن يكون RefreshIndicator على الـ inner scroll view مباشرةً
           // وليس على NestedScrollView ككل — هذا هو سبب عدم عمل pull-to-refresh.
@@ -97,13 +104,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ];
           },
-          // RefreshIndicator على الـ inner CustomScrollView مباشرةً
           body: RefreshIndicator(
             displacement: 50,
             onRefresh: _refreshHome,
             child: const _HomeBody(),
           ),
         ),
+      ),
       ),
     );
   }
@@ -124,7 +131,7 @@ class _HomeBody extends StatelessWidget {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: AppLoading()),
           ),
         ],
       );
@@ -139,37 +146,10 @@ class _HomeBody extends StatelessWidget {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.wifi_off_rounded,
-                      size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'تعذر تحميل المنتجات',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    provider.error ?? 'تحقق من اتصالك بالإنترنت وأعد المحاولة',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () =>
-                        context.read<HomeProvider>().loadProducts(),
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('إعادة المحاولة'),
-                  ),
-                ],
-              ),
+            child: AppErrorState(
+              title: 'تعذر تحميل المنتجات',
+              message: provider.error ?? 'تحقق من اتصالك بالإنترنت وأعد المحاولة',
+              onRetry: () => context.read<HomeProvider>().loadProducts(),
             ),
           ),
         ],
@@ -185,30 +165,10 @@ class _HomeBody extends StatelessWidget {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.inventory_2_outlined,
-                      size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'لا توجد منتجات حالياً',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'سيتم إضافة منتجات قريباً',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
+            child: AppEmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: 'لا توجد منتجات حالياً',
+              subtitle: 'سيتم إضافة منتجات قريباً',
             ),
           ),
         ],
@@ -229,19 +189,25 @@ class _HomeBody extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: Colors.orange, size: 18),
+                  const AppIcon(Icons.warning_amber_rounded,
+                      color: Colors.orange, size: AppIconSize.small),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'تعذر تحديث المنتجات — تعرض بيانات قديمة',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.orange,
+                      ),
                     ),
                   ),
-                  TextButton(
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    onPressed: () => context.read<HomeProvider>().refresh(),
-                    child: const Text('إعادة', style: TextStyle(fontSize: 12)),
+                  SizedBox(
+                    width: 70,
+                    child: AppButton(
+                      variant: AppButtonVariant.text,
+                      size: AppButtonSize.small,
+                      text: 'إعادة',
+                      onPressed: () => context.read<HomeProvider>().refresh(),
+                    ),
                   ),
                 ],
               ),
@@ -249,9 +215,9 @@ class _HomeBody extends StatelessWidget {
           ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
+            8.0, // smaller outer padding
             10,
-            AppSpacing.lg,
+            8.0,
             AppSpacing.xxl,
           ),
           sliver: SliverList(

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_price.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/models/product_model.dart';
-import '../../ads/models/offer_model.dart';
-import '../../ads/providers/offers_provider.dart';
 
 class ProductInfo extends StatelessWidget {
   final ProductModel product;
@@ -21,21 +18,17 @@ class ProductInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
-
     final defaultUnit = product.units.isEmpty ? null : product.units.first;
 
-    final offerUnit = context.select<OffersProvider, OfferProductUnitModel?>(
-      (offers) => defaultUnit == null
-          ? null
-          : offers.productUnitOffer(
-              productId: product.id,
-              unitId: defaultUnit.id,
-            ),
-    );
 
-    final price = offerUnit?.price ?? product.price;
 
-    final double? oldPrice = offerUnit?.hasDiscount == true ? offerUnit?.oldPrice : null;
+    final price = defaultUnit != null && defaultUnit.finalPrice > 0
+        ? defaultUnit.finalPrice
+        : (defaultUnit?.price ?? product.price);
+
+    final double? oldPrice = defaultUnit != null && defaultUnit.originalPrice > price
+        ? defaultUnit.originalPrice
+        : null;
 
     final hasDiscount = oldPrice != null && oldPrice > price;
 
@@ -43,91 +36,87 @@ class ProductInfo extends StatelessWidget {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (soldQuantity > 200)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppIcon(
+                  Icons.local_fire_department_rounded,
+                  size: AppIconSize.small,
+                  color: AppColors.discount,
+                ),
+                const SizedBox(width: 2),
+                Expanded(
+                  child: Text(
+                    'تم شراؤه +$soldQuantity مرة',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.discount,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 9,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         Text(
           product.name,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.bodyMedium.copyWith(
+          style: AppTypography.bodySmall.copyWith(
             fontWeight: FontWeight.w700,
+            height: 1.2,
           ),
         ),
+        if (defaultUnit != null && defaultUnit.quantity > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+            child: Text(
+              'الكمية: ${defaultUnit.quantity}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 10,
+              ),
+            ),
+          ),
         const SizedBox(height: 4),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (hasDiscount)
-              Flexible(
-                child: Text(
-                  '${oldPrice.toStringAsFixed(0)} ر.ي',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.discount,
-                    decoration: TextDecoration.lineThrough,
-                    decorationColor: AppColors.discount,
-                  ),
-                ),
-              ),
-            if (hasDiscount) const SizedBox(width: 8),
-            if (defaultUnit != null && defaultUnit.quantity > 0)
-              Flexible(
-                child: Text(
-                  'الكمية: ${defaultUnit.quantity}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textHint,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        if (soldQuantity > 200) ...[
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.local_fire_department_rounded,
-                size: 14,
-                color: AppColors.discount,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'تم شراء $soldQuantity+ قطعة',
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textHint,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-        ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: AlignmentDirectional.centerStart,
-                  child: AppPrice(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppPrice(
                     price: price,
                     crossAxisAlignment:
                         rtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   ),
-                ),
+                  if (hasDiscount)
+                    Text(
+                      '${oldPrice.toStringAsFixed(0)} ر.ي',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.discount,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: AppColors.discount,
+                        fontSize: 10,
+                      ),
+                    ),
+                ],
               ),
             ),
-            if (quantityWidget != null) ...[
-              const SizedBox(width: 8),
-              quantityWidget!,
-            ],
+            if (quantityWidget != null) quantityWidget!,
           ],
         ),
       ],

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/app_page_header.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_text_field.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
@@ -206,70 +208,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: 'إنشاء حساب جديد',
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomTextField(
-                hint: 'الاسم الكامل',
-                controller: _nameController,
-                prefixIcon: const Icon(
-                  Icons.person_outline,
+        child: AppConstrainedContent(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.xl,
+              horizontal: AppSpacing.md, // Added for responsive safe area
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppTextField(
+                  hint: 'الاسم الكامل',
+                  controller: _nameController,
+                  prefixIcon: const AppIcon(
+                    Icons.person_outline,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hint: 'رقم الهاتف',
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                prefixIcon: const Icon(
-                  Icons.phone_outlined,
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  hint: 'رقم الهاتف',
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: const AppIcon(
+                    Icons.phone_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hint: 'البريد الإلكتروني',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
-                  Icons.email_outlined,
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  hint: 'البريد الإلكتروني',
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: const AppIcon(
+                    Icons.email_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hint: 'كلمة المرور',
-                controller: _passwordController,
-                obscureText: true,
-                prefixIcon: const Icon(
-                  Icons.lock_outline,
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  hint: 'كلمة المرور',
+                  controller: _passwordController,
+                  obscureText: true,
+                  prefixIcon: const AppIcon(
+                    Icons.lock_outline,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hint: 'تأكيد كلمة المرور',
-                controller: _confirmPasswordController,
-                obscureText: true,
-                prefixIcon: const Icon(
-                  Icons.lock_reset_outlined,
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  hint: 'تأكيد كلمة المرور',
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  prefixIcon: const AppIcon(
+                    Icons.lock_reset_outlined,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: _isLoading
-                    ? const Center(
-                        child: AppLoading(
-                          type: AppLoadingType.bars,
-                          size: 24,
-                        ),
-                      )
-                    : CustomButton(
-                        text: 'إنشاء حساب',
-                        onPressed: _submit,
-                      ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.xxl),
+                SizedBox(
+                  height: 52, // INTENTIONAL COMPONENT DIMENSION for consistency with Login
+                  child: AppButton(
+                    text: 'إنشاء حساب',
+                    onPressed: _submit,
+                    state: _isLoading
+                        ? AppButtonState.loading
+                        : AppButtonState.defaultState,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

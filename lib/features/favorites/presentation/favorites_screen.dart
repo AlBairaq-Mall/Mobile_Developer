@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../../core/widgets/app_message.dart';
-import '../../../core/widgets/empty_state.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
-import '../../products/widgets/product_card.dart';
+import '../../products/widgets/products_grid.dart';
 import '../../ads/providers/offers_provider.dart';
 
 /// Favorites screen backed by [FavoritesProvider].
@@ -37,26 +40,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final favProv = context.watch<FavoritesProvider>();
     final cartProv = context.read<CartProvider>();
     final favProducts = favProv.products;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('المفضلة'),
             if (favProducts.isNotEmpty) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.error,
+                  color: colorScheme.error,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '${favProducts.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: colorScheme.onError,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -88,31 +92,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   'تمت إضافة ${favProducts.length} منتج للسلة',
                 );
               },
-              icon: const Icon(Icons.shopping_cart_outlined, size: 16),
-              label: const Text(
+              icon: AppIcon(Icons.shopping_cart_outlined, size: AppIconSize.small),
+              label: Text(
                 'نقل الكل للسلة',
-                style: TextStyle(fontSize: 12),
+                style: AppTypography.labelLarge,
               ),
             ),
         ],
       ),
-      body: favProducts.isEmpty
-          ? const EmptyState(
-              icon: Icons.favorite_rounded,
-              title: 'المفضلة فارغة',
-              subtitle: 'اضغط على قلب أي منتج لإضافته هنا',
-            )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: favProducts.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.65,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+      body: AppConstrainedContent(
+        child: favProducts.isEmpty
+            ? const AppEmptyState(
+                icon: Icons.favorite_rounded,
+                title: 'المفضلة فارغة',
+                subtitle: 'اضغط على قلب أي منتج لإضافته هنا',
+              )
+            : ProductsGrid(
+                products: favProducts,
+                shrinkWrap: false,
+                physics: const AlwaysScrollableScrollPhysics(),
               ),
-              itemBuilder: (_, i) => ProductCard(product: favProducts[i]),
-            ),
+      ),
     );
   }
 }

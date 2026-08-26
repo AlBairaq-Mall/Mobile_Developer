@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_error_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/models/product_model.dart';
 import '../domain/repositories/product_repository.dart';
 import '../models/product_unit_model.dart';
@@ -223,10 +229,10 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
     return SafeArea(
       child: Material(
         color: cs.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
         clipBehavior: Clip.antiAlias,
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .88,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .9),
           child: Column(
             children: [
               _buildHandle(),
@@ -244,12 +250,12 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
 
   Widget _buildHandle() {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: Container(
         width: 44,
         height: 5,
         decoration: BoxDecoration(
-          color: Colors.grey.shade400,
+          color: AppColors.outline,
           borderRadius: BorderRadius.circular(20),
         ),
       ),
@@ -258,36 +264,32 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 14, 10, 10),
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.md, AppSpacing.sm, AppSpacing.sm),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'اختيار المنتجات',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppTypography.headlineSmall,
             ),
           ),
           if (_selected.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: .1),
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.primaryExtraLight,
+                borderRadius: BorderRadius.circular(AppRadius.chip),
               ),
               child: Text(
                 '${_selected.length} محدد',
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: AppTypography.badge.copyWith(color: AppColors.primaryDark),
               ),
             ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           IconButton(
             tooltip: 'إغلاق',
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close),
+            icon: const AppIcon(Icons.close_rounded, size: AppIconSize.medium),
           ),
         ],
       ),
@@ -296,14 +298,14 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
 
   Widget _buildSearch() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
       child: TextField(
         controller: _searchController,
         textInputAction: TextInputAction.search,
         onSubmitted: _searchProducts,
         decoration: InputDecoration(
           hintText: 'ابحث عن منتج...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const AppIcon(Icons.search_rounded, size: AppIconSize.medium),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   onPressed: () {
@@ -311,13 +313,13 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
                     _searchProducts('');
                     setState(() {});
                   },
-                  icon: const Icon(Icons.clear),
+                  icon: const AppIcon(Icons.clear_rounded, size: AppIconSize.medium),
                 )
               : null,
           filled: true,
-          fillColor: Colors.grey.withValues(alpha: .08),
+          fillColor: AppColors.surfaceVariant,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             borderSide: BorderSide.none,
           ),
         ),
@@ -330,15 +332,15 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
     return SizedBox(
       height: 54,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
         scrollDirection: Axis.horizontal,
         itemCount: _selected.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs),
         itemBuilder: (_, index) {
           final selection = _selected.values.elementAt(index);
 
           return InputChip(
-            avatar: const Icon(Icons.inventory_2_outlined, size: 16),
+            avatar: const AppIcon(Icons.inventory_2_outlined, size: AppIconSize.small),
             label: Text(
               '${selection.product.name} • ${selection.unit.unitName}',
               overflow: TextOverflow.ellipsis,
@@ -371,13 +373,13 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
       onRefresh: () => _loadProducts(reset: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(18, 4, 18, 20),
+        padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, AppSpacing.lg),
         itemCount: _products.length + (_loadingMore ? 1 : 0),
         itemBuilder: (_, index) {
           if (index >= _products.length) {
             return const Padding(
-              padding: EdgeInsets.all(20),
-              child: Center(child: CircularProgressIndicator()),
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Center(child: AppLoading(type: AppLoadingType.ring, size: 24)),
             );
           }
 
@@ -408,58 +410,30 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
 
   Widget _buildEmpty() {
     return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 14),
-            Text(
-              'لا توجد منتجات',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'جرّب البحث باسم المنتج أو الباركود.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
+      child: AppEmptyState(
+        icon: Icons.inventory_2_outlined,
+        title: 'لا توجد منتجات',
+        subtitle: 'جرّب البحث باسم المنتج أو الباركود.',
       ),
     );
   }
 
   Widget _buildError() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 56, color: Colors.redAccent),
-            const SizedBox(height: 12),
-            Text(_error ?? 'حدث خطأ', textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _loadProducts(reset: true),
-              icon: const Icon(Icons.refresh),
-              label: const Text('إعادة المحاولة'),
-            ),
-          ],
-        ),
+      child: AppErrorState(
+        message: _error ?? 'حدث خطأ',
+        onRetry: () => _loadProducts(reset: true),
       ),
     );
   }
 
   Widget _buildBottomBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        18,
-        12,
-        18,
-        MediaQuery.of(context).padding.bottom + 12,
+      padding: EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        MediaQuery.of(context).padding.bottom + AppSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -476,7 +450,7 @@ class _ProductUnitPickerSheetState extends State<ProductUnitPickerSheet> {
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: _selected.isEmpty ? null : _confirm,
-          icon: const Icon(Icons.check),
+          icon: const AppIcon(Icons.check_rounded, size: AppIconSize.medium),
           label: Text(
             _selected.isEmpty
                 ? 'اختر وحدة واحدة على الأقل'
@@ -560,21 +534,16 @@ class _ProductPickerCardState extends State<_ProductPickerCard> {
                           product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
+                          style: AppTypography.labelLarge,
                         ),
 
                         const SizedBox(height: 6),
                         Text(
                           '${units.length} وحدة متاحة',
-                          style: TextStyle(
+                          style: AppTypography.labelSmall.copyWith(
                             color: widget.isSelected
                                 ? AppColors.primary
                                 : Colors.grey,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -583,7 +552,7 @@ class _ProductPickerCardState extends State<_ProductPickerCard> {
                   AnimatedRotation(
                     turns: _expanded ? .5 : 0,
                     duration: const Duration(milliseconds: 200),
-                    child: const Icon(Icons.keyboard_arrow_down),
+                    child: const AppIcon(Icons.keyboard_arrow_down_rounded, size: AppIconSize.medium),
                   ),
                 ],
               ),
@@ -670,7 +639,7 @@ class _UnitOption extends StatelessWidget {
                 ),
               ),
               child: selected
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  ? const AppIcon(Icons.check_rounded, size: AppIconSize.small, color: Colors.white)
                   : null,
             ),
             const SizedBox(width: 12),
@@ -680,23 +649,21 @@ class _UnitOption extends StatelessWidget {
                 children: [
                   Text(
                     unit.unitName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                    style: AppTypography.titleSmall.copyWith(
                       color: selected ? AppColors.primary : null,
                     ),
                   ),
                   if (unit.quantity > 0)
                     Text(
                       'الكمية: ${unit.quantity}',
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: AppTypography.bodySmall,
                     ),
                 ],
               ),
             ),
             Text(
               '${unit.price.toStringAsFixed(0)} ر.ي',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
+              style: AppTypography.titleSmall.copyWith(
                 color: selected ? AppColors.primary : null,
               ),
             ),
@@ -727,7 +694,7 @@ class _ProductImage extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: image.isEmpty
-          ? const Icon(Icons.inventory_2_outlined, color: Colors.grey)
+          ? const AppIcon(Icons.inventory_2_outlined, color: AppColors.textHint, size: AppIconSize.large)
           : AppCachedImage(imageUrl: image, fit: BoxFit.contain),
     );
   }

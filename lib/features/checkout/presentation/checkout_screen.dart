@@ -5,10 +5,16 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../coupons/providers/coupon_provider.dart';
 import '../../ads/models/offer_model.dart';
 import '../../ads/providers/offers_provider.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../app/theme/app_colors.dart'; // Retained for semantic fallbacks
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../../core/widgets/app_message.dart';
 import '../../address/providers/address_provider.dart';
 import '../../address/widgets/address_card.dart';
@@ -205,6 +211,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final addressProvider = context.watch<AddressProvider>();
     final cart = context.watch<CartProvider>();
     final offers = context.watch<OffersProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+
     final giftRewards = offers.giftRewardsFor(
       cart.items.map(
         (item) => OfferCartLine(
@@ -224,9 +232,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           appliedSubtotal: _couponSubtotal,
           currentSubtotal: cart.subtotal,
         );
-    // total calculation is deferred to backend
+
     return PopScope(
-      // منع الخروج العرضي أثناء معالجة الطلب
       canPop: !_isPlacing,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _isPlacing) {
@@ -238,65 +245,82 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         }
       },
       child: Scaffold(
+        backgroundColor: colorScheme.surface,
         appBar: AppPageHeader(title: ('إتمام الطلب')),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── القسم الثاني: العنوان ──────────────────────────────
-                _sectionTitle('عنوان التوصيل'),
-                const SizedBox(height: 12),
-                if (addressProvider.selectedAddress != null) ...[
-                  AddressCard(address: addressProvider.selectedAddress!),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.edit_location_alt),
-                      label: const Text("تغيير أو إضافة عنوان"),
-                      onPressed: () async {
-                        final addressProvider = context.read<AddressProvider>();
+          child: AppConstrainedContent(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── القسم الثاني: العنوان ──────────────────────────────
+                  _sectionTitle('عنوان التوصيل'),
+                  const SizedBox(height: AppSpacing.md),
+                  if (addressProvider.selectedAddress != null) ...[
+                    AddressCard(address: addressProvider.selectedAddress!),
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: AppButton(
+                        variant: AppButtonVariant.outlined,
+                        icon: const AppIcon(Icons.edit_location_alt, size: AppIconSize.small),
+                        text: "تغيير أو إضافة عنوان",
+                        size: AppButtonSize.large,
+                        onPressed: () async {
+                          final addressProvider = context.read<AddressProvider>();
 
-                        final result = await context.push<bool>(
-                          AppRoutes.addresses,
-                          extra: true,
-                        );
+                          final result = await context.push<bool>(
+                            AppRoutes.addresses,
+                            extra: true,
+                          );
 
-                        if (!mounted) return;
+                          if (!mounted) return;
 
-                        if (result == true) {
-                          await addressProvider.loadAddresses();
-                        }
-                      },
+                          if (result == true) {
+                            await addressProvider.loadAddresses();
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ] else ...[
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children: const [
-                              Icon(Icons.location_off),
-                              SizedBox(width: 10),
+                            children: [
+                              AppIcon(Icons.location_off, color: colorScheme.onSurfaceVariant, size: AppIconSize.medium),
+                              const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
                                   "لا يوجد عنوان",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: AppTypography.titleMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          const Text("أضف عنوان التوصيل لإكمال الطلب"),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            "أضف عنوان التوصيل لإكمال الطلب",
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
+                            child: AppButton(
+                              text: "إضافة عنوان توصيل",
+                              size: AppButtonSize.large,
                               onPressed: () async {
                                 final addressProvider =
                                     context.read<AddressProvider>();
@@ -312,93 +336,110 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   await addressProvider.loadAddresses();
                                 }
                               },
-                              child: const Text("إضافة عنوان"),
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // ── القسم الثالث: طريقة الدفع ─────────────────────────
+                  _sectionTitle('طريقة الدفع'),
+                  const SizedBox(height: AppSpacing.md),
+                  PaymentMethodSelector(
+                    selectedMethod: _paymentMethod,
+                    onChanged: (method) {
+                      setState(() {
+                        _paymentMethod = method;
+                      });
+                    },
                   ),
-                ],
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
-                // ── القسم الثالث: طريقة الدفع ─────────────────────────
-                _sectionTitle('طريقة الدفع'),
-                const SizedBox(height: 12),
-                PaymentMethodSelector(
-                  selectedMethod: _paymentMethod,
-                  onChanged: (method) {
-                    setState(() {
-                      _paymentMethod = method;
-                    });
-                  },
-                ),
-
-                // حقل رفع صورة السند إذا اختار "تحويل بنكي"
-
-                const SizedBox(height: 24),
-
-                // ── كوبون الخصم ───────────────────────────────────────
-                _sectionTitle('كوبون الخصم'),
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _couponController,
-                        textDirection: TextDirection.ltr,
-                        decoration: InputDecoration(
-                          hintText: 'أدخل كود الخصم',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 14,
+                  // ── كوبون الخصم ───────────────────────────────────────
+                  _sectionTitle('كوبون الخصم'),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _couponController,
+                          textDirection: TextDirection.ltr,
+                          decoration: InputDecoration(
+                            hintText: 'أدخل كود الخصم',
+                            hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              borderSide: BorderSide(color: colorScheme.outlineVariant),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: 14,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 100,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _couponLoading ? null : _applyCoupon,
-                        child: _couponLoading
-                            ? const AppLoading(
-                                type: AppLoadingType.bars,
-                                size: 20,
-                                color: Colors.white,
-                              )
-                            : const Text("تطبيق"),
+                      const SizedBox(width: AppSpacing.sm),
+                      SizedBox(
+                        width: 100,
+                        height: 52, // Intentional component dimension
+                        child: ElevatedButton(
+                          onPressed: _couponLoading ? null : _applyCoupon,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                            ),
+                          ),
+                          child: _couponLoading
+                              ? AppLoading(
+                                  type: AppLoadingType.bars,
+                                  size: 20,
+                                  color: colorScheme.onPrimary,
+                                )
+                              : const Text("تطبيق"),
+                        ),
                       ),
+                    ],
+                  ),
+                  if (couponNeedsRecheck) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'تغيرت قيمة السلة، أعد تطبيق الكوبون للتحقق من الخصم.',
+                      style: AppTypography.labelMedium.copyWith(color: colorScheme.error),
                     ),
                   ],
-                ),
-                if (couponNeedsRecheck) ...[
-                  const SizedBox(height: 8),
-                  const Text(
-                    'تغيرت قيمة السلة، أعد تطبيق الكوبون للتحقق من الخصم.',
-                    style: TextStyle(color: AppColors.error, fontSize: 12),
-                  ),
-                ],
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
-                // ── القسم الرابع: ملخص الطلب ──────────────────────────
-                _sectionTitle('ملخص الطلب'),
-                const SizedBox(height: 12),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+                  // ── القسم الرابع: ملخص الطلب ──────────────────────────
+                  _sectionTitle('ملخص الطلب'),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.card),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
                     child: Column(
                       children: [
                         ...cart.items.map(
                           (item) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -406,10 +447,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   child: Text(
                                     '${item.product.name} × ${item.quantity}',
                                     overflow: TextOverflow.ellipsis,
+                                    style: AppTypography.bodyMedium,
                                   ),
                                 ),
                                 Text(
                                   '${item.totalPrice.toStringAsFixed(0)} ر.ي',
+                                  style: AppTypography.bodyMedium,
                                 ),
                               ],
                             ),
@@ -417,7 +460,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         ...giftRewards.map(
                           (reward) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -425,21 +468,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   child: Text(
                                     'هدية مجانية: ${reward.gift.productName} × ${reward.quantity}',
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: AppTypography.bodyMedium.copyWith(
                                       color: AppColors.success,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   '0 ر.ي',
-                                  style: TextStyle(color: AppColors.success),
+                                  style: AppTypography.bodyMedium.copyWith(color: AppColors.success),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const Divider(),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                          child: Divider(),
+                        ),
                         _summaryRow('المجموع', cart.subtotal),
                         if (couponDiscount > 0)
                           _summaryRow(
@@ -447,25 +493,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             -couponDiscount,
                             color: AppColors.success,
                           ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 3),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('رسوم التوصيل', style: TextStyle(color: Colors.grey)),
-                              Text('تُحدد عند إنشاء الطلب', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text('رسوم التوصيل', style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+                              Text('تُحدد عند إنشاء الطلب', style: AppTypography.bodySmall.copyWith(color: colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
-                        const Divider(),
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 3),
+                          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                          child: Divider(),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                           child: Center(
                             child: Text(
                               'سيتم عرض الإجمالي النهائي في تفاصيل الطلب',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
+                              style: AppTypography.labelLarge.copyWith(
+                                color: colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
@@ -475,58 +523,72 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ],
                     ),
                   ),
-                ),
-                //---------------------------  ملاحظات الطلب  ---------------------------
-                const SizedBox(height: 24),
 
-                _sectionTitle('ملاحظات الطلب'),
-                const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.xl),
 
-                TextField(
-                  controller: _notesController,
-                  minLines: 3,
-                  maxLines: 5,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                    hintText: 'اكتب أي ملاحظات حول الطلب...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    contentPadding: const EdgeInsets.all(14),
-                    alignLabelWithHint: true,
-                  ),
-                ),
+                  //---------------------------  ملاحظات الطلب  ---------------------------
+                  _sectionTitle('ملاحظات الطلب'),
+                  const SizedBox(height: AppSpacing.md),
 
-                const SizedBox(height: 30),
-
-                // ── زر تأكيد الطلب ────────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _isPlacing ? null : _placeOrder,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  TextField(
+                    controller: _notesController,
+                    minLines: 3,
+                    maxLines: 5,
+                    textInputAction: TextInputAction.newline,
+                    decoration: InputDecoration(
+                      hintText: 'اكتب أي ملاحظات حول الطلب...',
+                      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        borderSide: BorderSide(color: colorScheme.outlineVariant),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        borderSide: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.all(AppSpacing.md),
+                      alignLabelWithHint: true,
                     ),
-                    child: _isPlacing
-                        ? const AppLoading(
-                            type: AppLoadingType.bars,
-                            size: 24,
-                            color: Colors.white,
-                          )
-                        : const Text(
-                            'تأكيد الطلب',
-                            style: TextStyle(fontSize: 17),
-                          ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 30), // Intentional spacing before submit
+
+                  // ── زر تأكيد الطلب ────────────────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54, // Intentional component dimension
+                    child: ElevatedButton(
+                      onPressed: _isPlacing ? null : _placeOrder,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                      ),
+                      child: _isPlacing
+                          ? AppLoading(
+                              type: AppLoadingType.bars,
+                              size: 24,
+                              color: colorScheme.onPrimary,
+                            )
+                          : Text(
+                              'تأكيد الطلب',
+                              style: AppTypography.titleMedium.copyWith(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+                ],
+              ),
             ),
           ),
         ), // end Scaffold
@@ -534,10 +596,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _sectionTitle(String title) => Text(
-        title,
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-      );
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+    );
+  }
 
   Widget _summaryRow(
     String label,
@@ -545,17 +609,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     bool bold = false,
     Color? color,
   }) {
-    final style = TextStyle(
-      fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-      color: color,
-    );
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
-          Text('${value.toStringAsFixed(0)} ر.ي', style: style),
+          Text(label, style: AppTypography.bodyMedium.copyWith(
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            color: color,
+          )),
+          Text(
+            '${value.toStringAsFixed(0)} ر.ي',
+            style: AppTypography.bodyMedium.copyWith(
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: color,
+            )
+          ),
         ],
       ),
     );

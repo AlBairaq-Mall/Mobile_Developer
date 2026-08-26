@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/network/api_response.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/widgets/app_message.dart';
 import '../../../core/widgets/loading_widget.dart';
@@ -96,37 +97,41 @@ class ProductCartControl extends StatelessWidget {
                   );
                 }
               },
-        child: Ink(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: const Color(0xff39BFE7),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .08),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+        child: Semantics(
+          button: true,
+          label: 'إضافة إلى السلة',
+          child: Ink(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              border: Border.all(
+                color: const Color(0xff39BFE7), // Intentional Exception
+                width: 1.2,
               ),
-            ],
-          ),
-          child: isProcessing
-              ? const Center(
-                  child: AppLoading(
-                    type: AppLoadingType.dots,
-                    size: 12,
-                    color: Color(0xff39BFE7),
-                  ),
-                )
-              : const Icon(
-                  Icons.add_rounded,
-                  color: Color(0xff39BFE7),
-                  size: 20,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .08), // Intentional Exception to retain specific blur
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
+              ],
+            ),
+            child: isProcessing
+                ? const Center(
+                    child: AppLoading(
+                      type: AppLoadingType.dots,
+                      size: 12,
+                      color: Color(0xff39BFE7),
+                    ),
+                  )
+                : const AppIcon(
+                    Icons.add_rounded,
+                    color: Color(0xff39BFE7),
+                    size: AppIconSize.small,
+                  ),
+          ),
         ),
       ),
     );
@@ -142,12 +147,12 @@ class ProductCartControl extends StatelessWidget {
 
     return Container(
       height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: AppColors.border,
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -166,12 +171,16 @@ class ProductCartControl extends StatelessWidget {
                       context.read<CartProvider>().increase(index);
                     }
                   },
-            child: const SizedBox(
-              width: 22,
-              child: Icon(
-                Icons.add,
-                size: 16,
-                color: AppColors.primary,
+            child: Semantics(
+              button: true,
+              label: 'زيادة الكمية',
+              child: SizedBox(
+                width: 22,
+                child: AppIcon(
+                  Icons.add,
+                  size: AppIconSize.small,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),
@@ -179,10 +188,10 @@ class ProductCartControl extends StatelessWidget {
             width: 22,
             child: Center(
               child: isProcessing
-                  ? const AppLoading(
+                  ? AppLoading(
                       type: AppLoadingType.dots,
                       size: 14,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                     )
                   : Text(
                       quantity.toString(),
@@ -205,12 +214,16 @@ class ProductCartControl extends StatelessWidget {
                       context.read<CartProvider>().decrease(index);
                     }
                   },
-            child: const SizedBox(
-              width: 22,
-              child: Icon(
-                Icons.remove,
-                size: 16,
-                color: AppColors.primary,
+            child: Semantics(
+              button: true,
+              label: 'إنقاص الكمية',
+              child: SizedBox(
+                width: 22,
+                child: AppIcon(
+                  Icons.remove,
+                  size: AppIconSize.small,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),

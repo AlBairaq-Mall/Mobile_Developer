@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/router/app_routes.dart';
+import '../../../app/theme/app_radius.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/user_model.dart';
 
@@ -453,7 +454,7 @@ class _SplashScreenState extends State<SplashScreen>
           width: 62,
           height: 4,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: AppRadius.pillRadius,
             child: Stack(
               children: [
                 // Track
@@ -473,7 +474,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: AppRadius.pillRadius,
                       ),
                     ),
                   ),

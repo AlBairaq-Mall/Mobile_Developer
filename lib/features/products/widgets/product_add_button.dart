@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/network/api_response.dart';
 import '../../ads/providers/offers_provider.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../cart/providers/cart_provider.dart';
 
 class ProductAddButton extends StatelessWidget {
@@ -74,10 +75,10 @@ class ProductAddButton extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
+          child: const AppIcon(
             Icons.add_rounded,
             color: Color(0xff39BFE7),
-            size: 20,
+            size: AppIconSize.small,
           ),
         ),
       ),

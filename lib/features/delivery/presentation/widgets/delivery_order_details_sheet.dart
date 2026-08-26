@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/app_typography.dart';
+import '../../../../core/design_system/components/app_icon.dart';
+import '../../../../core/design_system/components/feedback/app_loading.dart';
 import '../../../../core/utils/launcher_utils.dart';
 import '../../../../core/widgets/app_message.dart';
-import '../../../../core/widgets/loading_widget.dart';
 import '../../models/delivery_order_model.dart';
 import '../../providers/delivery_provider.dart';
 
@@ -42,6 +45,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DeliveryProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     final isAvailableOrder = provider.availableOrders.any(
       (order) => order.id == widget.order.id,
@@ -55,9 +59,9 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
     );
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(
           top: Radius.circular(24),
         ),
       ),
@@ -73,25 +77,26 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
-                horizontal: 20,
+                horizontal: AppSpacing.lg,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildOrderHeader(
                     currentOrder,
+                    colorScheme,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   const _SectionTitle(
                     'العميل',
                   ),
@@ -102,31 +107,35 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                   if (currentOrder.customerPhone.isNotEmpty)
                     _buildPhoneRow(
                       currentOrder.customerPhone,
+                      colorScheme,
                     ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   _buildAddressSection(
                     currentOrder,
+                    colorScheme,
                   ),
                   if (currentOrder.notes != null &&
                       currentOrder.notes!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                     const _SectionTitle(
                       'ملاحظات',
                     ),
                     _buildNotes(
                       currentOrder.notes!,
+                      colorScheme,
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   _buildPaymentSection(
                     currentOrder,
+                    colorScheme,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   _SectionTitle(
                     'المنتجات (${currentOrder.items.length})',
                   ),
                   ...currentOrder.items.map(
-                    _buildOrderItem,
+                    (item) => _buildOrderItem(item, colorScheme),
                   ),
                   const SizedBox(height: 40),
                 ],
@@ -138,6 +147,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
             provider: provider,
             order: currentOrder,
             isAvailableOrder: isAvailableOrder,
+            colorScheme: colorScheme,
           ),
         ],
       ),
@@ -150,6 +160,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildOrderHeader(
     DeliveryOrderModel order,
+    ColorScheme colorScheme,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -157,13 +168,12 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
         Expanded(
           child: Text(
             'طلب #${order.orderNumber}',
-            style: const TextStyle(
-              fontSize: 20,
+            style: AppTypography.titleLarge.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         _StatusBadge(
           status: order.status,
         ),
@@ -177,6 +187,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildPhoneRow(
     String phone,
+    ColorScheme colorScheme,
   ) {
     return Row(
       children: [
@@ -203,18 +214,18 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
               'تم نسخ الرقم',
             );
           },
-          icon: const Icon(
+          icon: AppIcon(
             Icons.copy,
-            size: 20,
-            color: Colors.grey,
+            size: AppIconSize.small,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         IconButton(
           tooltip: 'اتصال',
           onPressed: () => _callCustomer(phone),
-          icon: Icon(
+          icon: AppIcon(
             Icons.phone,
-            size: 20,
+            size: AppIconSize.small,
             color: Colors.green.shade700,
           ),
         ),
@@ -245,6 +256,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildAddressSection(
     DeliveryOrderModel order,
+    ColorScheme colorScheme,
   ) {
     final location = order.location;
 
@@ -260,17 +272,15 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
+            AppIcon(
               Icons.location_on_outlined,
-              color: Colors.grey,
+              color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 order.address.isEmpty ? 'لا يوجد عنوان' : order.address,
-                style: const TextStyle(
-                  fontSize: 14,
-                ),
+                style: AppTypography.bodyMedium,
               ),
             ),
             Column(
@@ -295,10 +305,10 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                             'تم نسخ العنوان',
                           );
                         },
-                  icon: const Icon(
+                  icon: AppIcon(
                     Icons.copy,
-                    size: 20,
-                    color: Colors.grey,
+                    size: AppIconSize.small,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   constraints: const BoxConstraints(),
                   padding: const EdgeInsets.only(
@@ -312,10 +322,10 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                       location!.latitude!,
                       location.longitude!,
                     ),
-                    icon: Icon(
+                    icon: AppIcon(
                       Icons.map,
-                      size: 20,
-                      color: Colors.blue.shade700,
+                      size: AppIconSize.small,
+                      color: colorScheme.primary,
                     ),
                     constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
@@ -353,10 +363,11 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildNotes(
     String notes,
+    ColorScheme colorScheme,
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.orange.shade50,
         borderRadius: BorderRadius.circular(8),
@@ -364,16 +375,16 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
+          AppIcon(
             Icons.info_outline,
             color: Colors.orange.shade700,
-            size: 20,
+            size: AppIconSize.small,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               notes,
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: Colors.orange.shade900,
               ),
             ),
@@ -389,6 +400,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildPaymentSection(
     DeliveryOrderModel order,
+    ColorScheme colorScheme,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,20 +436,22 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
           order.total,
           isTotal: true,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
-            const Text(
+            Text(
               'حالة الدفع: ',
+              style: AppTypography.bodyMedium,
             ),
             Text(
               _paymentStatusLabel(
                 order.paymentStatus,
               ),
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: _paymentStatusColor(
                   order.paymentStatus,
+                  colorScheme,
                 ),
               ),
             ),
@@ -467,13 +481,14 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Color _paymentStatusColor(
     String status,
+    ColorScheme colorScheme,
   ) {
     switch (status) {
       case 'paid':
         return Colors.green.shade700;
 
       case 'failed':
-        return Colors.red.shade700;
+        return colorScheme.error;
 
       case 'pending':
       default:
@@ -487,10 +502,11 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildOrderItem(
     DeliveryOrderItemModel item,
+    ColorScheme colorScheme,
   ) {
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 12,
+        bottom: AppSpacing.md,
       ),
       child: Row(
         children: [
@@ -498,34 +514,33 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
             child: Text(
               '${item.quantity}x',
-              style: const TextStyle(
+              style: AppTypography.labelLarge.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   item.product?.displayName ?? 'منتج',
-                  style: const TextStyle(
+                  style: AppTypography.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (item.unit != null)
                   Text(
                     item.unit!.displayName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -534,7 +549,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
           if (item.isGift)
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8,
+                horizontal: AppSpacing.sm,
                 vertical: 4,
               ),
               decoration: BoxDecoration(
@@ -543,17 +558,17 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                   12,
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'هدية',
-                style: TextStyle(
+                style: AppTypography.labelSmall.copyWith(
                   color: Colors.pink,
-                  fontSize: 12,
                 ),
               ),
             )
           else
             Text(
               '${item.total.toStringAsFixed(2)} ر.س',
+              style: AppTypography.bodyMedium,
             ),
         ],
       ),
@@ -568,11 +583,13 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
     required DeliveryProvider provider,
     required DeliveryOrderModel order,
     required bool isAvailableOrder,
+    required ColorScheme colorScheme,
   }) {
     // Available order → claim it.
     if (isAvailableOrder) {
       return _buildClaimAction(
         order: order,
+        colorScheme: colorScheme,
       );
     }
 
@@ -580,6 +597,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
     if (order.status == 'shipped') {
       return _buildDeliverAction(
         order: order,
+        colorScheme: colorScheme,
       );
     }
 
@@ -593,16 +611,17 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildClaimAction({
     required DeliveryOrderModel order,
+    required ColorScheme colorScheme,
   }) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        MediaQuery.of(context).padding.bottom + 16,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        MediaQuery.of(context).padding.bottom + AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
@@ -615,29 +634,28 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: ElevatedButton(
+        child: FilledButton(
           onPressed: _isClaiming
               ? null
               : () => _claimOrder(
                     order,
                   ),
-          style: ElevatedButton.styleFrom(
+          style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(
-              vertical: 16,
+              vertical: AppSpacing.lg,
             ),
-            backgroundColor: Colors.blue.shade700,
-            foregroundColor: Colors.white,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
           ),
           child: _isClaiming
-              ? const AppLoading(
+              ? AppLoading(
                   type: AppLoadingType.bars,
                   size: 24,
-                  color: Colors.white,
+                  color: colorScheme.onPrimary,
                 )
-              : const Text(
+              : Text(
                   'استلام الطلب',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -652,16 +670,17 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
 
   Widget _buildDeliverAction({
     required DeliveryOrderModel order,
+    required ColorScheme colorScheme,
   }) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        MediaQuery.of(context).padding.bottom + 16,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        MediaQuery.of(context).padding.bottom + AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
@@ -674,7 +693,7 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: ElevatedButton.icon(
+        child: FilledButton.icon(
           onPressed: _isDelivering
               ? null
               : () => _deliverOrder(
@@ -682,12 +701,13 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                   ),
           icon: _isDelivering
               ? const SizedBox.shrink()
-              : const Icon(
+              : const AppIcon(
                   Icons.check_circle_outline,
+                  color: Colors.white,
                 ),
-          style: ElevatedButton.styleFrom(
+          style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(
-              vertical: 16,
+              vertical: AppSpacing.lg,
             ),
             backgroundColor: Colors.green.shade700,
             foregroundColor: Colors.white,
@@ -698,10 +718,9 @@ class _DeliveryOrderDetailsSheetState extends State<DeliveryOrderDetailsSheet> {
                   size: 24,
                   color: Colors.white,
                 )
-              : const Text(
+              : Text(
                   'تم التسليم',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -818,14 +837,15 @@ class _StatusBadge extends StatelessWidget {
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: _backgroundColor(status),
+        color: _backgroundColor(status, context),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         _label(status),
-        style: TextStyle(
+        style: AppTypography.labelSmall.copyWith(
           color: _foregroundColor(
             status,
+            context,
           ),
           fontWeight: FontWeight.bold,
         ),
@@ -862,16 +882,19 @@ class _StatusBadge extends StatelessWidget {
 
   Color _backgroundColor(
     String value,
+    BuildContext context,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     switch (value) {
       case 'delivered':
         return Colors.green.shade50;
 
       case 'cancelled':
-        return Colors.red.shade50;
+        return colorScheme.errorContainer;
 
       case 'shipped':
-        return Colors.blue.shade50;
+        return colorScheme.primaryContainer;
 
       case 'processing':
         return Colors.orange.shade50;
@@ -880,22 +903,25 @@ class _StatusBadge extends StatelessWidget {
         return Colors.indigo.shade50;
 
       default:
-        return Colors.grey.shade100;
+        return colorScheme.surfaceContainerHighest;
     }
   }
 
   Color _foregroundColor(
     String value,
+    BuildContext context,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     switch (value) {
       case 'delivered':
         return Colors.green.shade700;
 
       case 'cancelled':
-        return Colors.red.shade700;
+        return colorScheme.onErrorContainer;
 
       case 'shipped':
-        return Colors.blue.shade700;
+        return colorScheme.onPrimaryContainer;
 
       case 'processing':
         return Colors.orange.shade700;
@@ -904,7 +930,7 @@ class _StatusBadge extends StatelessWidget {
         return Colors.indigo.shade700;
 
       default:
-        return Colors.grey.shade700;
+        return colorScheme.onSurfaceVariant;
     }
   }
 }
@@ -924,16 +950,16 @@ class _SectionTitle extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 12,
+        bottom: AppSpacing.md,
       ),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: AppTypography.titleMedium.copyWith(
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
@@ -959,23 +985,24 @@ class _InfoRow extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 8,
+        bottom: AppSpacing.sm,
       ),
       child: Row(
         children: [
-          Icon(
+          AppIcon(
             icon,
-            color: Colors.grey,
-            size: 20,
+            color: colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               title,
               textDirection: isPhone ? TextDirection.ltr : null,
               textAlign: isPhone ? TextAlign.right : null,
+              style: AppTypography.bodyMedium,
             ),
           ),
         ],
@@ -1005,27 +1032,27 @@ class _PriceRow extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 8,
+        bottom: AppSpacing.sm,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : null,
-              fontSize: isTotal ? 16 : 14,
-            ),
+            style: isTotal
+                ? AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold)
+                : AppTypography.bodyMedium,
           ),
           Text(
             '${amount.toStringAsFixed(2)} ر.س',
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : null,
-              fontSize: isTotal ? 16 : 14,
-              color: isDiscount ? Colors.red : null,
-            ),
+            style: isTotal
+                ? AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold)
+                : AppTypography.bodyMedium.copyWith(
+                    color: isDiscount ? colorScheme.error : null,
+                  ),
           ),
         ],
       ),

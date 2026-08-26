@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../app/localization/language_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 
 class DeliveryProfileScreen extends StatelessWidget {
   const DeliveryProfileScreen({super.key});
@@ -16,138 +19,159 @@ class DeliveryProfileScreen extends StatelessWidget {
     final user = context.watch<AuthProvider>().user;
     final theme = context.watch<ThemeProvider>();
     final lang = context.watch<LanguageProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: const AppPageHeader(title: 'الملف الشخصي', showBack: false),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // بطاقة المعلومات
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
+      body: AppConstrainedContent(
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          children: [
+            // بطاقة المعلومات
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 36,
+                      backgroundColor: colorScheme.primary.withValues(
+                        alpha: 0.1,
+                      ),
+                      child: AppIcon(
+                        Icons.delivery_dining,
+                        size: AppIconSize.large,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user?.name ?? 'سائق التوصيل',
+                            style: AppTypography.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user?.email ?? '',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          Text(
+                            user?.phone ?? '',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+  
+            // إعدادات
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Colors.blue.shade700.withValues(
-                      alpha: 0.1,
-                    ),
-                    child: Icon(
-                      Icons.delivery_dining,
-                      size: 40,
-                      color: Colors.blue.shade700,
-                    ),
+                  SwitchListTile(
+                    secondary: AppIcon(Icons.dark_mode_outlined, size: AppIconSize.medium),
+                    title: Text('الوضع الليلي', style: AppTypography.bodyLarge),
+                    value: theme.isDark,
+                    activeThumbColor: colorScheme.primary,
+                    onChanged: theme.setDark,
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.name ?? 'سائق التوصيل',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  ListTile(
+                    leading: AppIcon(Icons.language, size: AppIconSize.medium),
+                    title: Text('اللغة', style: AppTypography.bodyLarge),
+                    subtitle: Text(
+                      lang.isArabic ? 'العربية' : 'English',
+                      style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
+                    trailing: ToggleButtons(
+                      borderRadius: BorderRadius.circular(8),
+                      isSelected: [lang.isArabic, lang.isEnglish],
+                      onPressed: (i) =>
+                          i == 0 ? lang.setArabic() : lang.setEnglish(),
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('ع'),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? '',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      Text(
-                        user?.phone ?? '',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    ],
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('EN'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          // إعدادات
-          Card(
-            child: Column(
-              children: [
-                SwitchListTile(
-                  secondary: const Icon(Icons.dark_mode_outlined),
-                  title: const Text('الوضع الليلي'),
-                  value: theme.isDark,
-                  activeThumbColor: AppColors.primary,
-                  onChanged: theme.setDark,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('اللغة'),
-                  subtitle: Text(lang.isArabic ? 'العربية' : 'English'),
-                  trailing: ToggleButtons(
-                    borderRadius: BorderRadius.circular(8),
-                    isSelected: [lang.isArabic, lang.isEnglish],
-                    onPressed: (i) =>
-                        i == 0 ? lang.setArabic() : lang.setEnglish(),
-                    children: const [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('ع'),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('EN'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // تسجيل الخروج
-          ListTile(
-            tileColor: Colors.red.withValues(alpha: 0.06),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'تسجيل الخروج',
-              style: TextStyle(color: Colors.red),
-            ),
-            onTap: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (dialogContext) {
-                  return AlertDialog(
-                    title: const Text('تسجيل الخروج'),
-                    content: const Text('هل أنت متأكد أنك تريد تسجيل الخروج؟'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dialogContext, false),
-                        child: const Text('إلغاء'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(dialogContext, true),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.red,
+            const SizedBox(height: AppSpacing.lg),
+  
+            // تسجيل الخروج
+            ListTile(
+              tileColor: colorScheme.error.withValues(alpha: 0.06),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: AppIcon(Icons.logout, color: colorScheme.error, size: AppIconSize.medium),
+              title: Text(
+                'تسجيل الخروج',
+                style: AppTypography.titleMedium.copyWith(color: colorScheme.error),
+              ),
+              onTap: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) {
+                    return AlertDialog(
+                      title: const Text('تسجيل الخروج'),
+                      content: const Text('هل أنت متأكد أنك تريد تسجيل الخروج؟'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: const Text('إلغاء'),
                         ),
-                        child: const Text('تسجيل الخروج'),
-                      ),
-                    ],
-                  );
-                },
-              );
-
-              if (confirmed != true || !context.mounted) return;
-
-              await context.read<AuthProvider>().logout();
-
-              if (!context.mounted) return;
-              context.go(AppRoutes.login);
-            },
-          ),
-        ],
+                        FilledButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colorScheme.error,
+                          ),
+                          child: const Text('تسجيل الخروج'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+  
+                if (confirmed != true || !context.mounted) return;
+  
+                await context.read<AuthProvider>().logout();
+  
+                if (!context.mounted) return;
+                context.go(AppRoutes.login);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

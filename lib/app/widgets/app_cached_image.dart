@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../../core/design_system/components/app_icon.dart';
 import '../theme/app_radius.dart';
 
 class AppCachedImage extends StatelessWidget {
@@ -109,9 +110,9 @@ class AppCachedImage extends StatelessWidget {
             color: Colors.white,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: const AppIcon(
             Icons.shopping_bag_rounded,
-            size: 38,
+            size: AppIconSize.large,
             color: AppColors.primary,
           ),
         ),

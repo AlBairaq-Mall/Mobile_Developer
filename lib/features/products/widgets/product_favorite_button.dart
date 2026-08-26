@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_shadows.dart';
+import '../../../core/design_system/components/app_icon.dart';
 
 class ProductFavoriteButton extends StatelessWidget {
   final bool isFavorite;
@@ -15,25 +16,28 @@ class ProductFavoriteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.xs,
-          ),
-          child: Icon(
-            isFavorite ? Icons.favorite : Icons.favorite_border_rounded,
-            size: 18,
-            color: isFavorite ? AppColors.favorite : AppColors.textHint,
-          ),
+    return Semantics(
+      button: true,
+      label: isFavorite ? 'إزالة من المفضلة' : 'إضافة للمفضلة',
+      child: IconButton(
+        onPressed: onTap,
+        iconSize: 18,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(
+          minWidth: 48,
+          minHeight: 48,
+        ),
+        style: IconButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shadowColor: AppShadows.xs.first.color,
+          elevation: 2,
+        ),
+        icon: AppIcon(
+          isFavorite ? Icons.favorite : Icons.favorite_border_rounded,
+          size: AppIconSize.small,
+          color: isFavorite
+              ? AppColors.favorite
+              : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );

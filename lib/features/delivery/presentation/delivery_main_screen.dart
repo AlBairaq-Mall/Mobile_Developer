@@ -3,6 +3,7 @@ import 'delivery_home_screen.dart';
 import 'delivery_history_screen.dart';
 import 'delivery_profile_screen.dart';
 import 'delivery_earnings_screen.dart';
+import '../../../core/design_system/components/app_icon.dart';
 
 class DeliveryMainScreen extends StatefulWidget {
   const DeliveryMainScreen({super.key});
@@ -27,22 +28,23 @@ class _DeliveryMainScreenState extends State<DeliveryMainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
-        selectedItemColor: Colors.blue.shade700,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
+            icon: AppIcon(Icons.home_outlined, size: AppIconSize.medium),
             label: 'الرئيسية',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
+            icon: AppIcon(Icons.history_outlined, size: AppIconSize.medium),
             label: 'السجل',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
+            icon: AppIcon(Icons.attach_money, size: AppIconSize.medium),
             label: 'الأرباح',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
+            icon: AppIcon(Icons.person_outline, size: AppIconSize.medium),
             label: 'حسابي',
           ),
         ],

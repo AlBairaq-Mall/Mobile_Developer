@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../core/widgets/app_page_header.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import '../models/admin_reports_model.dart';
 import '../providers/admin_reports_provider.dart';
 
@@ -34,7 +37,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         showBack: false,
       ),
       body: provider.isLoading && provider.sales == null
-          ? const LoadingWidget()
+          ? const Center(child: AppLoading())
           : RefreshIndicator(
               onRefresh: provider.refresh,
               child: _ReportsBody(provider: provider),
@@ -57,10 +60,10 @@ class _ReportsBody extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           const SizedBox(height: 180),
-          Icon(
+          AppIcon(
             Icons.error_outline,
-            size: 56,
             color: Colors.red.shade300,
+            size: AppIconSize.large,
           ),
           const SizedBox(height: 16),
           const Center(
@@ -86,10 +89,7 @@ class _ReportsBody extends StatelessWidget {
         const SizedBox(height: 18),
         const Text(
           'ملخص النظام',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTypography.titleLarge,
         ),
         const SizedBox(height: 12),
         _SummaryGrid(
@@ -251,25 +251,20 @@ class _StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            AppIcon(
               icon,
               color: AppColors.primary,
+              size: AppIconSize.medium,
             ),
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: AppTypography.bodySmall,
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-              ),
+              style: AppTypography.titleLarge,
             ),
           ],
         ),
@@ -301,10 +296,7 @@ class _OrdersSection extends StatelessWidget {
       children: [
         const Text(
           'الطلبات',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTypography.titleLarge,
         ),
         const SizedBox(height: 12),
         Card(
@@ -319,10 +311,7 @@ class _OrdersSection extends StatelessWidget {
                     ),
                     Text(
                       '${report.totalOrders}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTypography.titleLarge,
                     ),
                   ],
                 ),
@@ -334,8 +323,7 @@ class _OrdersSection extends StatelessWidget {
                     ),
                     Text(
                       '${_format(report.totalAmount)} ر.ي',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                      style: AppTypography.titleMedium.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
@@ -349,17 +337,15 @@ class _OrdersSection extends StatelessWidget {
         ...statuses.map(
           (item) => Card(
             child: ListTile(
-              leading: Icon(
+              leading: AppIcon(
                 Icons.circle,
-                size: 12,
+                size: AppIconSize.small,
                 color: item.$3,
               ),
               title: Text(item.$1),
               trailing: Text(
                 '${item.$2}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTypography.titleSmall,
               ),
             ),
           ),
@@ -383,23 +369,12 @@ class _DriversSection extends StatelessWidget {
       children: [
         const Text(
           'أداء المندوبين',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTypography.titleLarge,
         ),
         const SizedBox(height: 12),
         if (provider.drivers.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Center(
-                child: Text(
-                  'لا توجد بيانات للمندوبين',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-            ),
+          const AppEmptyState(
+            title: 'لا توجد بيانات للمندوبين',
           ),
         ...provider.drivers.map(
           (driver) => Card(
@@ -421,16 +396,15 @@ class _DriversSection extends StatelessWidget {
               },
               leading: CircleAvatar(
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: const Icon(
+                child: const AppIcon(
                   Icons.delivery_dining,
                   color: AppColors.primary,
+                  size: AppIconSize.medium,
                 ),
               ),
               title: Text(
                 driver.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTypography.titleSmall,
               ),
               subtitle: Text(
                 '${driver.deliveredOrders} طلب تم تسليمه',
@@ -441,17 +415,13 @@ class _DriversSection extends StatelessWidget {
                 children: [
                   Text(
                     '${_format(driver.totalSales)} ر.ي',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                    style: AppTypography.titleSmall.copyWith(
                       color: AppColors.primary,
                     ),
                   ),
                   const Text(
                     'عرض التفاصيل',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
+                    style: AppTypography.caption,
                   ),
                 ],
               ),
@@ -492,16 +462,13 @@ class _DriverDetails extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 report.name,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTypography.headlineSmall,
               ),
               const SizedBox(height: 4),
               Text(
                 report.email,
-                style: const TextStyle(
-                  color: Colors.grey,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -565,7 +532,7 @@ class _DriverRow extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(
+            style: AppTypography.labelLarge.copyWith(
               fontWeight: bold ? FontWeight.bold : FontWeight.w600,
             ),
           ),

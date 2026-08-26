@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/tokens/app_radius.dart';
 import '../../auth/utils/auth_gate.dart';
 import '../../cart/presentation/cart_screen.dart';
 import '../../cart/providers/cart_provider.dart';
@@ -96,6 +98,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final navigation = context.watch<NavigationProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Create only the currently requested tab.
     _ensureTabCreated(navigation.index);
@@ -128,11 +131,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             height: 74,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(26),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .16),
+                  color: colorScheme.shadow.withValues(alpha: .16),
                   blurRadius: 45,
                   spreadRadius: 1,
                   offset: const Offset(0, 10),
@@ -237,12 +240,13 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = index == current;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => onTap(index),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.mdRadius,
         child: AnimatedScale(
           scale: selected ? 1.05 : 1,
           duration: const Duration(milliseconds: 180),
@@ -254,29 +258,33 @@ class _NavItem extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.primary.withValues(alpha: .08)
+                  ? colorScheme.primary.withValues(alpha: .08)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: AppRadius.mdRadius,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 180),
-                  child: Icon(
+                  child: AppIcon(
                     icon,
                     key: ValueKey(selected),
-                    size: 26,
-                    color: selected ? AppColors.primary : AppColors.textHint,
+                    size: AppIconSize.medium,
+                    color: selected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: AppTypography.labelSmall.copyWith(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: selected ? AppColors.primary : AppColors.textHint,
+                    color: selected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -306,6 +314,7 @@ class _CartBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = current == 2;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
@@ -327,24 +336,26 @@ class _CartBtn extends StatelessWidget {
                     height: 56,
                     decoration: BoxDecoration(
                       gradient: selected
-                          ? const LinearGradient(
+                          ? LinearGradient(
                               colors: [
-                                AppColors.primary,
-                                AppColors.brand,
+                                colorScheme.primary,
+                                colorScheme.tertiary,
                               ],
                             )
                           : null,
                       color: selected
                           ? null
-                          : AppColors.primary.withValues(
+                          : colorScheme.primary.withValues(
                               alpha: .08,
                             ),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(
-                      Icons.shopping_cart_rounded,
-                      color: selected ? Colors.white : AppColors.primary,
-                      size: 26,
+                    child: Center(
+                      child: AppIcon(
+                        Icons.shopping_cart_rounded,
+                        color: selected ? colorScheme.onPrimary : colorScheme.primary,
+                        size: AppIconSize.medium,
+                      ),
                     ),
                   ),
                 ),
@@ -355,15 +366,15 @@ class _CartBtn extends StatelessWidget {
                     child: Container(
                       width: 20,
                       height: 20,
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '$count',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: AppTypography.labelSmall.copyWith(
+                            color: colorScheme.onError,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -376,10 +387,12 @@ class _CartBtn extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               'السلة',
-              style: TextStyle(
+              style: AppTypography.labelSmall.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: selected ? AppColors.primary : AppColors.textHint,
+                color: selected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ],

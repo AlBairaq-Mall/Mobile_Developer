@@ -3,8 +3,15 @@ import 'package:bhm_supermarket/features/navigation/providers/navigation_provide
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/design_system/components/app_button.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
 import '../../ads/models/offer_model.dart';
 import '../../ads/providers/offers_provider.dart';
 import '../providers/cart_provider.dart';
@@ -28,7 +35,6 @@ class _CartScreenState extends State<CartScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_synced && mounted) {
         _synced = true;
-
         await context.read<CartProvider>().loadFromServer();
       }
     });
@@ -38,6 +44,8 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final offers = context.watch<OffersProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+
     final giftRewards = offers.giftRewardsFor(
       cart.items.map(
         (item) => OfferCartLine(
@@ -49,7 +57,7 @@ class _CartScreenState extends State<CartScreen> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppPageHeader(
         title: 'السلة',
         showBack: false,
@@ -60,7 +68,7 @@ class _CartScreenState extends State<CartScreen> {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   title: const Text('تفريغ السلة'),
                   content: const Text('هل تريد حذف جميع المنتجات؟'),
@@ -74,190 +82,153 @@ class _CartScreenState extends State<CartScreen> {
                         Navigator.pop(ctx);
                         await cart.clear();
                       },
-                      child: const Text(
+                      child: Text(
                         'حذف',
-                        style: TextStyle(color: AppColors.error),
+                        style: TextStyle(color: colorScheme.error),
                       ),
                     ),
                   ],
                 ),
               ),
-              icon: const Icon(
+              icon: AppIcon(
                 Icons.delete_outline,
-                size: 18,
-                color: AppColors.error,
+                size: AppIconSize.small,
+                color: colorScheme.error,
               ),
-              label: const Text(
+              label: Text(
                 'تفريغ',
-                style: TextStyle(color: AppColors.error, fontSize: 13),
+                style: TextStyle(color: colorScheme.error, fontSize: 13),
               ),
             ),
         ],
       ),
-      body: cart.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: AppConstrainedContent(
+        child: cart.isEmpty
+            ? AppEmptyState(
+                icon: Icons.shopping_bag_outlined,
+                title: 'السلة فارغة',
+                subtitle: 'أضف منتجات من الصفحة الرئيسية',
+                actionLabel: 'تسوق الآن',
+                onAction: () {
+                  context.read<NavigationProvider>().changeTab(0);
+                },
+              )
+            : Column(
                 children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text('🛒', style: TextStyle(fontSize: 54)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'السلة فارغة',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'أضف منتجات من الصفحة الرئيسية',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 28),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<NavigationProvider>().changeTab(0);
-                    },
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                    label: const Text('تسوق الآن'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(200, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  // Items list
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
                       ),
+                      itemCount: cart.items.length + giftRewards.length,
+                      itemBuilder: (context, index) {
+                        if (index >= cart.items.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: _GiftRewardCard(
+                              reward: giftRewards[index - cart.items.length],
+                            ),
+                          );
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          child: CartItemCard(
+                            item: cart.items[index],
+                            onIncrease: () async {
+                              await cart.increase(index);
+                            },
+                            onDecrease: () async {
+                              await cart.decrease(index);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Summary card
+                  Container(
+                    margin: const EdgeInsets.all(AppSpacing.md),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06), // Intentional shadow
+                          blurRadius: 20,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _SummaryRow(
+                          'المجموع',
+                          '${cart.originalSubtotal.toStringAsFixed(0)} ر.ي',
+                        ),
+
+                        if (cart.offerDiscount > 0) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          _SummaryRow(
+                            'الخصم',
+                            '-${cart.offerDiscount.toStringAsFixed(0)} ر.ي',
+                            valueColor: AppColors.success,
+                          ),
+                        ],
+
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                          child: Divider(),
+                        ),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'إجمالي المنتجات',
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${cart.subtotal.toStringAsFixed(0)} ر.ي',
+                              style: AppTypography.titleLarge.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+                        AppButton(
+                          onPressed: () {
+                            AuthGate.check(
+                              context,
+                              destination: AppRoutes.checkout,
+                              onAuthenticated: () {
+                                context.push(AppRoutes.checkout);
+                              },
+                            );
+                          },
+                          icon: const AppIcon(
+                            Icons.arrow_back_ios_rounded,
+                            size: AppIconSize.small,
+                            directionSensitive: true,
+                          ),
+                          text: 'متابعة إتمام الطلب',
+                          size: AppButtonSize.large,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            )
-          : Column(
-              children: [
-                // Items list
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                    itemCount: cart.items.length + giftRewards.length,
-                    itemBuilder: (context, index) {
-                      if (index >= cart.items.length) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _GiftRewardCard(
-                            reward: giftRewards[index - cart.items.length],
-                          ),
-                        );
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: CartItemCard(
-                          item: cart.items[index],
-                          onIncrease: () async {
-                            await cart.increase(index);
-                          },
-                          onDecrease: () async {
-                            await cart.decrease(index);
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // Summary card
-                Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 20,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      //ملخص الطلب من هنا
-                      _SummaryRow(
-                        'المجموع',
-                        '${cart.originalSubtotal.toStringAsFixed(0)} ر.ي',
-                      ),
-
-                      if (cart.offerDiscount > 0) ...[
-                        const SizedBox(height: 8),
-                        _SummaryRow(
-                          'الخصم',
-                          '-${cart.offerDiscount.toStringAsFixed(0)} ر.ي',
-                          valueColor: AppColors.success,
-                        ),
-                      ],
-
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(),
-                      ),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'إجمالي المنتجات',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${cart.subtotal.toStringAsFixed(0)} ر.ي',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          AuthGate.check(
-                            context,
-                            destination: AppRoutes.checkout,
-                            onAuthenticated: () {
-                              context.push(AppRoutes.checkout);
-                            },
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.arrow_back_ios_rounded,
-                          size: 16,
-                        ),
-                        label: const Text('متابعة إتمام الطلب'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          minimumSize: const Size(double.infinity, 52),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      ),
     );
   }
 }
@@ -270,16 +241,19 @@ class _SummaryRow extends StatelessWidget {
   const _SummaryRow(this.label, this.value, {this.valueColor});
 
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-          Text(
-            value,
-            style: TextStyle(fontWeight: FontWeight.w600, color: valueColor),
-          ),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant)),
+        Text(
+          value,
+          style: AppTypography.labelLarge.copyWith(color: valueColor),
+        ),
+      ],
+    );
+  }
 }
 
 class _GiftRewardCard extends StatelessWidget {
@@ -289,26 +263,27 @@ class _GiftRewardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final successColor = AppColors.success;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
+        color: successColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: successColor.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.card_giftcard_rounded, color: AppColors.success),
-          const SizedBox(width: 12),
+          AppIcon(Icons.card_giftcard_rounded, color: successColor),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'هدية مجانية',
-                  style: TextStyle(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.bold,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: successColor,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -316,11 +291,10 @@ class _GiftRewardCard extends StatelessWidget {
               ],
             ),
           ),
-          const Text(
+          Text(
             '0 ر.ي',
-            style: TextStyle(
-              color: AppColors.success,
-              fontWeight: FontWeight.bold,
+            style: AppTypography.titleSmall.copyWith(
+              color: successColor,
             ),
           ),
         ],

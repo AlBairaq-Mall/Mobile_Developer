@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../app/localization/language_provider.dart';
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_typography.dart';
+import '../../../core/design_system/tokens/app_radius.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
+import '../../../core/design_system/components/app_icon.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -14,111 +18,142 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeProvider>();
     final lang = context.watch<LanguageProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: const AppPageHeader(title: 'الإعدادات'),
-      body: ListView(
-        children: [
-          // المظهر
-          const _SectionHeader('المظهر والواجهة'),
-          SwitchListTile(
-            secondary: Icon(
-              theme.isDark ? Icons.dark_mode : Icons.light_mode,
-              color: AppColors.primary,
+      body: AppConstrainedContent(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          children: [
+            // المظهر
+            const _SectionHeader('المظهر والواجهة'),
+            SwitchListTile(
+              secondary: AppIcon(
+                theme.isDark ? Icons.dark_mode : Icons.light_mode,
+                color: colorScheme.primary,
+                size: AppIconSize.medium,
+              ),
+              title: Text('الوضع الليلي', style: AppTypography.titleMedium),
+              subtitle: Text(
+                theme.isDark ? 'مفعّل' : 'معطّل',
+                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              value: theme.isDark,
+              activeThumbColor: colorScheme.primary,
+              onChanged: theme.setDark,
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
             ),
-            title: const Text('الوضع الليلي'),
-            subtitle: Text(theme.isDark ? 'مفعّل' : 'معطّل'),
-            value: theme.isDark,
-            activeThumbColor: AppColors.primary,
-            onChanged: theme.setDark,
-          ),
-          ListTile(
-            leading: const Icon(Icons.language, color: AppColors.primary),
-            title: const Text('اللغة'),
-            subtitle: Text(lang.isArabic ? 'العربية' : 'English'),
-            trailing: ToggleButtons(
-              borderRadius: BorderRadius.circular(10),
-              isSelected: [lang.isArabic, lang.isEnglish],
-              selectedColor: Colors.white,
-              fillColor: AppColors.primary,
-              onPressed: (i) => i == 0 ? lang.setArabic() : lang.setEnglish(),
-              children: const [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    'ع',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+            ListTile(
+              leading: AppIcon(Icons.language, color: colorScheme.primary, size: AppIconSize.medium),
+              title: Text('اللغة', style: AppTypography.titleMedium),
+              subtitle: Text(
+                lang.isArabic ? 'العربية' : 'English',
+                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              trailing: ToggleButtons(
+                borderRadius: AppRadius.mdRadius,
+                isSelected: [lang.isArabic, lang.isEnglish],
+                selectedColor: colorScheme.onPrimary,
+                fillColor: colorScheme.primary,
+                color: colorScheme.onSurface,
+                onPressed: (i) => i == 0 ? lang.setArabic() : lang.setEnglish(),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    child: Text(
+                      'ع',
+                      style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    'EN',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    child: Text(
+                      'EN',
+                      style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Divider(),
+            const Divider(height: AppSpacing.xl),
 
-          // الحساب
-          const _SectionHeader('الحساب'),
-          ListTile(
-            leading: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.primary,
+            // الحساب
+            const _SectionHeader('الحساب'),
+            ListTile(
+              leading: AppIcon(
+                Icons.notifications_outlined,
+                color: colorScheme.primary,
+                size: AppIconSize.medium,
+              ),
+              title: Text('الإشعارات', style: AppTypography.titleMedium),
+              trailing: AppIcon(Icons.chevron_left, color: colorScheme.outline, size: AppIconSize.medium, directionSensitive: true),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              onTap: () => context.push(AppRoutes.notifications),
             ),
-            title: const Text('الإشعارات'),
-            trailing: const Icon(Icons.chevron_left),
-            onTap: () => context.push(AppRoutes.notifications),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.location_on_outlined,
-              color: AppColors.primary,
+            ListTile(
+              leading: AppIcon(
+                Icons.location_on_outlined,
+                color: colorScheme.primary,
+                size: AppIconSize.medium,
+              ),
+              title: Text('عناوين التوصيل', style: AppTypography.titleMedium),
+              trailing: AppIcon(Icons.chevron_left, color: colorScheme.outline, size: AppIconSize.medium, directionSensitive: true),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              onTap: () => context.push(AppRoutes.addresses),
             ),
-            title: const Text('عناوين التوصيل'),
-            trailing: const Icon(Icons.chevron_left),
-            onTap: () => context.push(AppRoutes.addresses),
-          ),
-          const Divider(),
+            const Divider(height: AppSpacing.xl),
 
-          // معلومات
-          const _SectionHeader('معلومات'),
-          ListTile(
-            leading: const Icon(Icons.info_outline, color: AppColors.primary),
-            title: const Text('من نحن'),
-            trailing: const Icon(Icons.chevron_left),
-            onTap: () => context.push(AppRoutes.aboutUs),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.privacy_tip_outlined,
-              color: AppColors.primary,
+            // معلومات
+            const _SectionHeader('معلومات'),
+            ListTile(
+              leading: AppIcon(Icons.info_outline, color: colorScheme.primary, size: AppIconSize.medium),
+              title: Text('من نحن', style: AppTypography.titleMedium),
+              trailing: AppIcon(Icons.chevron_left, color: colorScheme.outline, size: AppIconSize.medium, directionSensitive: true),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              onTap: () => context.push(AppRoutes.aboutUs),
             ),
-            title: const Text('سياسة الخصوصية'),
-            trailing: const Icon(Icons.chevron_left),
-            onTap: () => context.push(AppRoutes.privacyPolicy),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.description_outlined,
-              color: AppColors.primary,
+            ListTile(
+              leading: AppIcon(
+                Icons.privacy_tip_outlined,
+                color: colorScheme.primary,
+                size: AppIconSize.medium,
+              ),
+              title: Text('سياسة الخصوصية', style: AppTypography.titleMedium),
+              trailing: AppIcon(Icons.chevron_left, color: colorScheme.outline, size: AppIconSize.medium, directionSensitive: true),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              onTap: () => context.push(AppRoutes.privacyPolicy),
             ),
-            title: const Text('شروط الاستخدام'),
-            trailing: const Icon(Icons.chevron_left),
-            onTap: () => context.push(AppRoutes.termsOfUse),
-          ),
-          const Divider(),
+            ListTile(
+              leading: AppIcon(
+                Icons.description_outlined,
+                color: colorScheme.primary,
+                size: AppIconSize.medium,
+              ),
+              title: Text('شروط الاستخدام', style: AppTypography.titleMedium),
+              trailing: AppIcon(Icons.chevron_left, color: colorScheme.outline, size: AppIconSize.medium, directionSensitive: true),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              onTap: () => context.push(AppRoutes.termsOfUse),
+            ),
+            const Divider(height: AppSpacing.xl),
 
-          // الإصدار
-          const ListTile(
-            leading: Icon(Icons.info_outline, color: Colors.grey),
-            title: Text('إصدار التطبيق', style: TextStyle(color: Colors.grey)),
-            trailing: Text('v1.0.0', style: TextStyle(color: Colors.grey)),
-          ),
-        ],
+            // الإصدار
+            ListTile(
+              leading: AppIcon(Icons.info_outline, color: colorScheme.onSurfaceVariant, size: AppIconSize.medium),
+              title: Text(
+                'إصدار التطبيق',
+                style: AppTypography.titleMedium.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              trailing: Text(
+                'v1.0.0',
+                style: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -128,15 +163,16 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader(this.title);
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.outline,
-            fontSize: 12,
-          ),
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.xs),
+      child: Text(
+        title,
+        style: AppTypography.labelLarge.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.outline,
         ),
-      );
+      ),
+    );
+  }
 }

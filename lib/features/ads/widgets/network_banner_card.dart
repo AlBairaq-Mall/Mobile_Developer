@@ -109,8 +109,11 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_radius.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/components/app_icon.dart';
 import '../models/ad_model.dart';
 
 class NetworkBannerCard extends StatelessWidget {
@@ -136,7 +139,7 @@ class NetworkBannerCard extends StatelessWidget {
     return GestureDetector(
       onTap: ad.url.isEmpty ? null : _openUrl,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -168,7 +171,8 @@ class NetworkBannerCard extends StatelessWidget {
             // Content
             // ─────────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
               child: Align(
                 alignment: rtl ? Alignment.centerRight : Alignment.centerLeft,
                 child: ConstrainedBox(
@@ -230,12 +234,13 @@ class _BannerAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(7),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -247,10 +252,11 @@ class _BannerAction extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
-              Icon(
-                rtl ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
-                size: 16,
+              const AppIcon(
+                Icons.arrow_forward_rounded,
+                size: AppIconSize.small,
                 color: AppColors.primary,
+                directionSensitive: true,
               ),
             ],
           ),

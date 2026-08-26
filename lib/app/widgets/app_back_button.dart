@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../router/navigation_helper.dart';
 import '../theme/app_colors.dart';
+import '../../core/design_system/components/app_icon.dart';
 
 /// ```
 class AppBackButton extends StatelessWidget {
@@ -61,7 +62,7 @@ class AppBackButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
-              child: Icon(resolvedIcon, size: 20, color: resolvedIconColor),
+              child: AppIcon(resolvedIcon, size: AppIconSize.small, color: resolvedIconColor, directionSensitive: true),
             ),
           ),
         ),
@@ -114,7 +115,7 @@ class AppBackButtonOverlay extends StatelessWidget {
               ),
             ],
           ),
-          child: Center(child: Icon(icon, size: 18, color: iconColor)),
+          child: Center(child: AppIcon(icon, size: AppIconSize.small, color: iconColor, directionSensitive: true)),
         ),
       ),
     );

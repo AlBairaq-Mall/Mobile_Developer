@@ -9,9 +9,10 @@ import '../../../app/theme/app_shadows.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/widgets/app_cached_image.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../../core/models/category_model.dart';
-import '../../../core/widgets/empty_state.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import '../providers/category_provider.dart';
 
 class CategoriesScreen extends StatelessWidget {
@@ -28,13 +29,13 @@ class CategoriesScreen extends StatelessWidget {
     final provider = context.watch<CategoryProvider>();
 
     if (provider.isLoading) {
-      return const Scaffold(body: LoadingWidget());
+      return const Scaffold(body: Center(child: AppLoading()));
     }
 
     if (provider.error != null) {
       return Scaffold(
         appBar: const AppPageHeader(title: "الأقسام", showBack: false),
-        body: EmptyState(
+        body: AppEmptyState(
           icon: Icons.warning_rounded,
           title: "تعذر تحميل الأقسام",
           subtitle: provider.error,
@@ -44,11 +45,21 @@ class CategoriesScreen extends StatelessWidget {
       );
     }
 
-    final categories = provider.mainCategories;
+    final categories = [
+      const CategoryModel(
+        id: 'special_offers',
+        nameAr: 'العروض',
+        nameEn: 'Offers',
+        image: '',
+        parentId: null,
+        sortOrder: 0,
+      ),
+      ...provider.mainCategories,
+    ];
 
     if (categories.isEmpty) {
       return const Scaffold(
-        body: EmptyState(
+        body: AppEmptyState(
           icon: Icons.inventory_2_rounded,
           title: "لا توجد أقسام",
           subtitle: "سيتم إضافة الأقسام قريباً",
@@ -58,64 +69,73 @@ class CategoriesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: const AppPageHeader(title: "الأقسام", showBack: false),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        physics: const BouncingScrollPhysics(),
-        itemCount: categories.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: AppSpacing.md,
-          mainAxisSpacing: AppSpacing.md,
-          childAspectRatio: .92,
-        ),
-        itemBuilder: (_, index) {
-          final category = categories[index];
+      body: AppConstrainedContent(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            int crossAxisCount = (constraints.maxWidth / 160).floor();
+            if (crossAxisCount < 2) crossAxisCount = 2;
 
-          return Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              onTap: () => _open(context, category),
-              child: Ink(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                  boxShadow: AppShadows.card,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Hero(
-                          tag: 'cat_${category.id}',
-                          child: category.imageUrl.isNotEmpty
-                              ? AppCachedImage(
-                                  imageUrl: category.imageUrl,
-                                  fit: BoxFit.contain,
-                                )
-                              : Icon(
-                                  Icons.category_rounded,
-                                  size: 42,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+            return GridView.builder(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              physics: const BouncingScrollPhysics(),
+              itemCount: categories.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: AppSpacing.md,
+                mainAxisSpacing: AppSpacing.md,
+                childAspectRatio: .92,
+              ),
+              itemBuilder: (_, index) {
+                final category = categories[index];
+
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    onTap: () => _open(context, category),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        boxShadow: AppShadows.card,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Hero(
+                                tag: 'cat_${category.id}',
+                                child: category.imageUrl.isNotEmpty
+                                    ? AppCachedImage(
+                                        imageUrl: category.imageUrl,
+                                        fit: BoxFit.contain,
+                                      )
+                                    : Icon(
+                                        Icons.category_rounded,
+                                        size: 42,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              category.name,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.titleMedium,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        category.name,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.titleMedium,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

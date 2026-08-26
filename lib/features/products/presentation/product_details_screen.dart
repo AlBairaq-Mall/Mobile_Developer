@@ -6,14 +6,16 @@ import 'package:bhm_supermarket/app/widgets/app_quantity_selector.dart';
 import 'package:bhm_supermarket/app/widgets/app_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/design_system/components/app_icon.dart';
+import '../../../core/design_system/patterns/app_responsive.dart';
 import '../providers/product_provider.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/widgets/app_message.dart';
 import '../../../app/widgets/app_back_button.dart';
 import '../../../app/widgets/app_button.dart';
 import '../../../app/widgets/app_cached_image.dart';
-import '../../../core/widgets/empty_state.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../../core/design_system/components/feedback/app_empty_state.dart';
+import '../../../core/design_system/components/feedback/app_loading.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../ads/models/offer_model.dart';
@@ -124,13 +126,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   leading: const AppBackButtonOverlay(),
                   actions: [
                     Container(
-                      margin: const EdgeInsets.only(top: 10, left: 6),
+                      margin: const EdgeInsetsDirectional.only(top: 10, start: 6),
                       child: Material(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         shape: const CircleBorder(),
                         elevation: 2,
                         child: IconButton(
-                          icon: const Icon(Icons.share_outlined),
+                          icon: const AppIcon(Icons.share_outlined),
                           onPressed: () {
                             // سيتم ربط المشاركة لاحقاً
                           },
@@ -138,9 +140,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10, left: 12),
+                      margin: const EdgeInsetsDirectional.only(
+                        top: 10,
+                        start: 12,
+                        end: AppSpacing.md,
+                      ),
                       child: Material(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         shape: const CircleBorder(),
                         elevation: 2,
                         child: IconButton(
@@ -149,9 +155,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               : () {
                                   favProv.toggle(currentProduct.id);
                                 },
-                          icon: Icon(
+                          icon: AppIcon(
                             isFav ? Icons.favorite : Icons.favorite_border,
-                            color: isFav ? Colors.red : AppColors.textSecondary,
+                            color: isFav ? AppColors.error : AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -164,7 +170,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       children: [
                         Container(color: Colors.white),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(30, 90, 30, 50),
+                          padding: const EdgeInsetsDirectional.fromSTEB(30, 90, 30, 50),
                           child: Hero(
                             tag: 'product_${widget.productId}',
                             child: (currentProduct == null ||
@@ -186,10 +192,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
                 if (currentProduct != null)
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: AppConstrainedContent(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           //-----------------------------------------------------
                           // Category
@@ -327,17 +334,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               style: AppTypography.titleLarge,
                             ),
                             const SizedBox(height: AppSpacing.md),
-                            GridView.builder(
+                            AppAdaptiveGrid(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: units.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 2.4,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                              ),
+                              minItemWidth: 160.0, // Intentional component dimension to fit 2 on mobile
+                              childAspectRatio: 2.4,
+                              spacing: AppSpacing.md,
+                              runSpacing: AppSpacing.md,
                               itemBuilder: (_, i) {
                                 final unit = units[i];
 
@@ -485,7 +489,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: related.length,
                                 separatorBuilder: (_, __) =>
-                                    const SizedBox(height: AppSpacing.sm),
+                                    const SizedBox(width: AppSpacing.md),
                                 itemBuilder: (_, i) => SizedBox(
                                   width: 150,
                                   child: ProductCard(product: related[i]),
@@ -497,13 +501,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ],
                       ),
                     ),
-                  )
+                  ))
                 else
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
                       child: error != null
-                          ? EmptyState(
+                          ? AppEmptyState(
                               icon: Icons.warning_rounded,
                               title: 'تعذر تحميل المنتج',
                               subtitle: error,
@@ -512,7 +516,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   .read<ProductProvider>()
                                   .loadProduct(widget.productId),
                             )
-                          : const LoadingWidget(),
+                          : const Center(child: AppLoading()),
                     ),
                   ),
               ],
