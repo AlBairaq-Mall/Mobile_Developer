@@ -1,8 +1,13 @@
+import 'package:bhm_supermarket/core/models/product_model.dart';
 import 'package:bhm_supermarket/core/network/api_response.dart';
+import 'package:bhm_supermarket/core/pagination/pagination_meta.dart';
 import 'package:bhm_supermarket/features/checkout/models/coupon_totals.dart';
 import 'package:bhm_supermarket/features/ads/domain/repositories/offers_repository.dart';
 import 'package:bhm_supermarket/features/ads/models/offer_model.dart';
 import 'package:bhm_supermarket/features/ads/providers/offers_provider.dart';
+import 'package:bhm_supermarket/features/products/domain/repositories/product_repository.dart';
+import 'package:bhm_supermarket/features/products/models/product_unit_model.dart';
+import 'package:bhm_supermarket/features/scanner/providers/barcode_scanner_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -180,6 +185,140 @@ void main() {
       0,
     );
   });
+
+  group('BarcodeScannerProvider Tests', () {
+    final sampleProduct = ProductModel(
+      id: '10',
+      uniqueNumber: 'PROD-9988',
+      categoryId: '1',
+      categoryNameAr: 'ألبان',
+      categoryNameEn: 'Dairy',
+      nameAr: 'حليب المراعي',
+      nameEn: 'Almarai Milk',
+      descriptionAr: 'حليب طازج',
+      descriptionEn: 'Fresh milk',
+      images: const ['milk.png'],
+      price: 1500,
+      barcode: '6281003301234',
+      units: const [
+        ProductUnitModel(
+          id: '101',
+          nameAr: 'حبة 1 لتر',
+          nameEn: '1 Liter Piece',
+          price: 1500,
+          originalPrice: 1500,
+          quantity: 1,
+        ),
+        ProductUnitModel(
+          id: '102',
+          nameAr: 'كرتون 12 حبة',
+          nameEn: 'Carton 12 Pieces',
+          price: 16000,
+          originalPrice: 18000,
+          discount: 2000,
+          finalPrice: 16000,
+          quantity: 12,
+        ),
+      ],
+    );
+
+    test('lookupBarcode finds product and sets found state', () async {
+      final fakeRepo = _FakeProductRepository([sampleProduct]);
+      final provider = BarcodeScannerProvider(fakeRepo);
+
+      final result = await provider.lookupBarcode('6281003301234');
+
+      expect(result, isNotNull);
+      expect(result?.uniqueNumber, 'PROD-9988');
+      expect(provider.state, ScannerState.found);
+      expect(provider.scannedProduct?.nameAr, 'حليب المراعي');
+      expect(provider.scannedProduct?.units.length, 2);
+    });
+
+    test('lookupBarcode with non-existent barcode sets notFound state', () async {
+      final fakeRepo = _FakeProductRepository([sampleProduct]);
+      final provider = BarcodeScannerProvider(fakeRepo);
+
+      final result = await provider.lookupBarcode('0000000000000');
+
+      expect(result, isNull);
+      expect(provider.state, ScannerState.notFound);
+      expect(provider.errorMessage, contains('لم يتم العثور على أي منتج'));
+    });
+
+    test('lookupBarcode with empty barcode sets error state', () async {
+      final fakeRepo = _FakeProductRepository([sampleProduct]);
+      final provider = BarcodeScannerProvider(fakeRepo);
+
+      final result = await provider.lookupBarcode('   ');
+
+      expect(result, isNull);
+      expect(provider.state, ScannerState.error);
+      expect(provider.errorMessage, contains('يرجى إدخال'));
+    });
+  });
+}
+
+class _FakeProductRepository implements ProductRepository {
+  final List<ProductModel> products;
+
+  _FakeProductRepository(this.products);
+
+  @override
+  Future<ApiResponse<PaginatedResult<List<ProductModel>>>> getProducts({
+    String? categoryId,
+    String? search,
+    int page = 1,
+    bool? isBestSeller,
+    bool? isFlashDeal,
+    bool? isRecommended,
+  }) async {
+    if (search != null && search.isNotEmpty) {
+      final filtered = products.where((p) {
+        return p.barcode.contains(search) ||
+            p.uniqueNumber.contains(search) ||
+            p.nameAr.contains(search);
+      }).toList();
+
+      return ApiResponse.success(
+        PaginatedResult(
+          items: filtered,
+          meta: PaginationMeta(
+            currentPage: 1,
+            lastPage: 1,
+            total: filtered.length,
+            perPage: 10,
+            from: filtered.isNotEmpty ? 1 : 0,
+            to: filtered.length,
+            hasNext: false,
+            hasPrevious: false,
+          ),
+        ),
+      );
+    }
+
+    return ApiResponse.success(
+      PaginatedResult(
+        items: products,
+        meta: PaginationMeta(
+          currentPage: 1,
+          lastPage: 1,
+          total: products.length,
+          perPage: 10,
+          from: products.isNotEmpty ? 1 : 0,
+          to: products.length,
+          hasNext: false,
+          hasPrevious: false,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<ApiResponse<ProductModel>> getProductById(String id) async {
+    final product = products.firstWhere((p) => p.id == id);
+    return ApiResponse.success(product);
+  }
 }
 
 class _FakeOffersRepository implements OffersRepository {

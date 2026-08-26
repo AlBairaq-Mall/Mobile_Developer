@@ -20,6 +20,7 @@ import '../../features/navigation/providers/navigation_provider.dart';
 import '../../features/delivery/providers/delivery_provider.dart';
 import '../../features/coupons/providers/coupon_provider.dart';
 import '../../features/admin/providers/admin_reports_provider.dart';
+import '../../features/scanner/providers/barcode_scanner_provider.dart';
 
 class AppProviders {
   AppProviders._();
@@ -74,6 +75,11 @@ class AppProviders {
         ChangeNotifierProvider(
           create: (_) => AdminReportsProvider(
             DependencyInjection.adminReportsRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => BarcodeScannerProvider(
+            DependencyInjection.productRepository,
           ),
         ),
       ];

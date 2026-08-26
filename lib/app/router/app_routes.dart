@@ -23,6 +23,7 @@ class AppRoutes {
   static const settings = '/settings';
   static const orderSuccess = '/order-success';
   static const orderTracking = '/order-tracking/:orderNumber';
+  static const scanner = '/scanner';
 
   // Static Info
   static const aboutUs = '/about-us';

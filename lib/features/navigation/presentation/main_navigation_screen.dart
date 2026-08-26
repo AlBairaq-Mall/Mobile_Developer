@@ -9,9 +9,9 @@ import '../../auth/utils/auth_gate.dart';
 import '../../cart/presentation/cart_screen.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../categories/presentation/categories_screen.dart';
-import '../../favorites/presentation/favorites_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../scanner/presentation/barcode_scanner_screen.dart';
 import '../providers/navigation_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -29,8 +29,8 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // 0 = Home
   // 1 = Categories
-  // 2 = Cart
-  // 3 = Favorites
+  // 2 = Barcode Scanner (Center)
+  // 3 = Cart
   // 4 = Profile
   static const int _tabCount = 5;
 
@@ -74,10 +74,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return const CategoriesScreen();
 
       case 2:
-        return const CartScreen();
+        return const BarcodeScannerScreen();
 
       case 3:
-        return const FavoritesScreen();
+        return const CartScreen();
 
       case 4:
         return const ProfileScreen();
@@ -128,7 +128,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             14,
           ),
           child: Container(
-            height: 74,
+            height: 76,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: colorScheme.surface,
@@ -144,7 +144,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 6,
+                horizontal: 4,
+                vertical: 2,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -163,14 +164,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     current: navigation.index,
                     onTap: (i) => _go(context, i),
                   ),
-                  _CartBtn(
-                    count: cartCount,
+                  _ScannerCenterBtn(
                     current: navigation.index,
                     onTap: (i) => _go(context, i),
                   ),
-                  _NavItem(
-                    icon: Icons.favorite_rounded,
-                    label: 'المفضلة',
+                  _CartNavItem(
+                    count: cartCount,
                     index: 3,
                     current: navigation.index,
                     onTap: (i) => _go(context, i),
@@ -192,8 +191,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _go(BuildContext context, int index) {
-    // Favorites and Profile require authentication.
-    if (index == 3 || index == 4) {
+    // Only Profile requires authentication.
+    if (index == 4) {
       AuthGate.check(
         context,
         destination: '${AppRoutes.home}?tab=$index',
@@ -248,13 +247,13 @@ class _NavItem extends StatelessWidget {
         onTap: () => onTap(index),
         borderRadius: AppRadius.mdRadius,
         child: AnimatedScale(
-          scale: selected ? 1.05 : 1,
+          scale: selected ? 1.04 : 1,
           duration: const Duration(milliseconds: 180),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 8,
+              horizontal: 10,
+              vertical: 4,
             ),
             decoration: BoxDecoration(
               color: selected
@@ -264,6 +263,7 @@ class _NavItem extends StatelessWidget {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 180),
@@ -276,7 +276,7 @@ class _NavItem extends StatelessWidget {
                         : colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
@@ -297,16 +297,14 @@ class _NavItem extends StatelessWidget {
 }
 
 // ────────────────────────────────────────────────────────────────
-// Cart center button
+// Center Barcode Scanner button
 // ────────────────────────────────────────────────────────────────
 
-class _CartBtn extends StatelessWidget {
-  final int count;
+class _ScannerCenterBtn extends StatelessWidget {
   final int current;
   final void Function(int) onTap;
 
-  const _CartBtn({
-    required this.count,
+  const _ScannerCenterBtn({
     required this.current,
     required this.onTap,
   });
@@ -319,74 +317,56 @@ class _CartBtn extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         onTap: () => onTap(2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedScale(
-                  scale: selected ? 1.05 : 1,
-                  duration: const Duration(milliseconds: 180),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: selected
-                          ? LinearGradient(
-                              colors: [
-                                colorScheme.primary,
-                                colorScheme.tertiary,
-                              ],
-                            )
-                          : null,
-                      color: selected
-                          ? null
-                          : colorScheme.primary.withValues(
-                              alpha: .08,
-                            ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: AppIcon(
-                        Icons.shopping_cart_rounded,
-                        color: selected ? colorScheme.onPrimary : colorScheme.primary,
-                        size: AppIconSize.medium,
-                      ),
-                    ),
+            AnimatedScale(
+              scale: selected ? 1.05 : 1,
+              duration: const Duration(milliseconds: 180),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: selected
+                      ? LinearGradient(
+                          colors: [
+                            colorScheme.primary,
+                            colorScheme.tertiary,
+                          ],
+                        )
+                      : null,
+                  color: selected
+                      ? null
+                      : colorScheme.primary.withValues(
+                          alpha: .08,
+                        ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: colorScheme.primary.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: AppIcon(
+                    Icons.qr_code_scanner_rounded,
+                    color: selected ? colorScheme.onPrimary : colorScheme.primary,
+                    size: AppIconSize.medium,
                   ),
                 ),
-                if (count > 0)
-                  PositionedDirectional(
-                    top: -2,
-                    end: -2,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: colorScheme.error,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$count',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: colorScheme.onError,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+              ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             Text(
-              'السلة',
+              'مسح باركود',
               style: AppTypography.labelSmall.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
@@ -396,6 +376,111 @@ class _CartBtn extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────
+// Cart navigation item (with live badge)
+// ────────────────────────────────────────────────────────────────
+
+class _CartNavItem extends StatelessWidget {
+  final int count;
+  final int index;
+  final int current;
+  final void Function(int) onTap;
+
+  const _CartNavItem({
+    required this.count,
+    required this.index,
+    required this.current,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = index == current;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onTap(index),
+        borderRadius: AppRadius.mdRadius,
+        child: AnimatedScale(
+          scale: selected ? 1.04 : 1,
+          duration: const Duration(milliseconds: 180),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: selected
+                  ? colorScheme.primary.withValues(alpha: .08)
+                  : Colors.transparent,
+              borderRadius: AppRadius.mdRadius,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      child: AppIcon(
+                        Icons.shopping_cart_rounded,
+                        key: ValueKey(selected),
+                        size: AppIconSize.medium,
+                        color: selected
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    if (count > 0)
+                      PositionedDirectional(
+                        top: -4,
+                        end: -8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.error,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          child: Center(
+                            child: Text(
+                              count > 99 ? '99+' : '$count',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: colorScheme.onError,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'السلة',
+                  style: AppTypography.labelSmall.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: selected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

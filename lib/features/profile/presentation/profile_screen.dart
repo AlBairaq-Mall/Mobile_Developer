@@ -11,7 +11,6 @@ import '../../../core/design_system/tokens/app_radius.dart';
 import '../../../core/design_system/tokens/app_shadows.dart';
 import '../../../core/design_system/patterns/app_responsive.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../navigation/providers/navigation_provider.dart';
 import '../../orders/providers/orders_provider.dart';
 
 import '../../favorites/providers/favorites_provider.dart';
@@ -152,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Icons.favorite_border_rounded,
                         'المفضلة',
                         colorScheme.error,
-                        () => context.read<NavigationProvider>().changeTab(3),
+                        () => context.push(AppRoutes.favorites),
                       ),
                       _MenuItem(
                         Icons.location_on_outlined,

@@ -28,8 +28,13 @@ import '../providers/product_provider.dart';
 /// في حال لم تكن الوحدات متوفرة يُجرى [ProductProvider.loadProduct].
 class ProductDetailsSheet extends StatefulWidget {
   final ProductModel product;
+  final int initialUnitIndex;
 
-  const ProductDetailsSheet({super.key, required this.product});
+  const ProductDetailsSheet({
+    super.key,
+    required this.product,
+    this.initialUnitIndex = 0,
+  });
 
   @override
   State<ProductDetailsSheet> createState() => _ProductDetailsSheetState();
@@ -50,6 +55,10 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
       if (widget.product.units.isNotEmpty) {
         // الوحدات موجودة → لا حاجة لطلب API
         provider.setProduct(widget.product);
+        if (widget.initialUnitIndex > 0 &&
+            widget.initialUnitIndex < widget.product.units.length) {
+          provider.selectUnit(widget.initialUnitIndex);
+        }
       } else {
         // الوحدات غير موجودة → جلب من API
         provider.loadProduct(widget.product.id);
@@ -155,130 +164,148 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             ),
           );
 
-    return SafeArea(
-      top: false,
-      child: Column(
-        children: [
-          // ── Drag Handle ────────────────────────────────────────────────
-          const _DragHandle(),
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.90,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.sheet),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            // ── Drag Handle ────────────────────────────────────────────────
+            const _DragHandle(),
 
-          // ── Scrollable Content ─────────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // صورة المنتج
-                  _ImageSection(
-                    images: images,
-                    productId: widget.product.id,
-                    isFavorite: isFavorite,
-                    currentIndex: _imageIndex,
-                    pageController: _pageController,
-                    onPageChanged: (i) => setState(() => _imageIndex = i),
-                    onClose: () => context.pop(),
-                    onFavoriteToggle: () => context
-                        .read<FavoritesProvider>()
-                        .toggle(widget.product.id),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // التصنيف
-                        if (widget.product.categoryName.isNotEmpty) ...[
-                          _CategoryChip(label: widget.product.categoryName),
-                          const SizedBox(height: AppSpacing.sm),
-                        ],
-
-                        // اسم المنتج
-                        Text(
-                          widget.product.name,
-                          style: AppTypography.headlineSmall,
-                        ),
-
-
-
-                        // الوصف
-                        if (widget.product.description.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            widget.product.description,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
-                              height: 1.65,
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: AppSpacing.lg),
-
-                        // ── قسم الوحدات ──────────────────────────────
-                        if (provider.isLoading)
-                          const _UnitsLoadingState()
-                        else if (provider.error != null)
-                          _UnitsErrorState(error: provider.error!)
-                        else if (units.isNotEmpty)
-                          _UnitsSection(
-                            productId: widget.product.id,
-                            units: units,
-                            selectedIndex: provider.selectedUnitIndex,
-                            onSelect: (i) =>
-                                context.read<ProductProvider>().selectUnit(i),
-                          )
-                        else
-                          const _NoUnitsWarning(),
-
-                        // مسافة لشريط الأسفل
-                        const SizedBox(height: 110),
-                      ],
+            // ── Scrollable Content ─────────────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // صورة المنتج
+                    _ImageSection(
+                      images: images,
+                      productId: widget.product.id,
+                      isFavorite: isFavorite,
+                      currentIndex: _imageIndex,
+                      pageController: _pageController,
+                      onPageChanged: (i) => setState(() => _imageIndex = i),
+                      onClose: () => context.pop(),
+                      onFavoriteToggle: () => context
+                          .read<FavoritesProvider>()
+                          .toggle(widget.product.id),
                     ),
-                  ),
-                ],
+
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // التصنيف
+                          if (widget.product.categoryName.isNotEmpty) ...[
+                            _CategoryChip(label: widget.product.categoryName),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+
+                          // اسم المنتج
+                          Text(
+                            widget.product.name,
+                            style: AppTypography.headlineSmall,
+                          ),
+
+
+
+                          // الوصف
+                          if (widget.product.description.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              widget.product.description,
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.65,
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: AppSpacing.lg),
+
+                          // ── قسم الوحدات ──────────────────────────────
+                          if (provider.isLoading)
+                            const _UnitsLoadingState()
+                          else if (provider.error != null)
+                            _UnitsErrorState(error: provider.error!)
+                          else if (units.isNotEmpty)
+                            _UnitsSection(
+                              productId: widget.product.id,
+                              units: units,
+                              selectedIndex: provider.selectedUnitIndex,
+                              onSelect: (i) =>
+                                  context.read<ProductProvider>().selectUnit(i),
+                            )
+                          else
+                            const _NoUnitsWarning(),
+
+                          // مسافة لشريط الأسفل
+                          const SizedBox(height: 110),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // ── Bottom Action Bar ──────────────────────────────────────────
-          if (selectedUnit != null)
-            _BottomBar(
-              selectedUnit: selectedUnit,
-              price: selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price,
-              oldPrice: selectedUnit.originalPrice > (selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price)
-                  ? selectedUnit.originalPrice
-                  : null,
-              quantity: cartQuantity,
-              isLoading: isQuantityProcessing,
-              onIncrease: () async {
-                final cart = context.read<CartProvider>();
+            // ── Bottom Action Bar ──────────────────────────────────────────
+            if (selectedUnit != null)
+              _BottomBar(
+                selectedUnit: selectedUnit,
+                price: selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price,
+                oldPrice: selectedUnit.originalPrice > (selectedUnit.finalPrice > 0 ? selectedUnit.finalPrice : selectedUnit.price)
+                    ? selectedUnit.originalPrice
+                    : null,
+                quantity: cartQuantity,
+                isLoading: isQuantityProcessing,
+                onIncrease: () async {
+                  final cart = context.read<CartProvider>();
 
-                await cart.setQuantity(
-                  productId: widget.product.id,
-                  unitId: selectedUnit.id,
-                  quantity: cartQuantity + 1,
-                );
-              },
-              onDecrease: () async {
-                final cart = context.read<CartProvider>();
+                  await cart.setQuantity(
+                    productId: widget.product.id,
+                    unitId: selectedUnit.id,
+                    quantity: cartQuantity + 1,
+                  );
+                },
+                onDecrease: () async {
+                  final cart = context.read<CartProvider>();
 
-                if (cartQuantity <= 0) {
-                  return;
-                }
+                  if (cartQuantity <= 0) {
+                    return;
+                  }
 
-                await cart.setQuantity(
-                  productId: widget.product.id,
-                  unitId: selectedUnit.id,
-                  quantity: cartQuantity - 1,
-                );
-              },
-              onAddToCart: _addToCart,
-            )
-          else if (!provider.isLoading)
-            const _UnavailableBottomBar(),
-        ],
+                  await cart.setQuantity(
+                    productId: widget.product.id,
+                    unitId: selectedUnit.id,
+                    quantity: cartQuantity - 1,
+                  );
+                },
+                onAddToCart: _addToCart,
+              )
+            else if (!provider.isLoading)
+              const _UnavailableBottomBar(),
+          ],
+        ),
       ),
     );
   }

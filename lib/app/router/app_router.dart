@@ -20,6 +20,8 @@ import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/favorites/presentation/favorites_screen.dart';
+import '../../features/scanner/presentation/barcode_scanner_screen.dart';
 import 'route_guards.dart';
 import 'app_routes.dart';
 // import '../../features/admin/presentation/admin_reports_screen.dart';
@@ -88,6 +90,14 @@ class AppRouter {
 
               return AddressManagementScreen(fromCheckout: fromCheckout);
             },
+          ),
+          GoRoute(
+            path: AppRoutes.favorites,
+            builder: (_, __) => const FavoritesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.scanner,
+            builder: (_, __) => const BarcodeScannerScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,
