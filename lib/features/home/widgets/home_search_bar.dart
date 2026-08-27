@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_radius.dart';
-import '../../../app/theme/app_shadows.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/design_system/components/app_icon.dart';
 
@@ -39,14 +36,21 @@ class HomeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = Container(
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: .35),
+          color: const Color(0xFFEEEEEE),
+          width: 1,
         ),
-        boxShadow: AppShadows.search,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextField(
         controller: controller,
@@ -64,23 +68,28 @@ class HomeSearchBar extends StatelessWidget {
         decoration: InputDecoration(
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
+            horizontal: 18,
             vertical: 13,
           ),
           hintText: hint,
           hintStyle: AppTypography.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: const Color(0xFF9E9E9E),
+            fontSize: 14,
           ),
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(5),
+          suffixIcon: Container(
+            margin: const EdgeInsets.all(6),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadius.pill),
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: AppIcon(
-              Icons.search_rounded,
-              size: AppIconSize.small,
-              color: Theme.of(context).colorScheme.primary,
+            child: const Center(
+              child: AppIcon(
+                Icons.search_rounded,
+                size: AppIconSize.small,
+                color: Color(0xFFD97706),
+              ),
             ),
           ),
         ),

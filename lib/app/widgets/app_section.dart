@@ -16,15 +16,23 @@ class AppSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-          //   child: SectionHeader(title: title, onSeeAll: onSeeAll),
-          // ),
-          const SizedBox(height: 12),
+          if (title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1E1E1E),
+                ),
+              ),
+            ),
+          const SizedBox(height: 6),
           child,
         ],
       ),

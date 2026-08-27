@@ -153,7 +153,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                 }
               }
             },
-            errorBuilder: (context, error, child) {
+            errorBuilder: (context, error) {
               return _buildCameraFallback(
                 message: 'تعذر تشغيل كاميرا المسح. يمكنك إدخال الباركود يدويًا.',
               );

@@ -66,11 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AppConstrainedContent(
+        addHorizontalPadding: false,
         child: SafeArea(
           child: NestedScrollView(
-          // NestedScrollView يدير OuterScrollView (headers) + InnerScrollView (body).
-          // يجب أن يكون RefreshIndicator على الـ inner scroll view مباشرةً
-          // وليس على NestedScrollView ككل — هذا هو سبب عدم عمل pull-to-refresh.
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
@@ -78,21 +76,21 @@ class _HomeScreenState extends State<HomeScreen> {
             BuildContext context,
             bool innerBoxIsScrolled,
           ) {
+            final hasAds = context.watch<AdsProvider>().ads.isNotEmpty;
+
             return [
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: 6,
-                  ),
-                  child: const Column(
-                    children: [
-                      HomeHeader(),
-                      SizedBox(height: AppSpacing.lg),
-                      HomeBanner(),
-                    ],
-                  ),
-                ),
+                child: hasAds
+                    ? const HomeBanner()
+                    : const Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          8,
+                          AppSpacing.lg,
+                          8,
+                        ),
+                        child: HomeHeader(isOverlay: false),
+                      ),
               ),
               SliverPersistentHeader(
                 pinned: true,
@@ -215,9 +213,9 @@ class _HomeBody extends StatelessWidget {
           ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
-            8.0, // smaller outer padding
-            10,
-            8.0,
+            6.0, // small outer padding to maximize product card width
+            4,
+            6.0,
             AppSpacing.xxl,
           ),
           sliver: SliverList(
@@ -229,24 +227,24 @@ class _HomeBody extends StatelessWidget {
               if (provider.selectedCategory.isEmpty) ...[
                 if (provider.flashDeals.isNotEmpty) ...[
                   ProductSection(
-                    title: 'العروض',
+                    title: 'العروض 🔥',
                     products: provider.flashDeals,
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.lg),
                 ],
                 if (provider.bestSellerProducts.isNotEmpty) ...[
                   ProductSection(
-                    title: 'الأكثر مبيعاً',
+                    title: 'الأكثر مبيعاً 🔥',
                     products: provider.bestSellerProducts,
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.lg),
                 ],
                 if (provider.recommendedProducts.isNotEmpty) ...[
                   ProductSection(
-                    title: 'مختارة لك',
+                    title: 'خصيصاً لك 🔥',
                     products: provider.recommendedProducts,
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.lg),
                 ],
               ],
 
@@ -274,10 +272,10 @@ class _SearchDelegate extends SliverPersistentHeaderDelegate {
   const _SearchDelegate();
 
   @override
-  double get minExtent => 64;
+  double get minExtent => 60;
 
   @override
-  double get maxExtent => 64;
+  double get maxExtent => 60;
 
   @override
   Widget build(
@@ -291,11 +289,9 @@ class _SearchDelegate extends SliverPersistentHeaderDelegate {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            8,
-            AppSpacing.lg,
-            8,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 5,
           ),
           child: const HomeSearchBar(enableHero: true),
         ),
@@ -311,10 +307,10 @@ class _CategoriesDelegate extends SliverPersistentHeaderDelegate {
   const _CategoriesDelegate();
 
   @override
-  double get minExtent => 128;
+  double get minExtent => 82;
 
   @override
-  double get maxExtent => 128;
+  double get maxExtent => 82;
 
   @override
   Widget build(
@@ -324,7 +320,7 @@ class _CategoriesDelegate extends SliverPersistentHeaderDelegate {
   ) {
     return Material(
       color: Theme.of(context).colorScheme.surface,
-      elevation: overlapsContent ? 3 : 0,
+      elevation: overlapsContent ? 2 : 0,
       child: const SafeArea(bottom: false, child: CategoriesPinned()),
     );
   }

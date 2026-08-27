@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:bhm_supermarket/app/design/app_durations.dart';
 import 'package:bhm_supermarket/features/ads/providers/ads_provider.dart';
 
 import '../../ads/widgets/network_banner_card.dart';
+import 'home_header.dart';
 
 class HomeBanner extends StatefulWidget {
   const HomeBanner({super.key});
@@ -28,7 +28,7 @@ class _HomeBannerState extends State<HomeBanner> {
   void initState() {
     super.initState();
 
-    _controller = PageController(viewportFraction: 0.94);
+    _controller = PageController(viewportFraction: 1.0);
 
     _timer = Timer.periodic(const Duration(seconds: 4), (_) => _autoScroll());
   }
@@ -63,7 +63,7 @@ class _HomeBannerState extends State<HomeBanner> {
 
     if (provider.loading) {
       return const SizedBox(
-        height: 178,
+        height: 245,
         child: Center(child: AppLoading(type: AppLoadingType.dots, size: 18)),
       );
     }
@@ -72,58 +72,72 @@ class _HomeBannerState extends State<HomeBanner> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 178,
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: ads.length,
-            physics: const BouncingScrollPhysics(),
-            onPageChanged: (index) {
-              if (!mounted) return;
+    return SizedBox(
+      height: 245,
+      child: Stack(
+        children: [
+          // ─────────────────────────────────────────────────────────
+          // 1. Banner PageView (The actual visual background)
+          // ─────────────────────────────────────────────────────────
+          Positioned.fill(
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: ads.length,
+              physics: const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                if (!mounted) return;
 
-              setState(() {
-                _page = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: NetworkBannerCard(ad: ads[index]),
-              );
-            },
+                setState(() {
+                  _page = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return NetworkBannerCard(ad: ads[index]);
+              },
+            ),
           ),
-        ),
 
-        // ─────────────────────────────────────────────────────────────
-        // Indicators
-        // ─────────────────────────────────────────────────────────────
-        if (ads.length > 1) ...[
-          const SizedBox(height: 7),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(ads.length, (index) {
-              final active = index == _page;
-
-              return AnimatedContainer(
-                duration: AppDurations.normal,
-                curve: Curves.easeOut,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                width: active ? 20 : 5,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: active
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              );
-            }),
+          // ─────────────────────────────────────────────────────────
+          // 2. Header Overlay (Top Overlay)
+          // ─────────────────────────────────────────────────────────
+          const Positioned(
+            top: 8,
+            left: 16,
+            right: 16,
+            child: HomeHeader(isOverlay: true),
           ),
+
+          // ─────────────────────────────────────────────────────────
+          // 3. Page Indicators (Bottom Overlay)
+          // ─────────────────────────────────────────────────────────
+          if (ads.length > 1)
+            Positioned(
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(ads.length, (index) {
+                  final active = index == _page;
+
+                  return AnimatedContainer(
+                    duration: AppDurations.normal,
+                    curve: Curves.easeOut,
+                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                    width: active ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
         ],
-      ],
+      ),
     );
   }
 }

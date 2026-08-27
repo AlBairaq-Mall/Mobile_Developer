@@ -3,60 +3,76 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/router/app_routes.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_radius.dart';
-import '../../../app/theme/app_shadows.dart';
-import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/design_system/components/app_icon.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final bool isOverlay;
+
+  const HomeHeader({super.key, this.isOverlay = true});
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+    final textColor = isOverlay ? Colors.white : Theme.of(context).colorScheme.onSurface;
+    final hintColor = isOverlay ? Colors.white.withValues(alpha: 0.90) : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return SizedBox(
-      height: 72,
+      height: 56,
       child: Row(
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              boxShadow: AppShadows.product,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              user?.name.isNotEmpty == true
-                  ? user!.name.substring(0, 1).toUpperCase()
-                  : "👤",
-              style: AppTypography.headlineSmall.copyWith(color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.lg),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'مرحباً 👋',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.textHint,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'مرحبًا',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: hintColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        shadows: isOverlay
+                            ? [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.45),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      '👋',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: 1),
                 Text(
-                  user?.name ?? 'زائر',
+                  user?.name.isNotEmpty == true ? user!.name : 'زائر',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.headlineMedium.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 24,
+                    color: textColor,
+                    height: 1.15,
+                    shadows: isOverlay
+                        ? [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.50),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
               ],
@@ -89,30 +105,40 @@ class _HeaderIconButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
-        child: Ink(
-          width: 52,
-          height: 52,
+        child: Container(
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            boxShadow: AppShadows.card,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              AppIcon(icon, color: Theme.of(context).colorScheme.onSurface),
+              const AppIcon(
+                Icons.notifications_none_rounded,
+                size: AppIconSize.small,
+                color: Color(0xFF1E1E1E),
+              ),
               if (hasBadge)
                 Positioned(
-                  top: 12,
-                  right: 12,
+                  top: 9,
+                  right: 9,
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF3B30),
                       shape: BoxShape.circle,
                     ),
                   ),

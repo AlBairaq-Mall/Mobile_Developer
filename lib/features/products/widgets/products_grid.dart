@@ -22,21 +22,21 @@ class ProductsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppAdaptiveGrid(
-      // Intentional Component Dimension: 150.0 width to preserve 2 columns on mobile
-      minItemWidth: 150.0,
-      // Figma visual intent spacing for dense layout
+      // Responsive threshold to ensure 2 wider columns on mobile
+      minItemWidth: 140.0,
+      // Spacing between the two products in the same row
       spacing: AppSpacing.sm, // 8.0
       runSpacing: AppSpacing.md, // 12.0
-      // Intentional Aspect Ratio to accommodate ProductCard content
+      // Aspect ratio accommodating wider ProductCard content
       childAspectRatio: 0.62,
       itemCount: products.length,
       shrinkWrap: shrinkWrap,
       physics: physics,
       controller: controller,
-      // 10.0 horizontal to maintain exact C3 density and prevent double-margin
+      // Zero horizontal padding inside grid so outer padding is controlled and cards expand
       padding: const EdgeInsets.symmetric(
-        horizontal: 10.0,
-        vertical: AppSpacing.md,
+        horizontal: 0.0,
+        vertical: AppSpacing.xs,
       ),
       itemBuilder: (_, index) {
         return ProductCard(product: products[index]);
